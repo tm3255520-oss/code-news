@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "xiaohongshu-skills": {
+      "source": "autoclaw-cc/xiaohongshu-skills",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "f15152cedb60bc68dd07bea59d16682772bf50616c1735097e22faec05c65e5e"
+    }
+  }
+}

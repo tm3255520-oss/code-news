@@ -1,0 +1,15 @@
+.tmp/
+node_modules/
+
+.agents/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+@AutomationLog.txt
+gcm-diagnose.log

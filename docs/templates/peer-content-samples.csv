@@ -1,0 +1,2 @@
+captured_date,platform,account_name,account_url_or_id,post_date,title,url,topic,angle,format,hook_type,cover_type,cta_type,views,likes,comments,bookmarks,shares,notes
+2026-05-24,zhihu,Example Account,https://example.com/account,2026-05-23,Example title: why this topic worked,https://example.com/post,ai-tools,case-study,long-article,result-first,data-card,ask-choice,12000,640,118,92,44,Example row

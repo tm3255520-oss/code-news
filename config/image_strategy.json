@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "historyWindow": 6,
+  "avoidRepeatWindow": 2,
+  "coverFamilies": {
+    "warm_editorial": {
+      "renderer": "guizang-social-card-skill",
+      "promptStyle": "暖色留白、标题主导、报刊感"
+    },
+    "contrast_signal": {
+      "renderer": "imagegen",
+      "promptStyle": "高对比、强信号、决策感"
+    },
+    "data_brief": {
+      "renderer": "guizang-social-card-skill",
+      "promptStyle": "信息简报、数据提示、简洁网格"
+    },
+    "question_lead": {
+      "renderer": "imagegen",
+      "promptStyle": "问题导向、强引子、单一核心视觉"
+    }
+  },
+  "bodyFamilies": {
+    "workflow_whiteboard": {
+      "renderer": "ian-xiaohei-illustrations",
+      "promptStyle": "白底手绘流程、节点和箭头、轻批注"
+    },
+    "comparison_board": {
+      "renderer": "imagegen",
+      "promptStyle": "双栏对比、差异突出、结构化信息板"
+    },
+    "risk_checklist": {
+      "renderer": "ian-xiaohei-illustrations",
+      "promptStyle": "风险清单、标注意味、避坑指向"
+    },
+    "decision_tree": {
+      "renderer": "ian-xiaohei-illustrations",
+      "promptStyle": "分叉判断、路径选择、条件递进"
+    },
+    "tool_stack_map": {
+      "renderer": "imagegen",
+      "promptStyle": "工具堆栈、层级关系、组件地图"
+    },
+    "myth_vs_fact": {
+      "renderer": "imagegen",
+      "promptStyle": "误区与事实对照、结论鲜明"
+    }
+  },
+  "palettes": {
+    "copper_teal": {
+      "primary": "#C9723B",
+      "secondary": "#0E7C7B",
+      "ink": "#1F1F1F"
+    },
+    "amber_ink": {
+      "primary": "#D8941E",
+      "secondary": "#2E3138",
+      "ink": "#181818"
+    },
+    "olive_blue": {
+      "primary": "#7A8A32",
+      "secondary": "#1E4F8C",
+      "ink": "#1F2933"
+    },
+    "coral_slate": {
+      "primary": "#D56B59",
+      "secondary": "#49525C",
+      "ink": "#202124"
+    },
+    "graphite_green": {
+      "primary": "#3E4A59",
+      "secondary": "#2E8B57",
+      "ink": "#151515"
+    }
+  },
+  "domainPreferences": {
+    "ai_tools": {
+      "coverFamilies": [
+        "question_lead",
+        "contrast_signal",
+        "data_brief"
+      ],
+      "bodyFamilies": [
+        "comparison_board",
+        "tool_stack_map",
+        "workflow_whiteboard",
+        "myth_vs_fact"
+      ],
+      "palettes": [
+        "copper_teal",
+        "coral_slate",
+        "amber_ink"
+      ]
+    },
+    "efficiency_tools": {
+      "coverFamilies": [
+        "data_brief",
+        "warm_editorial",
+        "contrast_signal"
+      ],
+      "bodyFamilies": [
+        "workflow_whiteboard",
+        "decision_tree",
+        "risk_checklist",
+        "comparison_board"
+      ],
+      "palettes": [
+        "olive_blue",
+        "graphite_green",
+        "amber_ink"
+      ]
+    },
+    "digital_product_usage": {
+      "coverFamilies": [
+        "warm_editorial",
+        "question_lead",
+        "data_brief"
+      ],
+      "bodyFamilies": [
+        "comparison_board",
+        "workflow_whiteboard",
+        "tool_stack_map",
+        "risk_checklist"
+      ],
+      "palettes": [
+        "copper_teal",
+        "olive_blue",
+        "coral_slate"
+      ]
+    },
+    "light_tech_science": {
+      "coverFamilies": [
+        "contrast_signal",
+        "data_brief",
+        "warm_editorial"
+      ],
+      "bodyFamilies": [
+        "myth_vs_fact",
+        "decision_tree",
+        "comparison_board",
+        "workflow_whiteboard"
+      ],
+      "palettes": [
+        "graphite_green",
+        "amber_ink",
+        "olive_blue"
+      ]
+    }
+  }
+}

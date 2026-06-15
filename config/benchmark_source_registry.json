@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "sources": {
+    "design-tools": {
+      "aliases": [
+        "ai_tools",
+        "ai-tool",
+        "ai-tools",
+        "content-tools",
+        "editable-design-results",
+        "agent-tools"
+      ],
+      "action": "search_content",
+      "provider": "import_json",
+      "platform": "wechat",
+      "inputPath": "../.tmp/wechat-search-ai-tools-2026-05-26.json",
+      "query": "AI 工具"
+    },
+    "ai-subscriptions": {
+      "aliases": [
+        "digital_product_usage",
+        "digital-products",
+        "product-usage",
+        "ai-subscriptions"
+      ],
+      "action": "search_content",
+      "provider": "import_json",
+      "platform": "wechat",
+      "inputPath": "../.tmp/wechat-search-ai-subscriptions.json",
+      "query": "AI 工具 订阅"
+    },
+    "workflow-shift": {
+      "aliases": [
+        "efficiency_tools",
+        "efficiency-tools",
+        "ai-coding",
+        "approval-first",
+        "shared-agents"
+      ],
+      "action": "search_content",
+      "provider": "import_json",
+      "platform": "wechat",
+      "inputPath": "../.tmp/wechat-search-ai-coding-2026-05-26.json",
+      "query": "AI 工作流"
+    },
+    "google-search-ai": {
+      "aliases": [
+        "light_tech_science",
+        "light-tech-science",
+        "google-io-agentic",
+        "video-platform-ai-policy"
+      ],
+      "action": "search_content",
+      "provider": "import_json",
+      "platform": "wechat",
+      "inputPath": "../.tmp/wechat-search-google-search-ai-2026-05-26.json",
+      "query": "Google 搜索 AI"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "defaultProvider": "import_json",
+  "providers": {
+    "fixture": {
+      "type": "fixture",
+      "fixtures": {}
+    },
+    "import_json": {
+      "type": "import_json"
+    }
+  }
+}

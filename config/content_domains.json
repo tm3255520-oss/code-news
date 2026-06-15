@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "domains": {
+    "ai_tools": {
+      "displayName": "AI工具",
+      "aliases": [
+        "ai-tool",
+        "ai-tools",
+        "design-tools",
+        "agent-tools"
+      ],
+      "keywords": [
+        "AI工具",
+        "Canva",
+        "Figma",
+        "Claude",
+        "ChatGPT",
+        "Codex",
+        "Gemini",
+        "Midjourney"
+      ]
+    },
+    "efficiency_tools": {
+      "displayName": "效率工具",
+      "aliases": [
+        "workflow-shift",
+        "approval-first",
+        "shared-agents"
+      ],
+      "keywords": [
+        "效率",
+        "工作流",
+        "自动化",
+        "流程",
+        "审批",
+        "协作",
+        "时间管理"
+      ]
+    },
+    "digital_product_usage": {
+      "displayName": "数字产品使用",
+      "aliases": [
+        "digital-products",
+        "product-usage"
+      ],
+      "keywords": [
+        "产品使用",
+        "上手",
+        "教程",
+        "怎么用",
+        "对比",
+        "选购",
+        "订阅"
+      ]
+    },
+    "light_tech_science": {
+      "displayName": "轻科技科普",
+      "aliases": [
+        "google-io-agentic",
+        "google-search-ai",
+        "video-platform-ai-policy"
+      ],
+      "keywords": [
+        "科普",
+        "科技趋势",
+        "行业变化",
+        "平台规则",
+        "Google I/O",
+        "政策"
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "defaultProvider": "packet",
+  "providers": {
+    "fixture": {
+      "type": "fixture",
+      "fixtures": {}
+    },
+    "packet": {
+      "type": "packet",
+      "packetDirName": "ai-packets"
+    }
+  }
+}

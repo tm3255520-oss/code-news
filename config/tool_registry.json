@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "interfaces": {
+    "monitor_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "dbs-benchmark",
+      "fallbacks": [
+        "wechat-article-search",
+        "xhs-explore"
+      ],
+      "purpose": "对标监控与选题池更新"
+    },
+    "analyzer_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "dbs-content",
+      "fallbacks": [
+        "content-research-writer"
+      ],
+      "purpose": "选题诊断与内容方向收敛"
+    },
+    "writer_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "content-research-writer",
+      "fallbacks": [
+        "wechat-content-optimizer"
+      ],
+      "purpose": "资料整理、提纲与草稿生成"
+    },
+    "humanizer_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "humanizer-zh",
+      "fallbacks": [],
+      "purpose": "中文成稿去 AI 味"
+    },
+    "illustration_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "ian-xiaohei-illustrations",
+      "fallbacks": [
+        "imagegen"
+      ],
+      "purpose": "正文插图生成"
+    },
+    "cover_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "guizang-social-card-skill",
+      "fallbacks": [
+        "imagegen"
+      ],
+      "purpose": "封面、社交卡片与首图生成"
+    },
+    "publisher_skill": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/run_three_platform_pipeline.py",
+      "fallbacks": [
+        ".tmp/publish_toutiao_article.js",
+        ".tmp/publish_zhihu_article_controlled.js",
+        ".tmp/publish_wechat_article_controlled.js"
+      ],
+      "formalPublishEnabled": false,
+      "purpose": "三平台正式发布适配层，第一阶段只保留占位"
+    },
+    "codex_api_mcp": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/codex_api_mcp.py",
+      "fallbacks": [
+        "scripts/run_codex_generation_job.py"
+      ],
+      "providerConfig": "config/codex_api_mcp.json",
+      "purpose": "统一 AI 生成入口"
+    },
+    "web_scraper_mcp": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/web_scraper_mcp.py",
+      "fallbacks": [
+        "scripts/run_benchmark_monitor.py"
+      ],
+      "providerConfig": "config/web_scraper_mcp.json",
+      "purpose": "统一网页采集与结构化记录入口"
+    },
+    "xhs_placeholder_publish": {
+      "mode": "local_skill_cli",
+      "status": "active",
+      "primary": "xhs-publish",
+      "fallbacks": [
+        "xhs-auth",
+        "xhs-explore"
+      ],
+      "formalPublishEnabled": false,
+      "purpose": "小红书仅保留预发布占位，不走正式发布"
+    },
+    "scheduler": {
+      "mode": "planned_adapter",
+      "status": "planned",
+      "primary": "Windows Task Scheduler",
+      "fallbacks": [],
+      "purpose": "后续自动调度"
+    }
+  }
+}
