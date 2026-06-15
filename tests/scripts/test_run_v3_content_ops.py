@@ -154,6 +154,26 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertEqual(state["platforms"]["xiaohongshu"]["status"], "placeholder_ready")
         self.assertFalse(state["v3"]["formalPublishEnabled"])
 
+    def test_run_v3_prepublish_writes_operator_checklist_for_manual_handoff(self) -> None:
+        summary = run_v3_prepublish(
+            self.payload_path,
+            config_dir=self.config_dir,
+            history_path=self.history_path,
+            min_score=0,
+        )
+
+        checklist_path = self.generated_dir / "operator-checklist.md"
+        self.assertTrue(checklist_path.exists())
+        checklist = checklist_path.read_text(encoding="utf-8")
+        self.assertIn("# 用户配合清单", checklist)
+        self.assertIn("image-plan.json", checklist)
+        self.assertIn("publish-preview.json", checklist)
+        self.assertIn("skill-packets.json", checklist)
+        self.assertEqual(Path(summary["operatorChecklistPath"]).resolve(), checklist_path.resolve())
+
+        state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
+        self.assertEqual(Path(state["v3"]["operatorChecklistPath"]).resolve(), checklist_path.resolve())
+
     def test_run_v3_prepublish_persists_image_history(self) -> None:
         run_v3_prepublish(
             self.payload_path,

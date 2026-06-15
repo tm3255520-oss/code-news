@@ -226,6 +226,90 @@ def build_publish_preview(
     }
 
 
+def build_operator_checklist(
+    *,
+    payload: dict[str, Any],
+    preflight: dict[str, Any],
+    asset_gate: dict[str, Any],
+    signal_pipeline: dict[str, Any],
+    image_plan_path: Path,
+    skill_packets_path: Path,
+    publish_preview_path: Path,
+    xhs_placeholder_path: Path,
+) -> str:
+    gate_status = str(preflight.get("gate", {}).get("status") or "unknown")
+    signal_status = str(signal_pipeline.get("status") or "unknown")
+    quality_report_path = preflight.get("reportMarkdownPath")
+    required_actions: list[str] = []
+
+    if signal_status == "pending_source":
+        required_actions.append("补齐对标来源：提供 `benchmark-records.jsonl`、`benchmark-request.json` 或 payload 中的对标来源路径。")
+    else:
+        required_actions.append("审阅 `benchmark-monitor.md`、`viral-analysis.md` 和 `rewrite-plan.md`，确认对标、爆款分析和仿写方向无偏差。")
+
+    if gate_status != "passed":
+        required_actions.append("先处理质量门禁未通过项，按质量报告逐条修正文案、标题或结构。")
+    else:
+        required_actions.append("质量门禁已通过，但仍需人工复核三平台标题、摘要和正文开头是否符合当天选题。")
+
+    if asset_gate.get("status") != "passed":
+        required_actions.append("补齐封面和正文配图，确保 `cover.png` 和正文图片数量满足最小要求。")
+    else:
+        required_actions.append("根据 `image-plan.json` 复核封面家族、配色和正文三张图是否真的做出了差异化。")
+
+    required_actions.extend(
+        [
+            "人工确认 `publish-preview.json` 中今日头条、知乎、公众号仍然处于人工确认或阻塞态，避免误触正式发布。",
+            "人工确认小红书仍然只保留占位，不进入正式发布。",
+            "正式发布前再次核对是否存在重复发布、重复标题或重复配图风险。",
+        ]
+    )
+
+    lines = [
+        "# 用户配合清单",
+        "",
+        f"- slug：`{payload.get('slug') or ''}`",
+        f"- 标题：`{payload.get('title') or ''}`",
+        f"- 更新时间：`{now_iso()}`",
+        f"- 质量门禁：`{gate_status}`",
+        f"- 资产门禁：`{asset_gate.get('status') or 'unknown'}`",
+        f"- 对标信号链：`{signal_status}`",
+        "",
+        "## 自动产物",
+        "",
+        f"- 配图计划：`{image_plan_path.name}`",
+        f"- 技能调用包：`{skill_packets_path.name}`",
+        f"- 发布预览：`{publish_preview_path.name}`",
+        f"- 小红书占位：`{xhs_placeholder_path.name}`",
+    ]
+
+    if quality_report_path:
+        lines.append(f"- 质量报告：`{Path(str(quality_report_path)).name}`")
+    if signal_pipeline.get("benchmarkSummaryPath"):
+        lines.append(f"- 对标监控：`{Path(str(signal_pipeline['benchmarkSummaryPath'])).name}`")
+    if signal_pipeline.get("viralAnalysisPath"):
+        lines.append(f"- 爆款分析：`{Path(str(signal_pipeline['viralAnalysisPath'])).name}`")
+    if signal_pipeline.get("rewritePlanPath"):
+        lines.append(f"- 仿写方案：`{Path(str(signal_pipeline['rewritePlanPath'])).name}`")
+
+    lines.extend(
+        [
+            "",
+            "## 当前边界",
+            "",
+            "- 这条链路只做到生成、配图规划、预检和发布前占位。",
+            "- 今日头条、知乎、公众号默认仍需人工确认后才能正式发布。",
+            "- 小红书当前只保留占位，不进入正式发布。",
+            "",
+            "## 需要你配合的事项",
+            "",
+        ]
+    )
+    lines.extend([f"{index}. {item}" for index, item in enumerate(required_actions, start=1)])
+    lines.append("")
+    return "\n".join(lines)
+
+
 def upsert_history(history: list[dict[str, Any]], entry: dict[str, Any], max_items: int = 50) -> list[dict[str, Any]]:
     output = [item for item in history if item.get("slug") != entry.get("slug")]
     output.append(entry)
@@ -280,6 +364,7 @@ def run_v3_prepublish(
     skill_packets_path = state_path.parent / "skill-packets.json"
     publish_preview_path = state_path.parent / "publish-preview.json"
     xhs_placeholder_path = state_path.parent / "xhs-placeholder.json"
+    operator_checklist_path = state_path.parent / "operator-checklist.md"
 
     write_json_file(image_plan_path, image_plan)
     write_json_file(skill_packets_path, skill_packets)
@@ -292,6 +377,19 @@ def run_v3_prepublish(
             "status": publish_preview["platforms"]["xiaohongshu"]["status"],
             "note": "第一阶段仅保留预发布占位，不触发正式发布。",
         },
+    )
+    operator_checklist_path.write_text(
+        build_operator_checklist(
+            payload=payload,
+            preflight=preflight,
+            asset_gate=asset_gate,
+            signal_pipeline=signal_pipeline,
+            image_plan_path=image_plan_path,
+            skill_packets_path=skill_packets_path,
+            publish_preview_path=publish_preview_path,
+            xhs_placeholder_path=xhs_placeholder_path,
+        ),
+        encoding="utf-8",
     )
 
     gate_status = preflight.get("gate", {}).get("status")
@@ -323,6 +421,7 @@ def run_v3_prepublish(
         "imagePlanPath": str(image_plan_path),
         "skillPacketsPath": str(skill_packets_path),
         "publishPreviewPath": str(publish_preview_path),
+        "operatorChecklistPath": str(operator_checklist_path),
         "historyPath": str(history_path),
         "xhsPlaceholderOnly": True,
         "updatedAt": now_iso(),
@@ -353,6 +452,7 @@ def run_v3_prepublish(
         "imagePlanPath": str(image_plan_path),
         "skillPacketsPath": str(skill_packets_path),
         "publishPreviewPath": str(publish_preview_path),
+        "operatorChecklistPath": str(operator_checklist_path),
         "formalPublishEnabled": False,
     }
 
