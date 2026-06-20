@@ -1093,17 +1093,17 @@ def normalize_registry_request(request: dict[str, Any], registry_path: Path) -> 
     return normalized
 
 
-def resolve_registry_request(payload: dict[str, Any]) -> dict[str, Any] | None:
+def resolve_registry_request(payload: dict[str, Any]) -> tuple[str | None, dict[str, Any] | None]:
     registry_path = Path(
         str(payload.get("benchmarkRegistryPath") or DEFAULT_BENCHMARK_REGISTRY_PATH).strip()
     )
     if not registry_path.exists():
-        return None
+        return None, None
 
     registry = load_benchmark_registry(registry_path)
     sources = registry.get("sources", {})
     if not isinstance(sources, dict):
-        return None
+        return None, None
 
     alias_to_key: dict[str, str] = {}
     for key, raw_request in sources.items():
@@ -1121,18 +1121,22 @@ def resolve_registry_request(payload: dict[str, Any]) -> dict[str, Any] | None:
             continue
         raw_request = sources.get(resolved_key)
         if isinstance(raw_request, dict):
-            return normalize_registry_request(raw_request, registry_path)
-    return None
+            return resolved_key, normalize_registry_request(raw_request, registry_path)
+    return None, None
 
 
 def benchmark_request_path(generated_dir: Path) -> Path:
     return generated_dir / BENCHMARK_REQUEST_NAME
 
 
-def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+def build_benchmark_request_from_payload(payload: dict[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     explicit_request = payload.get("benchmarkRequest")
     if isinstance(explicit_request, dict):
-        return explicit_request
+        return explicit_request, {
+            "sourceKind": "payload",
+            "registryKey": None,
+            "requestResolvedFrom": "payload",
+        }
 
     request_path = str(payload.get("benchmarkRequestPath") or "").strip()
     if request_path:
@@ -1140,11 +1144,26 @@ def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, A
         if candidate.exists():
             data = read_json_file(candidate)
             if isinstance(data, dict):
-                return data
+                return data, {
+                    "sourceKind": "payload",
+                    "registryKey": None,
+                    "requestResolvedFrom": "payload",
+                }
 
     source_path = str(payload.get("benchmarkSourcePath") or "").strip()
     if not source_path:
-        return resolve_registry_request(payload)
+        registry_key, request = resolve_registry_request(payload)
+        if isinstance(request, dict):
+            return request, {
+                "sourceKind": "registry",
+                "registryKey": registry_key,
+                "requestResolvedFrom": "registry",
+            }
+        return None, {
+            "sourceKind": None,
+            "registryKey": None,
+            "requestResolvedFrom": None,
+        }
 
     request: dict[str, Any] = {
         "action": str(payload.get("benchmarkAction") or "search_content").strip() or "search_content",
@@ -1157,24 +1176,39 @@ def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, A
         request["limit"] = int(payload.get("benchmarkLimit") or 0)
     if str(payload.get("benchmarkQuery") or "").strip():
         request["query"] = str(payload.get("benchmarkQuery")).strip()
-    return request
+    return request, {
+        "sourceKind": "payload",
+        "registryKey": None,
+        "requestResolvedFrom": "payload",
+    }
 
 
-def resolve_benchmark_request(generated_dir: Path, payload: dict[str, Any] | None) -> tuple[Path | None, dict[str, Any] | None]:
+def resolve_benchmark_request(
+    generated_dir: Path,
+    payload: dict[str, Any] | None,
+) -> tuple[Path | None, dict[str, Any] | None, dict[str, Any]]:
     sidecar_path = benchmark_request_path(generated_dir)
     if sidecar_path.exists():
         data = read_json_file(sidecar_path)
         if isinstance(data, dict):
-            return sidecar_path, data
+            return sidecar_path.resolve(), data, {
+                "sourceKind": "request_sidecar",
+                "registryKey": None,
+                "requestResolvedFrom": "generated_sidecar",
+            }
 
     if isinstance(payload, dict):
-        request = build_benchmark_request_from_payload(payload)
+        request, trace = build_benchmark_request_from_payload(payload)
         if isinstance(request, dict):
             generated_dir.mkdir(parents=True, exist_ok=True)
             write_json_file(sidecar_path, request)
-            return sidecar_path, request
+            return sidecar_path.resolve(), request, trace
 
-    return None, None
+    return None, None, {
+        "sourceKind": None,
+        "registryKey": None,
+        "requestResolvedFrom": None,
+    }
 
 
 def collect_records_from_request(
@@ -1203,19 +1237,19 @@ def collect_records_from_request(
     return target_path.resolve()
 
 
-def resolve_records_path(payload: dict[str, Any] | None, generated_dir: Path) -> Path | None:
-    candidates: list[Path] = []
+def resolve_records_path(payload: dict[str, Any] | None, generated_dir: Path) -> tuple[Path | None, str | None]:
+    candidates: list[tuple[Path, str]] = []
     if isinstance(payload, dict):
         for key in ("benchmarkRecordsPath", "benchmark_records_path"):
             raw = str(payload.get(key) or "").strip()
             if raw:
-                candidates.append(Path(raw))
-    candidates.append(generated_dir / "benchmark-records.jsonl")
+                candidates.append((Path(raw), "payload"))
+    candidates.append((generated_dir / "benchmark-records.jsonl", "generated_records"))
 
-    for candidate in candidates:
+    for candidate, source in candidates:
         if candidate.exists():
-            return candidate.resolve()
-    return None
+            return candidate.resolve(), source
+    return None, None
 
 
 def resolve_existing_request_path(generated_dir: Path) -> Path | None:
@@ -1236,15 +1270,32 @@ def ensure_signal_artifacts(
     top_limit: int = 5,
 ) -> dict[str, Any]:
     artifact_paths = signal_artifact_paths(generated_dir)
-    resolved_records = (records_path.resolve() if records_path and records_path.exists() else None) or resolve_records_path(payload, generated_dir)
+    records_resolved_from: str | None = None
+    if records_path and records_path.exists():
+        resolved_records = records_path.resolve()
+        records_resolved_from = "explicit_records"
+    else:
+        resolved_records, records_resolved_from = resolve_records_path(payload, generated_dir)
+
     request_path, benchmark_request = (resolve_existing_request_path(generated_dir), None)
+    trace: dict[str, Any] = {
+        "sourceKind": None,
+        "registryKey": None,
+        "requestResolvedFrom": "generated_sidecar" if request_path else None,
+        "recordsResolvedFrom": records_resolved_from,
+    }
     if not resolved_records:
-        request_path, benchmark_request = resolve_benchmark_request(generated_dir, payload)
+        request_path, benchmark_request, request_trace = resolve_benchmark_request(generated_dir, payload)
+        trace.update(request_trace)
         if benchmark_request:
             resolved_records = collect_records_from_request(
                 generated_dir=generated_dir,
                 request=benchmark_request,
             )
+            if resolved_records:
+                trace["recordsResolvedFrom"] = "request_fetch"
+    elif records_resolved_from in {"generated_records", "explicit_records", "payload"}:
+        trace["sourceKind"] = "records_reused" if records_resolved_from in {"generated_records", "explicit_records"} else "payload"
     has_all_artifacts = all(path.exists() for path in artifact_paths.values())
 
     if resolved_records:
@@ -1260,6 +1311,7 @@ def ensure_signal_artifacts(
             "status": "completed",
             "recordsPath": str(resolved_records),
             "requestPath": str(request_path) if request_path else None,
+            **trace,
             **result,
         }
 
@@ -1268,6 +1320,7 @@ def ensure_signal_artifacts(
             "status": "reused_existing",
             "recordsPath": None,
             "requestPath": str(request_path) if request_path else None,
+            **trace,
             **{key: str(path) for key, path in artifact_paths.items()},
         }
 
@@ -1275,6 +1328,7 @@ def ensure_signal_artifacts(
         "status": "pending_source",
         "recordsPath": None,
         "requestPath": str(request_path) if request_path else None,
+        **trace,
         **{key: str(path) for key, path in artifact_paths.items()},
     }
 

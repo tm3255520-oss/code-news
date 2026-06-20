@@ -239,6 +239,10 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertTrue((self.output_dir / "viral-analysis.md").exists())
         self.assertTrue((self.output_dir / "rewrite-plan.md").exists())
         self.assertTrue(Path(result["requestPath"]).samefile(request_path))
+        self.assertEqual(result["sourceKind"], "request_sidecar")
+        self.assertIsNone(result["registryKey"])
+        self.assertEqual(result["requestResolvedFrom"], "generated_sidecar")
+        self.assertEqual(result["recordsResolvedFrom"], "request_fetch")
 
     def test_ensure_signal_artifacts_keeps_request_path_when_records_already_exist(self) -> None:
         request_path = self.output_dir / "benchmark-request.json"
@@ -267,6 +271,10 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(Path(result["recordsPath"]), benchmark_records_path.resolve())
         self.assertTrue(Path(result["requestPath"]).samefile(request_path))
+        self.assertEqual(result["sourceKind"], "records_reused")
+        self.assertIsNone(result["registryKey"])
+        self.assertEqual(result["requestResolvedFrom"], "generated_sidecar")
+        self.assertEqual(result["recordsResolvedFrom"], "generated_records")
 
     def test_ensure_signal_artifacts_uses_registry_fallback_when_payload_has_topic_only(self) -> None:
         raw_source_path = self.root / "registry-source.json"
@@ -333,6 +341,10 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertEqual(request["provider"], "import_json")
         self.assertEqual(request["platform"], "wechat")
         self.assertTrue(Path(request["inputPath"]).samefile(raw_source_path))
+        self.assertEqual(result["sourceKind"], "registry")
+        self.assertEqual(result["registryKey"], "workflow-shift")
+        self.assertEqual(result["requestResolvedFrom"], "registry")
+        self.assertEqual(result["recordsResolvedFrom"], "request_fetch")
 
 
 if __name__ == "__main__":
