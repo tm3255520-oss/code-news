@@ -1,6 +1,8 @@
 import csv
 import json
+import os
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -445,6 +447,39 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         trace = json.loads((self.output_dir / "benchmark-trace.json").read_text(encoding="utf-8"))
         self.assertEqual(trace["sourceKind"], "registry")
         self.assertEqual(trace["registryKey"], "workflow-shift")
+
+    def test_ensure_signal_artifacts_reports_stale_records_inputs(self) -> None:
+        request_path = self.output_dir / "benchmark-request.json"
+        request_path.write_text(
+            json.dumps(
+                {
+                    "action": "search_content",
+                    "provider": "import_json",
+                    "platform": "wechat",
+                    "inputPath": str(self.root / "unused-source.json"),
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        benchmark_records_path = self.output_dir / "benchmark-records.jsonl"
+        benchmark_records_path.write_text(self.records_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+        now_ts = time.time()
+        os.utime(request_path, (now_ts - 2 * 3600, now_ts - 2 * 3600))
+        os.utime(benchmark_records_path, (now_ts - 96 * 3600, now_ts - 96 * 3600))
+
+        result = ensure_signal_artifacts(
+            generated_dir=self.output_dir,
+            slug="demo-slug",
+            current_title="Content teams should check 4 publish steps before buying tools",
+        )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["freshnessStatus"], "stale")
+        self.assertGreaterEqual(result["recordsAgeHours"], 95)
+        self.assertLess(result["requestAgeHours"], 5)
 
 
 if __name__ == "__main__":

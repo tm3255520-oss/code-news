@@ -139,6 +139,7 @@ SIGNAL_ARTIFACT_NAMES = {
 }
 BENCHMARK_REQUEST_NAME = "benchmark-request.json"
 BENCHMARK_TRACE_NAME = "benchmark-trace.json"
+STALE_INPUT_HOURS = 72.0
 
 
 def parse_args() -> argparse.Namespace:
@@ -1147,6 +1148,33 @@ def write_benchmark_trace(generated_dir: Path, trace: dict[str, Any]) -> None:
     write_json_file(path, trace)
 
 
+def file_age_hours(path: Path | None) -> float | None:
+    if not path or not path.exists():
+        return None
+    modified_at = datetime.fromtimestamp(path.stat().st_mtime).astimezone()
+    delta = datetime.now().astimezone() - modified_at
+    return round(delta.total_seconds() / 3600, 2)
+
+
+def build_freshness_payload(request_path: Path | None, records_path: Path | None) -> dict[str, Any]:
+    request_age = file_age_hours(request_path)
+    records_age = file_age_hours(records_path)
+
+    ages = [age for age in (request_age, records_age) if age is not None]
+    if not ages:
+        status = "missing"
+    elif any(age > STALE_INPUT_HOURS for age in ages):
+        status = "stale"
+    else:
+        status = "fresh"
+
+    return {
+        "requestAgeHours": request_age,
+        "recordsAgeHours": records_age,
+        "freshnessStatus": status,
+    }
+
+
 def requests_match(left: dict[str, Any] | None, right: dict[str, Any] | None) -> bool:
     if not isinstance(left, dict) or not isinstance(right, dict):
         return False
@@ -1367,6 +1395,7 @@ def ensure_signal_artifacts(
     has_all_artifacts = all(path.exists() for path in artifact_paths.values())
 
     if resolved_records:
+        freshness = build_freshness_payload(request_path, resolved_records)
         result = run_content_signal_pipeline(
             resolved_records,
             generated_dir,
@@ -1380,6 +1409,7 @@ def ensure_signal_artifacts(
             "recordsPath": str(resolved_records),
             "requestPath": str(request_path) if request_path else None,
             **trace,
+            **freshness,
             **result,
         }
 
@@ -1389,6 +1419,7 @@ def ensure_signal_artifacts(
             "recordsPath": None,
             "requestPath": str(request_path) if request_path else None,
             **trace,
+            **build_freshness_payload(request_path, None),
             **{key: str(path) for key, path in artifact_paths.items()},
         }
 
@@ -1397,6 +1428,7 @@ def ensure_signal_artifacts(
         "recordsPath": None,
         "requestPath": str(request_path) if request_path else None,
         **trace,
+        **build_freshness_payload(request_path, None),
         **{key: str(path) for key, path in artifact_paths.items()},
     }
 
