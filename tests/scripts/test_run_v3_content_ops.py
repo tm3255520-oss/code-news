@@ -6,6 +6,7 @@ from pathlib import Path
 from time import time
 
 from scripts.run_v3_content_ops import run_v3_prepublish
+from scripts.run_content_signal_pipeline import STALE_INPUT_HOURS
 
 
 class RunV3ContentOpsTests(unittest.TestCase):
@@ -285,7 +286,8 @@ class RunV3ContentOpsTests(unittest.TestCase):
             "meta": {"topic": "ai_tools", "tags": ["workflow", "publish"], "captureMethod": "fixture"},
         }
         records_path.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
-        stale_timestamp = int(time()) - (7 * 24 * 60 * 60)
+        stale_seconds = int((STALE_INPUT_HOURS + 24) * 60 * 60)
+        stale_timestamp = int(time()) - stale_seconds
         os.utime(records_path, (stale_timestamp, stale_timestamp))
 
         summary = run_v3_prepublish(
@@ -306,7 +308,7 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
         self.assertEqual(state["platforms"]["zhihu"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
         self.assertEqual(state["platforms"]["wechat"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
-        self.assertIn("stale", checklist)
+        self.assertIn("benchmark request / records", checklist)
 
     def test_run_v3_prepublish_marks_signal_pipeline_pending_when_records_are_missing(self) -> None:
         run_v3_prepublish(
