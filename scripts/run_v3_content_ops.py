@@ -104,6 +104,24 @@ def resolve_stale_benchmark_block(signal_pipeline: dict[str, Any]) -> dict[str, 
     }
 
 
+def resolve_three_platform_prepublish_status(
+    *,
+    preflight: dict[str, Any],
+    asset_gate: dict[str, Any],
+    signal_pipeline: dict[str, Any],
+) -> str:
+    stale_block = resolve_stale_benchmark_block(signal_pipeline)
+    if stale_block:
+        return str(stale_block["status"])
+
+    gate_status = str(preflight.get("gate", {}).get("status") or "")
+    if gate_status != "passed":
+        return "blocked_by_quality_gate"
+    if asset_gate.get("status") != "passed":
+        return "blocked_by_asset_gate"
+    return "ready_for_confirmation"
+
+
 def resolve_content_domain(payload: dict[str, Any], domains_config: dict[str, Any]) -> str:
     declared = str(payload.get("domain") or "").strip()
     domains = domains_config.get("domains", {})
@@ -199,14 +217,12 @@ def build_publish_preview(
     xhs_placeholder = interfaces.get("xhs_placeholder_publish", {})
     stale_block = resolve_stale_benchmark_block(signal_pipeline)
     gate_status = preflight.get("gate", {}).get("status")
-    if stale_block:
-        status = str(stale_block["status"])
-    elif gate_status != "passed":
-        status = "blocked_by_quality_gate"
-    elif asset_gate.get("status") != "passed":
-        status = "blocked_by_asset_gate"
-    else:
-        status = "manual_confirmation_required"
+    three_platform_status = resolve_three_platform_prepublish_status(
+        preflight=preflight,
+        asset_gate=asset_gate,
+        signal_pipeline=signal_pipeline,
+    )
+    status = "manual_confirmation_required" if three_platform_status == "ready_for_confirmation" else three_platform_status
 
     return {
         "schemaVersion": 1,
@@ -334,7 +350,7 @@ def build_operator_checklist(
         ]
     )
     if signal_freshness == "stale":
-        required_actions.insert(0, "对标输入已过期，先刷新 benchmark request / records，再决定是否继续发布。")
+        required_actions.insert(0, "Refresh benchmark request / records before three-platform prepublish confirmation can continue.")
     lines.extend([f"{index}. {item}" for index, item in enumerate(required_actions, start=1)])
     lines.append("")
     return "\n".join(lines)
@@ -423,16 +439,21 @@ def run_v3_prepublish(
         encoding="utf-8",
     )
 
-    gate_status = preflight.get("gate", {}).get("status")
-    ready_for_confirmation = gate_status == "passed" and asset_gate.get("status") == "passed"
+    three_platform_prepublish_status = resolve_three_platform_prepublish_status(
+        preflight=preflight,
+        asset_gate=asset_gate,
+        signal_pipeline=signal_pipeline,
+    )
+    ready_for_confirmation = three_platform_prepublish_status == "ready_for_confirmation"
     for platform in ("toutiao", "zhihu", "wechat"):
         state["platforms"].setdefault(platform, empty_platform_state())
         state["platforms"][platform]["manualConfirmRequired"] = True
         state["platforms"][platform]["formalPublishEnabled"] = False
-        state["platforms"][platform]["prepublishStatus"] = (
-            "ready_for_confirmation"
-            if ready_for_confirmation
-            else ("blocked_by_quality_gate" if gate_status != "passed" else "blocked_by_asset_gate")
+        state["platforms"][platform]["prepublishStatus"] = three_platform_prepublish_status
+        state["platforms"][platform]["error"] = (
+            "benchmark_inputs_stale"
+            if three_platform_prepublish_status == "blocked_by_stale_benchmark_inputs"
+            else None
         )
 
     state["platforms"]["xiaohongshu"] = {

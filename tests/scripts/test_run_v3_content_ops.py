@@ -308,7 +308,13 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
         self.assertEqual(state["platforms"]["zhihu"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
         self.assertEqual(state["platforms"]["wechat"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
-        self.assertIn("benchmark request / records", checklist)
+        self.assertEqual(state["platforms"]["toutiao"]["error"], "benchmark_inputs_stale")
+        self.assertEqual(state["platforms"]["zhihu"]["error"], "benchmark_inputs_stale")
+        self.assertEqual(state["platforms"]["wechat"]["error"], "benchmark_inputs_stale")
+        self.assertIn(
+            "Refresh benchmark request / records before three-platform prepublish confirmation can continue.",
+            checklist,
+        )
 
     def test_run_v3_prepublish_marks_signal_pipeline_pending_when_records_are_missing(self) -> None:
         run_v3_prepublish(
