@@ -1,7 +1,9 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from time import time
 
 from scripts.run_v3_content_ops import run_v3_prepublish
 
@@ -268,6 +270,43 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertTrue((self.generated_dir / "rewrite-plan.md").exists())
         self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
         self.assertEqual(Path(state["v3"]["signalPipeline"]["recordsPath"]).resolve(), records_path.resolve())
+
+    def test_run_v3_prepublish_blocks_when_benchmark_inputs_are_stale(self) -> None:
+        records_path = self.generated_dir / "benchmark-records.jsonl"
+        record = {
+            "platform": "toutiao",
+            "recordType": "article",
+            "author": "Flow Lab",
+            "title": "Ultimate workflow: publish without rework",
+            "url": "https://example.com/toutiao-1",
+            "publishedAt": "2026-06-14T08:30:00+08:00",
+            "metrics": {"views": 1800, "likes": 55, "comments": 12, "favorites": 9, "shares": 5},
+            "content": {"summary": "Auto publishing workflow for content teams.", "rawTextPath": None},
+            "meta": {"topic": "ai_tools", "tags": ["workflow", "publish"], "captureMethod": "fixture"},
+        }
+        records_path.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
+        stale_timestamp = int(time()) - (7 * 24 * 60 * 60)
+        os.utime(records_path, (stale_timestamp, stale_timestamp))
+
+        summary = run_v3_prepublish(
+            self.payload_path,
+            config_dir=self.config_dir,
+            history_path=self.history_path,
+            min_score=0,
+        )
+
+        preview = json.loads((self.generated_dir / "publish-preview.json").read_text(encoding="utf-8"))
+        state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
+        checklist = (self.generated_dir / "operator-checklist.md").read_text(encoding="utf-8")
+
+        self.assertEqual(summary["signalPipeline"]["freshnessStatus"], "stale")
+        self.assertEqual(preview["platforms"]["toutiao"]["status"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(preview["platforms"]["zhihu"]["status"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(preview["platforms"]["wechat"]["status"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["zhihu"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["wechat"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
+        self.assertIn("宸茶繃鏈", checklist)
 
     def test_run_v3_prepublish_marks_signal_pipeline_pending_when_records_are_missing(self) -> None:
         run_v3_prepublish(
