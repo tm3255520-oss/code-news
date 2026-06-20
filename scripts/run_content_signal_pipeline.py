@@ -138,6 +138,7 @@ SIGNAL_ARTIFACT_NAMES = {
     "rewritePlanPath": "rewrite-plan.md",
 }
 BENCHMARK_REQUEST_NAME = "benchmark-request.json"
+BENCHMARK_TRACE_NAME = "benchmark-trace.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -1129,6 +1130,35 @@ def benchmark_request_path(generated_dir: Path) -> Path:
     return generated_dir / BENCHMARK_REQUEST_NAME
 
 
+def benchmark_trace_path(generated_dir: Path) -> Path:
+    return generated_dir / BENCHMARK_TRACE_NAME
+
+
+def read_benchmark_trace(generated_dir: Path) -> dict[str, Any] | None:
+    path = benchmark_trace_path(generated_dir)
+    if not path.exists():
+        return None
+    data = read_json_file(path)
+    return data if isinstance(data, dict) else None
+
+
+def write_benchmark_trace(generated_dir: Path, trace: dict[str, Any]) -> None:
+    path = benchmark_trace_path(generated_dir)
+    write_json_file(path, trace)
+
+
+def requests_match(left: dict[str, Any] | None, right: dict[str, Any] | None) -> bool:
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return False
+    keys = ("action", "provider", "platform", "inputPath", "query")
+    for key in keys:
+        left_value = str(left.get(key) or "").strip()
+        right_value = str(right.get(key) or "").strip()
+        if left_value != right_value:
+            return False
+    return True
+
+
 def build_benchmark_request_from_payload(payload: dict[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     explicit_request = payload.get("benchmarkRequest")
     if isinstance(explicit_request, dict):
@@ -1259,6 +1289,30 @@ def resolve_existing_request_path(generated_dir: Path) -> Path | None:
     return None
 
 
+def backfill_trace_from_payload(
+    *,
+    generated_dir: Path,
+    payload: dict[str, Any] | None,
+    existing_request_path: Path | None,
+) -> dict[str, Any] | None:
+    if not isinstance(payload, dict) or not existing_request_path or not existing_request_path.exists():
+        return None
+
+    inferred_request, inferred_trace = build_benchmark_request_from_payload(payload)
+    if not isinstance(inferred_request, dict):
+        return None
+    if inferred_trace.get("sourceKind") != "registry":
+        return None
+
+    existing_request = read_json_file(existing_request_path)
+    if not requests_match(existing_request, inferred_request):
+        return None
+
+    trace = dict(inferred_trace)
+    write_benchmark_trace(generated_dir, trace)
+    return trace
+
+
 def ensure_signal_artifacts(
     *,
     generated_dir: Path,
@@ -1278,6 +1332,7 @@ def ensure_signal_artifacts(
         resolved_records, records_resolved_from = resolve_records_path(payload, generated_dir)
 
     request_path, benchmark_request = (resolve_existing_request_path(generated_dir), None)
+    stored_trace = read_benchmark_trace(generated_dir) or {}
     trace: dict[str, Any] = {
         "sourceKind": None,
         "registryKey": None,
@@ -1294,8 +1349,21 @@ def ensure_signal_artifacts(
             )
             if resolved_records:
                 trace["recordsResolvedFrom"] = "request_fetch"
+                write_benchmark_trace(generated_dir, trace)
     elif records_resolved_from in {"generated_records", "explicit_records", "payload"}:
-        trace["sourceKind"] = "records_reused" if records_resolved_from in {"generated_records", "explicit_records"} else "payload"
+        if records_resolved_from in {"generated_records", "explicit_records"}:
+            recovered_trace = stored_trace or backfill_trace_from_payload(
+                generated_dir=generated_dir,
+                payload=payload,
+                existing_request_path=request_path,
+            ) or {}
+            trace["sourceKind"] = str(recovered_trace.get("sourceKind") or "records_reused")
+            trace["registryKey"] = recovered_trace.get("registryKey")
+            trace["requestResolvedFrom"] = str(
+                recovered_trace.get("requestResolvedFrom") or trace["requestResolvedFrom"]
+            )
+        else:
+            trace["sourceKind"] = "payload"
     has_all_artifacts = all(path.exists() for path in artifact_paths.values())
 
     if resolved_records:

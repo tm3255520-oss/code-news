@@ -259,6 +259,20 @@ class RunContentSignalPipelineTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        trace_path = self.output_dir / "benchmark-trace.json"
+        trace_path.write_text(
+            json.dumps(
+                {
+                    "sourceKind": "registry",
+                    "registryKey": "workflow-shift",
+                    "requestResolvedFrom": "registry",
+                    "recordsResolvedFrom": "request_fetch",
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
         benchmark_records_path = self.output_dir / "benchmark-records.jsonl"
         benchmark_records_path.write_text(self.records_path.read_text(encoding="utf-8"), encoding="utf-8")
 
@@ -271,9 +285,9 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertEqual(result["status"], "completed")
         self.assertEqual(Path(result["recordsPath"]), benchmark_records_path.resolve())
         self.assertTrue(Path(result["requestPath"]).samefile(request_path))
-        self.assertEqual(result["sourceKind"], "records_reused")
-        self.assertIsNone(result["registryKey"])
-        self.assertEqual(result["requestResolvedFrom"], "generated_sidecar")
+        self.assertEqual(result["sourceKind"], "registry")
+        self.assertEqual(result["registryKey"], "workflow-shift")
+        self.assertEqual(result["requestResolvedFrom"], "registry")
         self.assertEqual(result["recordsResolvedFrom"], "generated_records")
 
     def test_ensure_signal_artifacts_uses_registry_fallback_when_payload_has_topic_only(self) -> None:
@@ -345,6 +359,92 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertEqual(result["registryKey"], "workflow-shift")
         self.assertEqual(result["requestResolvedFrom"], "registry")
         self.assertEqual(result["recordsResolvedFrom"], "request_fetch")
+
+    def test_ensure_signal_artifacts_backfills_trace_when_records_reused_without_trace_file(self) -> None:
+        raw_source_path = self.root / "registry-source.json"
+        raw_source_path.write_text(
+            json.dumps(
+                [
+                    {
+                        "platform": "wechat",
+                        "title": "Workflow guide for AI night shift ops",
+                        "url": "https://example.com/wechat-workflow",
+                        "summary": "A workflow benchmark sample for AI approval-first content ops.",
+                        "views": 2100,
+                        "likes": 61,
+                        "comments": 18,
+                        "favorites": 16,
+                        "shares": 7,
+                        "author": "Workflow Desk",
+                        "publishedAt": "2026-06-15T20:00:00+08:00",
+                        "tags": ["workflow", "approval"],
+                        "topic": "workflow-shift",
+                    }
+                ],
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        registry_path = self.root / "benchmark_source_registry.json"
+        registry_path.write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "sources": {
+                        "workflow-shift": {
+                            "aliases": ["efficiency_tools", "approval-first"],
+                            "action": "search_content",
+                            "provider": "import_json",
+                            "platform": "wechat",
+                            "inputPath": str(raw_source_path),
+                            "query": "AI workflow",
+                        }
+                    },
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        request_path = self.output_dir / "benchmark-request.json"
+        request_path.write_text(
+            json.dumps(
+                {
+                    "action": "search_content",
+                    "provider": "import_json",
+                    "platform": "wechat",
+                    "inputPath": str(raw_source_path),
+                    "query": "AI workflow",
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        benchmark_records_path = self.output_dir / "benchmark-records.jsonl"
+        benchmark_records_path.write_text(self.records_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+        result = ensure_signal_artifacts(
+            generated_dir=self.output_dir,
+            slug="demo-slug",
+            current_title="AI night shift workflow value",
+            payload={
+                "topic": "workflow-shift",
+                "benchmarkRegistryPath": str(registry_path),
+            },
+        )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertTrue(Path(result["requestPath"]).samefile(request_path))
+        self.assertEqual(Path(result["recordsPath"]), benchmark_records_path.resolve())
+        self.assertEqual(result["sourceKind"], "registry")
+        self.assertEqual(result["registryKey"], "workflow-shift")
+        self.assertEqual(result["requestResolvedFrom"], "registry")
+        self.assertEqual(result["recordsResolvedFrom"], "generated_records")
+        trace = json.loads((self.output_dir / "benchmark-trace.json").read_text(encoding="utf-8"))
+        self.assertEqual(trace["sourceKind"], "registry")
+        self.assertEqual(trace["registryKey"], "workflow-shift")
 
 
 if __name__ == "__main__":
