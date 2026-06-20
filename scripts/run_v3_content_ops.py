@@ -92,6 +92,18 @@ def evaluate_asset_gate(state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def resolve_stale_benchmark_block(signal_pipeline: dict[str, Any]) -> dict[str, Any] | None:
+    if str(signal_pipeline.get("freshnessStatus") or "") != "stale":
+        return None
+    return {
+        "status": "blocked_by_stale_benchmark_inputs",
+        "reason": "benchmark_inputs_stale",
+        "freshnessStatus": str(signal_pipeline.get("freshnessStatus") or "unknown"),
+        "requestAgeHours": signal_pipeline.get("requestAgeHours"),
+        "recordsAgeHours": signal_pipeline.get("recordsAgeHours"),
+    }
+
+
 def resolve_content_domain(payload: dict[str, Any], domains_config: dict[str, Any]) -> str:
     declared = str(payload.get("domain") or "").strip()
     domains = domains_config.get("domains", {})
@@ -180,12 +192,16 @@ def build_publish_preview(
     preflight: dict[str, Any],
     registry: dict[str, Any],
     asset_gate: dict[str, Any],
+    signal_pipeline: dict[str, Any],
 ) -> dict[str, Any]:
     interfaces = registry.get("interfaces", {})
     publisher = interfaces.get("publisher_skill", {})
     xhs_placeholder = interfaces.get("xhs_placeholder_publish", {})
+    stale_block = resolve_stale_benchmark_block(signal_pipeline)
     gate_status = preflight.get("gate", {}).get("status")
-    if gate_status != "passed":
+    if stale_block:
+        status = str(stale_block["status"])
+    elif gate_status != "passed":
         status = "blocked_by_quality_gate"
     elif asset_gate.get("status") != "passed":
         status = "blocked_by_asset_gate"
@@ -202,16 +218,19 @@ def build_publish_preview(
                 "status": status,
                 "payloadPath": str(preflight["platformPayloads"]["toutiao"]),
                 "formalPublishEnabled": False,
+                **({"blockContext": stale_block} if stale_block else {}),
             },
             "zhihu": {
                 "status": status,
                 "payloadPath": str(preflight["platformPayloads"]["zhihu"]),
                 "formalPublishEnabled": False,
+                **({"blockContext": stale_block} if stale_block else {}),
             },
             "wechat": {
                 "status": status,
                 "payloadPath": str(preflight["platformPayloads"]["wechat"]),
                 "formalPublishEnabled": False,
+                **({"blockContext": stale_block} if stale_block else {}),
             },
             "xiaohongshu": {
                 "status": (
@@ -369,6 +388,7 @@ def run_v3_prepublish(
         preflight=preflight,
         registry=registry,
         asset_gate=asset_gate,
+        signal_pipeline=signal_pipeline,
     )
 
     image_plan_path = state_path.parent / "image-plan.json"
