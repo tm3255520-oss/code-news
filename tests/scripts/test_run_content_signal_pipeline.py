@@ -238,6 +238,35 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertTrue((self.output_dir / "benchmark-monitor.md").exists())
         self.assertTrue((self.output_dir / "viral-analysis.md").exists())
         self.assertTrue((self.output_dir / "rewrite-plan.md").exists())
+        self.assertTrue(Path(result["requestPath"]).samefile(request_path))
+
+    def test_ensure_signal_artifacts_keeps_request_path_when_records_already_exist(self) -> None:
+        request_path = self.output_dir / "benchmark-request.json"
+        request_path.write_text(
+            json.dumps(
+                {
+                    "action": "search_content",
+                    "provider": "import_json",
+                    "platform": "wechat",
+                    "inputPath": str(self.root / "unused-source.json"),
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        benchmark_records_path = self.output_dir / "benchmark-records.jsonl"
+        benchmark_records_path.write_text(self.records_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+        result = ensure_signal_artifacts(
+            generated_dir=self.output_dir,
+            slug="demo-slug",
+            current_title="Content teams should check 4 publish steps before buying tools",
+        )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(Path(result["recordsPath"]), benchmark_records_path.resolve())
+        self.assertTrue(Path(result["requestPath"]).samefile(request_path))
 
     def test_ensure_signal_artifacts_uses_registry_fallback_when_payload_has_topic_only(self) -> None:
         raw_source_path = self.root / "registry-source.json"

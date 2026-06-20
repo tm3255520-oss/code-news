@@ -1218,6 +1218,13 @@ def resolve_records_path(payload: dict[str, Any] | None, generated_dir: Path) ->
     return None
 
 
+def resolve_existing_request_path(generated_dir: Path) -> Path | None:
+    sidecar_path = benchmark_request_path(generated_dir)
+    if sidecar_path.exists():
+        return sidecar_path.resolve()
+    return None
+
+
 def ensure_signal_artifacts(
     *,
     generated_dir: Path,
@@ -1230,7 +1237,7 @@ def ensure_signal_artifacts(
 ) -> dict[str, Any]:
     artifact_paths = signal_artifact_paths(generated_dir)
     resolved_records = (records_path.resolve() if records_path and records_path.exists() else None) or resolve_records_path(payload, generated_dir)
-    request_path, benchmark_request = (None, None)
+    request_path, benchmark_request = (resolve_existing_request_path(generated_dir), None)
     if not resolved_records:
         request_path, benchmark_request = resolve_benchmark_request(generated_dir, payload)
         if benchmark_request:
