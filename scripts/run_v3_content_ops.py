@@ -239,6 +239,13 @@ def build_operator_checklist(
 ) -> str:
     gate_status = str(preflight.get("gate", {}).get("status") or "unknown")
     signal_status = str(signal_pipeline.get("status") or "unknown")
+    signal_source_kind = str(signal_pipeline.get("sourceKind") or "unknown")
+    signal_registry_key = str(signal_pipeline.get("registryKey") or "none")
+    signal_request_from = str(signal_pipeline.get("requestResolvedFrom") or "unknown")
+    signal_records_from = str(signal_pipeline.get("recordsResolvedFrom") or "unknown")
+    signal_freshness = str(signal_pipeline.get("freshnessStatus") or "unknown")
+    signal_request_age = signal_pipeline.get("requestAgeHours")
+    signal_records_age = signal_pipeline.get("recordsAgeHours")
     quality_report_path = preflight.get("reportMarkdownPath")
     required_actions: list[str] = []
 
@@ -274,6 +281,8 @@ def build_operator_checklist(
         f"- 质量门禁：`{gate_status}`",
         f"- 资产门禁：`{asset_gate.get('status') or 'unknown'}`",
         f"- 对标信号链：`{signal_status}`",
+        f"- 对标输入来源：`{signal_source_kind}` / registry=`{signal_registry_key}` / request=`{signal_request_from}` / records=`{signal_records_from}`",
+        f"- 对标输入新鲜度：`{signal_freshness}` / requestAgeHours=`{signal_request_age}` / recordsAgeHours=`{signal_records_age}`",
         "",
         "## 自动产物",
         "",
@@ -305,6 +314,8 @@ def build_operator_checklist(
             "",
         ]
     )
+    if signal_freshness == "stale":
+        required_actions.insert(0, "对标输入已过期，先刷新 benchmark request / records，再决定是否继续发布。")
     lines.extend([f"{index}. {item}" for index, item in enumerate(required_actions, start=1)])
     lines.append("")
     return "\n".join(lines)

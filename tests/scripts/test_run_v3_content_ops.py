@@ -169,6 +169,8 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertIn("image-plan.json", checklist)
         self.assertIn("publish-preview.json", checklist)
         self.assertIn("skill-packets.json", checklist)
+        self.assertIn("对标输入来源", checklist)
+        self.assertIn("对标输入新鲜度", checklist)
         self.assertEqual(Path(summary["operatorChecklistPath"]).resolve(), checklist_path.resolve())
 
         state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
@@ -322,6 +324,11 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertTrue((self.generated_dir / "benchmark-records.jsonl").exists())
         self.assertTrue((self.generated_dir / "benchmark-request.json").exists())
         self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
+
+        checklist = (self.generated_dir / "operator-checklist.md").read_text(encoding="utf-8")
+        self.assertIn("对标输入来源", checklist)
+        self.assertIn("对标输入新鲜度", checklist)
+        self.assertIn("payload", checklist)
 
 
 if __name__ == "__main__":
