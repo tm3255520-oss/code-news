@@ -24,6 +24,9 @@ except ModuleNotFoundError:
     from web_scraper_mcp import read_json as read_web_scraper_json, run_request as run_web_scraper_request
 
 
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_BENCHMARK_REGISTRY_PATH = ROOT / "config" / "benchmark_source_registry.json"
+
 WORKFLOW_KEYWORDS = (
     "workflow",
     "flow",
@@ -1051,6 +1054,77 @@ def write_json_file(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def load_benchmark_registry(path: Path) -> dict[str, Any]:
+    data = read_json_file(path)
+    return data if isinstance(data, dict) else {}
+
+
+def normalize_registry_key(value: Any) -> str:
+    return str(value or "").strip().lower().replace("_", "-").replace(" ", "-")
+
+
+def candidate_registry_keys(payload: dict[str, Any]) -> list[str]:
+    keys: list[str] = []
+    for raw in (
+        payload.get("benchmarkRegistryKey"),
+        payload.get("domain"),
+        payload.get("topic"),
+    ):
+        key = normalize_registry_key(raw)
+        if not key or key in keys:
+            continue
+        keys.append(key)
+    return keys
+
+
+def normalize_registry_request(request: dict[str, Any], registry_path: Path) -> dict[str, Any]:
+    normalized = dict(request)
+    if "action" not in normalized:
+        normalized["action"] = "search_content"
+    if "provider" not in normalized:
+        normalized["provider"] = "import_json"
+
+    input_path = str(normalized.get("inputPath") or "").strip()
+    if input_path:
+        candidate = Path(input_path)
+        if not candidate.is_absolute():
+            candidate = (registry_path.parent / candidate).resolve()
+        normalized["inputPath"] = str(candidate)
+    return normalized
+
+
+def resolve_registry_request(payload: dict[str, Any]) -> dict[str, Any] | None:
+    registry_path = Path(
+        str(payload.get("benchmarkRegistryPath") or DEFAULT_BENCHMARK_REGISTRY_PATH).strip()
+    )
+    if not registry_path.exists():
+        return None
+
+    registry = load_benchmark_registry(registry_path)
+    sources = registry.get("sources", {})
+    if not isinstance(sources, dict):
+        return None
+
+    alias_to_key: dict[str, str] = {}
+    for key, raw_request in sources.items():
+        if not isinstance(raw_request, dict):
+            continue
+        alias_to_key[normalize_registry_key(key)] = key
+        for alias in raw_request.get("aliases", []) or []:
+            normalized_alias = normalize_registry_key(alias)
+            if normalized_alias:
+                alias_to_key[normalized_alias] = key
+
+    for candidate in candidate_registry_keys(payload):
+        resolved_key = alias_to_key.get(candidate)
+        if not resolved_key:
+            continue
+        raw_request = sources.get(resolved_key)
+        if isinstance(raw_request, dict):
+            return normalize_registry_request(raw_request, registry_path)
+    return None
+
+
 def benchmark_request_path(generated_dir: Path) -> Path:
     return generated_dir / BENCHMARK_REQUEST_NAME
 
@@ -1070,7 +1144,7 @@ def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, A
 
     source_path = str(payload.get("benchmarkSourcePath") or "").strip()
     if not source_path:
-        return None
+        return resolve_registry_request(payload)
 
     request: dict[str, Any] = {
         "action": str(payload.get("benchmarkAction") or "search_content").strip() or "search_content",

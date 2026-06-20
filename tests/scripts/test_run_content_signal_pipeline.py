@@ -239,6 +239,72 @@ class RunContentSignalPipelineTests(unittest.TestCase):
         self.assertTrue((self.output_dir / "viral-analysis.md").exists())
         self.assertTrue((self.output_dir / "rewrite-plan.md").exists())
 
+    def test_ensure_signal_artifacts_uses_registry_fallback_when_payload_has_topic_only(self) -> None:
+        raw_source_path = self.root / "registry-source.json"
+        raw_source_path.write_text(
+            json.dumps(
+                [
+                    {
+                        "platform": "wechat",
+                        "title": "Workflow guide for AI night shift ops",
+                        "url": "https://example.com/wechat-workflow",
+                        "summary": "A workflow benchmark sample for AI approval-first content ops.",
+                        "views": 2100,
+                        "likes": 61,
+                        "comments": 18,
+                        "favorites": 16,
+                        "shares": 7,
+                        "author": "Workflow Desk",
+                        "publishedAt": "2026-06-15T20:00:00+08:00",
+                        "tags": ["workflow", "approval"],
+                        "topic": "workflow-shift",
+                    }
+                ],
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        registry_path = self.root / "benchmark_source_registry.json"
+        registry_path.write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "sources": {
+                        "workflow-shift": {
+                            "aliases": ["efficiency_tools", "approval-first"],
+                            "action": "search_content",
+                            "provider": "import_json",
+                            "platform": "wechat",
+                            "inputPath": str(raw_source_path),
+                            "query": "AI workflow",
+                        }
+                    },
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        result = ensure_signal_artifacts(
+            generated_dir=self.output_dir,
+            slug="demo-slug",
+            current_title="AI night shift workflow value",
+            payload={
+                "topic": "workflow-shift",
+                "benchmarkRegistryPath": str(registry_path),
+            },
+        )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertTrue((self.output_dir / "benchmark-request.json").exists())
+        self.assertTrue((self.output_dir / "benchmark-records.jsonl").exists())
+        request = json.loads((self.output_dir / "benchmark-request.json").read_text(encoding="utf-8"))
+        self.assertEqual(request["provider"], "import_json")
+        self.assertEqual(request["platform"], "wechat")
+        self.assertTrue(Path(request["inputPath"]).samefile(raw_source_path))
+
 
 if __name__ == "__main__":
     unittest.main()
