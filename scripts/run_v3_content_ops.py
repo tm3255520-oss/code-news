@@ -439,12 +439,13 @@ def run_v3_prepublish(
         encoding="utf-8",
     )
 
+    gate_status = preflight.get("gate", {}).get("status")
     three_platform_prepublish_status = resolve_three_platform_prepublish_status(
         preflight=preflight,
         asset_gate=asset_gate,
         signal_pipeline=signal_pipeline,
     )
-    ready_for_confirmation = three_platform_prepublish_status == "ready_for_confirmation"
+    xhs_placeholder_ready = gate_status == "passed" and asset_gate.get("status") == "passed"
     for platform in ("toutiao", "zhihu", "wechat"):
         state["platforms"].setdefault(platform, empty_platform_state())
         state["platforms"][platform]["manualConfirmRequired"] = True
@@ -458,7 +459,7 @@ def run_v3_prepublish(
 
     state["platforms"]["xiaohongshu"] = {
         **state["platforms"].get("xiaohongshu", empty_platform_state()),
-        "status": "placeholder_ready" if ready_for_confirmation else "placeholder_blocked",
+        "status": "placeholder_ready" if xhs_placeholder_ready else "placeholder_blocked",
         "attemptCount": 0,
         "manualConfirmRequired": True,
         "formalPublishEnabled": False,
