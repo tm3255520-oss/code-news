@@ -265,12 +265,16 @@ class RunV3ContentOpsTests(unittest.TestCase):
             min_score=0,
         )
 
+        preview = json.loads((self.generated_dir / "publish-preview.json").read_text(encoding="utf-8"))
         state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
         self.assertTrue((self.generated_dir / "benchmark-monitor.md").exists())
         self.assertTrue((self.generated_dir / "viral-analysis.md").exists())
         self.assertTrue((self.generated_dir / "rewrite-plan.md").exists())
         self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
+        self.assertEqual(state["v3"]["signalPipeline"]["freshnessStatus"], "fresh")
         self.assertEqual(Path(state["v3"]["signalPipeline"]["recordsPath"]).resolve(), records_path.resolve())
+        self.assertEqual(preview["platforms"]["toutiao"]["status"], "manual_confirmation_required")
+        self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "ready_for_confirmation")
 
     def test_run_v3_prepublish_blocks_when_benchmark_inputs_are_stale(self) -> None:
         records_path = self.generated_dir / "benchmark-records.jsonl"
