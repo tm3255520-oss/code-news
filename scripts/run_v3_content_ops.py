@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     from scripts.check_generated_article_quality import infer_topic_from_payload, read_json
@@ -22,6 +22,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG_DIR = ROOT / "config"
 DEFAULT_HISTORY_PATH = ROOT / ".tmp" / "v3" / "image-history.json"
+DEFAULT_BENCHMARK_REGISTRY_PATH = DEFAULT_CONFIG_DIR / "benchmark_source_registry.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -52,6 +53,67 @@ def write_json_file(path: Path, data: Any) -> None:
 
 def load_config(config_dir: Path, name: str) -> dict[str, Any]:
     return read_json_file(config_dir / name, {})
+
+
+def resolve_registry_input_path(registry_path: Path, input_path: str) -> Path:
+    candidate = Path(input_path)
+    if candidate.is_absolute():
+        return candidate
+    return (registry_path.parent / candidate).resolve()
+
+
+def load_registry_request(
+    *,
+    registry_path: Path,
+    registry_key: str,
+) -> dict[str, Any] | None:
+    registry = read_json_file(registry_path, {})
+    sources = registry.get("sources", {}) if isinstance(registry, dict) else {}
+    source = sources.get(registry_key, {}) if isinstance(sources, dict) else {}
+    if not isinstance(source, dict):
+        return None
+
+    input_path = str(source.get("inputPath") or "").strip()
+    if not input_path:
+        return None
+
+    request = {
+        "action": str(source.get("action") or "search_content").strip() or "search_content",
+        "provider": str(source.get("provider") or "import_json").strip() or "import_json",
+        "platform": str(source.get("platform") or "unknown").strip() or "unknown",
+        "inputPath": str(resolve_registry_input_path(registry_path, input_path)),
+    }
+    query = str(source.get("query") or "").strip()
+    if query:
+        request["query"] = query
+    limit = source.get("limit")
+    if limit is not None:
+        request["limit"] = int(limit)
+    return request
+
+
+def resolve_registry_key_from_payload(registry_path: Path, payload: dict[str, Any]) -> str | None:
+    registry = read_json_file(registry_path, {})
+    sources = registry.get("sources", {}) if isinstance(registry, dict) else {}
+    if not isinstance(sources, dict):
+        return None
+
+    candidates = [
+        str(payload.get("benchmarkRegistryKey") or "").strip(),
+        str(payload.get("topic") or "").strip(),
+        str(payload.get("domain") or "").strip(),
+    ]
+    candidates = [item for item in candidates if item]
+    for candidate in candidates:
+        if candidate in sources:
+            return candidate
+    for key, source in sources.items():
+        if not isinstance(source, dict):
+            continue
+        aliases = [str(item).strip() for item in source.get("aliases", []) or []]
+        if any(candidate in aliases for candidate in candidates):
+            return str(key)
+    return None
 
 
 def reset_stale_platform_statuses(state: dict[str, Any]) -> dict[str, Any]:
@@ -146,6 +208,83 @@ def resolve_content_domain(payload: dict[str, Any], domains_config: dict[str, An
             return domain_id
 
     return next(iter(domains), "unclassified")
+
+
+def clear_signal_artifacts_for_refresh(generated_dir: Path) -> None:
+    for name in (
+        "benchmark-request.json",
+        "benchmark-trace.json",
+        "benchmark-records.jsonl",
+        "benchmark-monitor.md",
+        "peer-content-samples.csv",
+        "peer-content-traffic-report.md",
+        "viral-analysis.md",
+        "rewrite-plan.md",
+    ):
+        path = generated_dir / name
+        if path.exists():
+            path.unlink()
+
+
+def maybe_refresh_benchmark_inputs(
+    *,
+    payload: dict[str, Any],
+    generated_dir: Path,
+    signal_pipeline: dict[str, Any],
+    registry_path: Path = DEFAULT_BENCHMARK_REGISTRY_PATH,
+    benchmark_refresher: Callable[..., dict[str, Any]] | None = None,
+    benchmark_refresh_runner: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    signal_status = str(signal_pipeline.get("status") or "")
+    freshness_status = str(signal_pipeline.get("freshnessStatus") or "")
+    source_kind = str(signal_pipeline.get("sourceKind") or "")
+    registry_key = str(
+        signal_pipeline.get("registryKey")
+        or resolve_registry_key_from_payload(registry_path, payload)
+        or ""
+    ).strip()
+    registry_request = load_registry_request(registry_path=registry_path, registry_key=registry_key) if registry_key else None
+
+    should_refresh = (
+        (source_kind == "registry" or registry_request is not None)
+        and bool(registry_key)
+        and registry_path.exists()
+        and (signal_status == "pending_source" or freshness_status == "stale")
+    )
+    if not should_refresh:
+        return signal_pipeline, None
+
+    if benchmark_refresher is None:
+        try:
+            from scripts.refresh_benchmark_sources import refresh_benchmark_sources
+        except ModuleNotFoundError:
+            from refresh_benchmark_sources import refresh_benchmark_sources
+
+        benchmark_refresher = refresh_benchmark_sources
+
+    refresh_result = benchmark_refresher(
+        registry_path=registry_path,
+        source_keys=[registry_key],
+        runner=benchmark_refresh_runner,
+    )
+    if int(refresh_result.get("refreshedCount", 0) or 0) <= 0:
+        return signal_pipeline, refresh_result
+
+    if freshness_status == "stale":
+        clear_signal_artifacts_for_refresh(generated_dir)
+
+    refresh_payload = dict(payload)
+    if registry_request is not None:
+        refresh_payload["benchmarkRequest"] = registry_request
+        refresh_payload["benchmarkRegistryKey"] = registry_key
+
+    refreshed_signal_pipeline = ensure_signal_artifacts(
+        generated_dir=generated_dir,
+        slug=str(payload.get("slug") or generated_dir.name),
+        current_title=str(payload.get("title") or "").strip(),
+        payload=refresh_payload,
+    )
+    return refreshed_signal_pipeline, refresh_result
 
 
 def build_skill_packets(
@@ -281,6 +420,7 @@ def build_operator_checklist(
     signal_freshness = str(signal_pipeline.get("freshnessStatus") or "unknown")
     signal_request_age = signal_pipeline.get("requestAgeHours")
     signal_records_age = signal_pipeline.get("recordsAgeHours")
+    benchmark_refresh = signal_pipeline.get("benchmarkRefresh") if isinstance(signal_pipeline, dict) else None
     quality_report_path = preflight.get("reportMarkdownPath")
     required_actions: list[str] = []
 
@@ -318,14 +458,22 @@ def build_operator_checklist(
         f"- 对标信号链：`{signal_status}`",
         f"- 对标输入来源：`{signal_source_kind}` / registry=`{signal_registry_key}` / request=`{signal_request_from}` / records=`{signal_records_from}`",
         f"- 对标输入新鲜度：`{signal_freshness}` / requestAgeHours=`{signal_request_age}` / recordsAgeHours=`{signal_records_age}`",
-        "",
-        "## 自动产物",
-        "",
-        f"- 配图计划：`{image_plan_path.name}`",
-        f"- 技能调用包：`{skill_packets_path.name}`",
-        f"- 发布预览：`{publish_preview_path.name}`",
-        f"- 小红书占位：`{xhs_placeholder_path.name}`",
     ]
+    if isinstance(benchmark_refresh, dict):
+        lines.append(
+            f"- 对标刷新结果：`{benchmark_refresh.get('status', 'unknown')}` / refreshed=`{benchmark_refresh.get('refreshedCount', 0)}` / failed=`{benchmark_refresh.get('failedCount', 0)}`"
+        )
+    lines.extend(
+        [
+            "",
+            "## 自动产物",
+            "",
+            f"- 配图计划：`{image_plan_path.name}`",
+            f"- 技能调用包：`{skill_packets_path.name}`",
+            f"- 发布预览：`{publish_preview_path.name}`",
+            f"- 小红书占位：`{xhs_placeholder_path.name}`",
+        ]
+    )
 
     if quality_report_path:
         lines.append(f"- 质量报告：`{Path(str(quality_report_path)).name}`")
@@ -368,6 +516,8 @@ def run_v3_prepublish(
     config_dir: Path = DEFAULT_CONFIG_DIR,
     history_path: Path = DEFAULT_HISTORY_PATH,
     min_score: int = 80,
+    benchmark_refresher: Callable[..., dict[str, Any]] | None = None,
+    benchmark_refresh_runner: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     payload_path = payload_path.resolve()
     preflight = run_preflight(payload_path, min_score=min_score)
@@ -389,6 +539,16 @@ def run_v3_prepublish(
         current_title=str(payload.get("title") or "").strip(),
         payload=payload,
     )
+    signal_pipeline, benchmark_refresh = maybe_refresh_benchmark_inputs(
+        payload=payload,
+        generated_dir=generated_dir,
+        signal_pipeline=signal_pipeline,
+        registry_path=config_dir / "benchmark_source_registry.json",
+        benchmark_refresher=benchmark_refresher,
+        benchmark_refresh_runner=benchmark_refresh_runner,
+    )
+    if benchmark_refresh is not None:
+        signal_pipeline = {**signal_pipeline, "benchmarkRefresh": benchmark_refresh}
     asset_gate = evaluate_asset_gate(state)
     image_plan = build_image_plan(payload, domain, image_strategy, history if isinstance(history, list) else [])
     skill_packets = build_skill_packets(
@@ -470,6 +630,7 @@ def run_v3_prepublish(
         "domain": domain,
         "formalPublishEnabled": False,
         "signalPipeline": signal_pipeline,
+        "benchmarkRefresh": benchmark_refresh,
         "assetGate": asset_gate,
         "imagePlanPath": str(image_plan_path),
         "skillPacketsPath": str(skill_packets_path),
@@ -502,6 +663,7 @@ def run_v3_prepublish(
         "statePath": str(state_path),
         "domain": domain,
         "signalPipeline": signal_pipeline,
+        "benchmarkRefresh": benchmark_refresh,
         "imagePlanPath": str(image_plan_path),
         "skillPacketsPath": str(skill_packets_path),
         "publishPreviewPath": str(publish_preview_path),
