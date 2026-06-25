@@ -434,7 +434,11 @@ class RunV3ContentOpsTests(unittest.TestCase):
 
         state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
         self.assertEqual(summary["signalPipeline"]["status"], "completed")
+        self.assertEqual(summary["signalPipeline"]["sourceKind"], "registry")
+        self.assertEqual(summary["signalPipeline"]["registryKey"], "workflow-shift-fixture")
+        self.assertEqual(summary["signalPipeline"]["requestResolvedFrom"], "registry_refresh")
         self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
+        self.assertEqual(state["v3"]["signalPipeline"]["registryKey"], "workflow-shift-fixture")
         self.assertEqual(summary["benchmarkRefresh"]["refreshedCount"], 1)
         self.assertEqual(state["v3"]["benchmarkRefresh"]["refreshedCount"], 1)
         self.assertTrue((self.generated_dir / "benchmark-records.jsonl").exists())
@@ -518,6 +522,9 @@ class RunV3ContentOpsTests(unittest.TestCase):
         rebuilt_records = (self.generated_dir / "benchmark-records.jsonl").read_text(encoding="utf-8")
 
         self.assertEqual(summary["signalPipeline"]["freshnessStatus"], "fresh")
+        self.assertEqual(summary["signalPipeline"]["sourceKind"], "registry")
+        self.assertEqual(summary["signalPipeline"]["registryKey"], "workflow-shift-fixture")
+        self.assertEqual(summary["signalPipeline"]["requestResolvedFrom"], "registry_refresh")
         self.assertEqual(summary["benchmarkRefresh"]["refreshedCount"], 1)
         self.assertEqual(preview["platforms"]["toutiao"]["status"], "manual_confirmation_required")
         self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "ready_for_confirmation")

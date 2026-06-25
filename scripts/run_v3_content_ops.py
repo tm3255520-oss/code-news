@@ -55,6 +55,33 @@ def load_config(config_dir: Path, name: str) -> dict[str, Any]:
     return read_json_file(config_dir / name, {})
 
 
+def preserve_registry_refresh_trace(
+    *,
+    generated_dir: Path,
+    signal_pipeline: dict[str, Any],
+    registry_key: str,
+) -> dict[str, Any]:
+    updated = {
+        **signal_pipeline,
+        "sourceKind": "registry",
+        "registryKey": registry_key,
+        "requestResolvedFrom": "registry_refresh",
+    }
+    trace_path = generated_dir / "benchmark-trace.json"
+    trace = read_json_file(trace_path, {})
+    if isinstance(trace, dict):
+        trace.update(
+            {
+                "sourceKind": "registry",
+                "registryKey": registry_key,
+                "requestResolvedFrom": "registry_refresh",
+                "recordsResolvedFrom": updated.get("recordsResolvedFrom"),
+            }
+        )
+        write_json_file(trace_path, trace)
+    return updated
+
+
 def resolve_registry_input_path(registry_path: Path, input_path: str) -> Path:
     candidate = Path(input_path)
     if candidate.is_absolute():
@@ -283,6 +310,11 @@ def maybe_refresh_benchmark_inputs(
         slug=str(payload.get("slug") or generated_dir.name),
         current_title=str(payload.get("title") or "").strip(),
         payload=refresh_payload,
+    )
+    refreshed_signal_pipeline = preserve_registry_refresh_trace(
+        generated_dir=generated_dir,
+        signal_pipeline=refreshed_signal_pipeline,
+        registry_key=registry_key,
     )
     return refreshed_signal_pipeline, refresh_result
 
