@@ -1,9 +1,12 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from time import time
 
 from scripts.run_v3_content_ops import run_v3_prepublish
+from scripts.run_content_signal_pipeline import STALE_INPUT_HOURS
 
 
 class RunV3ContentOpsTests(unittest.TestCase):
@@ -124,6 +127,21 @@ class RunV3ContentOpsTests(unittest.TestCase):
             json.dumps(strategy, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        benchmark_registry = {
+            "schemaVersion": 1,
+            "sources": {
+                "workflow-shift-fixture": {
+                    "platform": "wechat",
+                    "query": "AI 编程",
+                    "inputPath": "../.tmp/workflow-shift-source.json",
+                    "limit": 10,
+                }
+            },
+        }
+        (self.config_dir / "benchmark_source_registry.json").write_text(
+            json.dumps(benchmark_registry, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
@@ -153,6 +171,28 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertIn("xiaohongshu", state["platforms"])
         self.assertEqual(state["platforms"]["xiaohongshu"]["status"], "placeholder_ready")
         self.assertFalse(state["v3"]["formalPublishEnabled"])
+
+    def test_run_v3_prepublish_writes_operator_checklist_for_manual_handoff(self) -> None:
+        summary = run_v3_prepublish(
+            self.payload_path,
+            config_dir=self.config_dir,
+            history_path=self.history_path,
+            min_score=0,
+        )
+
+        checklist_path = self.generated_dir / "operator-checklist.md"
+        self.assertTrue(checklist_path.exists())
+        checklist = checklist_path.read_text(encoding="utf-8")
+        self.assertIn("# 用户配合清单", checklist)
+        self.assertIn("image-plan.json", checklist)
+        self.assertIn("publish-preview.json", checklist)
+        self.assertIn("skill-packets.json", checklist)
+        self.assertIn("对标输入来源", checklist)
+        self.assertIn("对标输入新鲜度", checklist)
+        self.assertEqual(Path(summary["operatorChecklistPath"]).resolve(), checklist_path.resolve())
+
+        state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
+        self.assertEqual(Path(state["v3"]["operatorChecklistPath"]).resolve(), checklist_path.resolve())
 
     def test_run_v3_prepublish_persists_image_history(self) -> None:
         run_v3_prepublish(
@@ -240,12 +280,60 @@ class RunV3ContentOpsTests(unittest.TestCase):
             min_score=0,
         )
 
+        preview = json.loads((self.generated_dir / "publish-preview.json").read_text(encoding="utf-8"))
         state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
         self.assertTrue((self.generated_dir / "benchmark-monitor.md").exists())
         self.assertTrue((self.generated_dir / "viral-analysis.md").exists())
         self.assertTrue((self.generated_dir / "rewrite-plan.md").exists())
         self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
+        self.assertEqual(state["v3"]["signalPipeline"]["freshnessStatus"], "fresh")
         self.assertEqual(Path(state["v3"]["signalPipeline"]["recordsPath"]).resolve(), records_path.resolve())
+        self.assertEqual(preview["platforms"]["toutiao"]["status"], "manual_confirmation_required")
+        self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "ready_for_confirmation")
+
+    def test_run_v3_prepublish_blocks_when_benchmark_inputs_are_stale(self) -> None:
+        records_path = self.generated_dir / "benchmark-records.jsonl"
+        record = {
+            "platform": "toutiao",
+            "recordType": "article",
+            "author": "Flow Lab",
+            "title": "Ultimate workflow: publish without rework",
+            "url": "https://example.com/toutiao-1",
+            "publishedAt": "2026-06-14T08:30:00+08:00",
+            "metrics": {"views": 1800, "likes": 55, "comments": 12, "favorites": 9, "shares": 5},
+            "content": {"summary": "Auto publishing workflow for content teams.", "rawTextPath": None},
+            "meta": {"topic": "ai_tools", "tags": ["workflow", "publish"], "captureMethod": "fixture"},
+        }
+        records_path.write_text(json.dumps(record, ensure_ascii=False) + "\n", encoding="utf-8")
+        stale_seconds = int((STALE_INPUT_HOURS + 24) * 60 * 60)
+        stale_timestamp = int(time()) - stale_seconds
+        os.utime(records_path, (stale_timestamp, stale_timestamp))
+
+        summary = run_v3_prepublish(
+            self.payload_path,
+            config_dir=self.config_dir,
+            history_path=self.history_path,
+            min_score=0,
+        )
+
+        preview = json.loads((self.generated_dir / "publish-preview.json").read_text(encoding="utf-8"))
+        state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
+        checklist = (self.generated_dir / "operator-checklist.md").read_text(encoding="utf-8")
+
+        self.assertEqual(summary["signalPipeline"]["freshnessStatus"], "stale")
+        self.assertEqual(preview["platforms"]["toutiao"]["status"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(preview["platforms"]["zhihu"]["status"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(preview["platforms"]["wechat"]["status"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["zhihu"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["wechat"]["prepublishStatus"], "blocked_by_stale_benchmark_inputs")
+        self.assertEqual(state["platforms"]["toutiao"]["error"], "benchmark_inputs_stale")
+        self.assertEqual(state["platforms"]["zhihu"]["error"], "benchmark_inputs_stale")
+        self.assertEqual(state["platforms"]["wechat"]["error"], "benchmark_inputs_stale")
+        self.assertIn(
+            "Refresh benchmark request / records before three-platform prepublish confirmation can continue.",
+            checklist,
+        )
 
     def test_run_v3_prepublish_marks_signal_pipeline_pending_when_records_are_missing(self) -> None:
         run_v3_prepublish(
@@ -302,6 +390,150 @@ class RunV3ContentOpsTests(unittest.TestCase):
         self.assertTrue((self.generated_dir / "benchmark-records.jsonl").exists())
         self.assertTrue((self.generated_dir / "benchmark-request.json").exists())
         self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
+
+        checklist = (self.generated_dir / "operator-checklist.md").read_text(encoding="utf-8")
+        self.assertIn("对标输入来源", checklist)
+        self.assertIn("对标输入新鲜度", checklist)
+        self.assertIn("payload", checklist)
+
+    def test_run_v3_prepublish_refreshes_pending_registry_source_before_leaving_signal_pending(self) -> None:
+        payload = json.loads(self.payload_path.read_text(encoding="utf-8"))
+        payload["benchmarkRegistryKey"] = "workflow-shift-fixture"
+        self.payload_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+        def refresh_runner(job: dict[str, object]) -> dict[str, object]:
+            Path(str(job["outputPath"])).write_text(
+                json.dumps(
+                    {
+                        "query": job["query"],
+                        "total": 1,
+                        "articles": [
+                            {
+                                "title": "Shift guide",
+                                "link": "https://example.com/wechat-1",
+                                "accountName": "Flow Lab",
+                                "publishTime": "2026-06-21 10:00:00",
+                                "snippet": "How to keep publish workflows fresh.",
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            return {"status": "ok", "recordCount": 1}
+
+        summary = run_v3_prepublish(
+            self.payload_path,
+            config_dir=self.config_dir,
+            history_path=self.history_path,
+            min_score=0,
+            benchmark_refresh_runner=refresh_runner,
+        )
+
+        state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
+        self.assertEqual(summary["signalPipeline"]["status"], "completed")
+        self.assertEqual(summary["signalPipeline"]["sourceKind"], "registry")
+        self.assertEqual(summary["signalPipeline"]["registryKey"], "workflow-shift-fixture")
+        self.assertEqual(summary["signalPipeline"]["requestResolvedFrom"], "registry_refresh")
+        self.assertEqual(state["v3"]["signalPipeline"]["status"], "completed")
+        self.assertEqual(state["v3"]["signalPipeline"]["registryKey"], "workflow-shift-fixture")
+        self.assertEqual(summary["benchmarkRefresh"]["refreshedCount"], 1)
+        self.assertEqual(state["v3"]["benchmarkRefresh"]["refreshedCount"], 1)
+        self.assertTrue((self.generated_dir / "benchmark-records.jsonl").exists())
+
+    def test_run_v3_prepublish_refreshes_stale_registry_inputs_before_blocking_publish_preview(self) -> None:
+        payload = json.loads(self.payload_path.read_text(encoding="utf-8"))
+        payload["benchmarkRegistryKey"] = "workflow-shift-fixture"
+        self.payload_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+        records_path = self.generated_dir / "benchmark-records.jsonl"
+        records_path.write_text(
+            json.dumps(
+                {
+                    "platform": "wechat",
+                    "recordType": "article",
+                    "author": "Old Flow Lab",
+                    "title": "Old workflow",
+                    "url": "https://example.com/old-wechat-1",
+                    "publishedAt": "2026-06-14T08:30:00+08:00",
+                    "metrics": {"views": 800, "likes": 18, "comments": 4, "favorites": 3, "shares": 1},
+                    "content": {"summary": "Old benchmark content.", "rawTextPath": None},
+                    "meta": {"topic": "ai_tools", "tags": ["workflow"], "captureMethod": "fixture"},
+                },
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        stale_seconds = int((STALE_INPUT_HOURS + 24) * 60 * 60)
+        stale_timestamp = int(time()) - stale_seconds
+        os.utime(records_path, (stale_timestamp, stale_timestamp))
+        request_path = self.generated_dir / "benchmark-request.json"
+        request_path.write_text(
+            json.dumps(
+                {
+                    "action": "search_content",
+                    "provider": "import_json",
+                    "platform": "wechat",
+                    "inputPath": str(self.root / "old-source.json"),
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        os.utime(request_path, (stale_timestamp, stale_timestamp))
+
+        def refresh_runner(job: dict[str, object]) -> dict[str, object]:
+            Path(str(job["outputPath"])).write_text(
+                json.dumps(
+                    {
+                        "query": job["query"],
+                        "total": 1,
+                        "articles": [
+                            {
+                                "title": "Fresh workflow shift",
+                                "link": "https://example.com/wechat-fresh-1",
+                                "accountName": "Flow Lab",
+                                "publishTime": "2026-06-21 10:00:00",
+                                "snippet": "Fresh benchmark content after refresh.",
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            return {"status": "ok", "recordCount": 1}
+
+        summary = run_v3_prepublish(
+            self.payload_path,
+            config_dir=self.config_dir,
+            history_path=self.history_path,
+            min_score=0,
+            benchmark_refresh_runner=refresh_runner,
+        )
+
+        preview = json.loads((self.generated_dir / "publish-preview.json").read_text(encoding="utf-8"))
+        state = json.loads((self.generated_dir / "pipeline-state.json").read_text(encoding="utf-8"))
+        rebuilt_records = (self.generated_dir / "benchmark-records.jsonl").read_text(encoding="utf-8")
+
+        self.assertEqual(summary["signalPipeline"]["freshnessStatus"], "fresh")
+        self.assertEqual(summary["signalPipeline"]["sourceKind"], "registry")
+        self.assertEqual(summary["signalPipeline"]["registryKey"], "workflow-shift-fixture")
+        self.assertEqual(summary["signalPipeline"]["requestResolvedFrom"], "registry_refresh")
+        self.assertEqual(summary["benchmarkRefresh"]["refreshedCount"], 1)
+        self.assertEqual(preview["platforms"]["toutiao"]["status"], "manual_confirmation_required")
+        self.assertEqual(state["platforms"]["toutiao"]["prepublishStatus"], "ready_for_confirmation")
+        self.assertIn("Fresh workflow shift", rebuilt_records)
+        refreshed_request = json.loads((self.generated_dir / "benchmark-request.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            Path(refreshed_request["inputPath"]).resolve(),
+            (self.payload_dir / "workflow-shift-source.json").resolve(),
+        )
 
 
 if __name__ == "__main__":

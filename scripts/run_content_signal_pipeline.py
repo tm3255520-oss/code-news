@@ -24,6 +24,9 @@ except ModuleNotFoundError:
     from web_scraper_mcp import read_json as read_web_scraper_json, run_request as run_web_scraper_request
 
 
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_BENCHMARK_REGISTRY_PATH = ROOT / "config" / "benchmark_source_registry.json"
+
 WORKFLOW_KEYWORDS = (
     "workflow",
     "flow",
@@ -135,6 +138,8 @@ SIGNAL_ARTIFACT_NAMES = {
     "rewritePlanPath": "rewrite-plan.md",
 }
 BENCHMARK_REQUEST_NAME = "benchmark-request.json"
+BENCHMARK_TRACE_NAME = "benchmark-trace.json"
+STALE_INPUT_HOURS = 72.0
 
 
 def parse_args() -> argparse.Namespace:
@@ -1051,14 +1056,145 @@ def write_json_file(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def load_benchmark_registry(path: Path) -> dict[str, Any]:
+    data = read_json_file(path)
+    return data if isinstance(data, dict) else {}
+
+
+def normalize_registry_key(value: Any) -> str:
+    return str(value or "").strip().lower().replace("_", "-").replace(" ", "-")
+
+
+def candidate_registry_keys(payload: dict[str, Any]) -> list[str]:
+    keys: list[str] = []
+    for raw in (
+        payload.get("benchmarkRegistryKey"),
+        payload.get("domain"),
+        payload.get("topic"),
+    ):
+        key = normalize_registry_key(raw)
+        if not key or key in keys:
+            continue
+        keys.append(key)
+    return keys
+
+
+def normalize_registry_request(request: dict[str, Any], registry_path: Path) -> dict[str, Any]:
+    normalized = dict(request)
+    if "action" not in normalized:
+        normalized["action"] = "search_content"
+    if "provider" not in normalized:
+        normalized["provider"] = "import_json"
+
+    input_path = str(normalized.get("inputPath") or "").strip()
+    if input_path:
+        candidate = Path(input_path)
+        if not candidate.is_absolute():
+            candidate = (registry_path.parent / candidate).resolve()
+        normalized["inputPath"] = str(candidate)
+    return normalized
+
+
+def resolve_registry_request(payload: dict[str, Any]) -> tuple[str | None, dict[str, Any] | None]:
+    registry_path = Path(
+        str(payload.get("benchmarkRegistryPath") or DEFAULT_BENCHMARK_REGISTRY_PATH).strip()
+    )
+    if not registry_path.exists():
+        return None, None
+
+    registry = load_benchmark_registry(registry_path)
+    sources = registry.get("sources", {})
+    if not isinstance(sources, dict):
+        return None, None
+
+    alias_to_key: dict[str, str] = {}
+    for key, raw_request in sources.items():
+        if not isinstance(raw_request, dict):
+            continue
+        alias_to_key[normalize_registry_key(key)] = key
+        for alias in raw_request.get("aliases", []) or []:
+            normalized_alias = normalize_registry_key(alias)
+            if normalized_alias:
+                alias_to_key[normalized_alias] = key
+
+    for candidate in candidate_registry_keys(payload):
+        resolved_key = alias_to_key.get(candidate)
+        if not resolved_key:
+            continue
+        raw_request = sources.get(resolved_key)
+        if isinstance(raw_request, dict):
+            return resolved_key, normalize_registry_request(raw_request, registry_path)
+    return None, None
+
+
 def benchmark_request_path(generated_dir: Path) -> Path:
     return generated_dir / BENCHMARK_REQUEST_NAME
 
 
-def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+def benchmark_trace_path(generated_dir: Path) -> Path:
+    return generated_dir / BENCHMARK_TRACE_NAME
+
+
+def read_benchmark_trace(generated_dir: Path) -> dict[str, Any] | None:
+    path = benchmark_trace_path(generated_dir)
+    if not path.exists():
+        return None
+    data = read_json_file(path)
+    return data if isinstance(data, dict) else None
+
+
+def write_benchmark_trace(generated_dir: Path, trace: dict[str, Any]) -> None:
+    path = benchmark_trace_path(generated_dir)
+    write_json_file(path, trace)
+
+
+def file_age_hours(path: Path | None) -> float | None:
+    if not path or not path.exists():
+        return None
+    modified_at = datetime.fromtimestamp(path.stat().st_mtime).astimezone()
+    delta = datetime.now().astimezone() - modified_at
+    return round(delta.total_seconds() / 3600, 2)
+
+
+def build_freshness_payload(request_path: Path | None, records_path: Path | None) -> dict[str, Any]:
+    request_age = file_age_hours(request_path)
+    records_age = file_age_hours(records_path)
+
+    ages = [age for age in (request_age, records_age) if age is not None]
+    if not ages:
+        status = "missing"
+    elif any(age > STALE_INPUT_HOURS for age in ages):
+        status = "stale"
+    else:
+        status = "fresh"
+
+    return {
+        "requestAgeHours": request_age,
+        "recordsAgeHours": records_age,
+        "freshnessStatus": status,
+    }
+
+
+def requests_match(left: dict[str, Any] | None, right: dict[str, Any] | None) -> bool:
+    if not isinstance(left, dict) or not isinstance(right, dict):
+        return False
+    keys = ("action", "provider", "platform", "inputPath", "query")
+    for key in keys:
+        left_value = str(left.get(key) or "").strip()
+        right_value = str(right.get(key) or "").strip()
+        if left_value != right_value:
+            return False
+    return True
+
+
+def build_benchmark_request_from_payload(payload: dict[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
     explicit_request = payload.get("benchmarkRequest")
     if isinstance(explicit_request, dict):
-        return explicit_request
+        return explicit_request, {
+            "sourceKind": "payload",
+            "registryKey": None,
+            "requestResolvedFrom": "payload",
+        }
 
     request_path = str(payload.get("benchmarkRequestPath") or "").strip()
     if request_path:
@@ -1066,11 +1202,26 @@ def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, A
         if candidate.exists():
             data = read_json_file(candidate)
             if isinstance(data, dict):
-                return data
+                return data, {
+                    "sourceKind": "payload",
+                    "registryKey": None,
+                    "requestResolvedFrom": "payload",
+                }
 
     source_path = str(payload.get("benchmarkSourcePath") or "").strip()
     if not source_path:
-        return None
+        registry_key, request = resolve_registry_request(payload)
+        if isinstance(request, dict):
+            return request, {
+                "sourceKind": "registry",
+                "registryKey": registry_key,
+                "requestResolvedFrom": "registry",
+            }
+        return None, {
+            "sourceKind": None,
+            "registryKey": None,
+            "requestResolvedFrom": None,
+        }
 
     request: dict[str, Any] = {
         "action": str(payload.get("benchmarkAction") or "search_content").strip() or "search_content",
@@ -1083,24 +1234,39 @@ def build_benchmark_request_from_payload(payload: dict[str, Any]) -> dict[str, A
         request["limit"] = int(payload.get("benchmarkLimit") or 0)
     if str(payload.get("benchmarkQuery") or "").strip():
         request["query"] = str(payload.get("benchmarkQuery")).strip()
-    return request
+    return request, {
+        "sourceKind": "payload",
+        "registryKey": None,
+        "requestResolvedFrom": "payload",
+    }
 
 
-def resolve_benchmark_request(generated_dir: Path, payload: dict[str, Any] | None) -> tuple[Path | None, dict[str, Any] | None]:
+def resolve_benchmark_request(
+    generated_dir: Path,
+    payload: dict[str, Any] | None,
+) -> tuple[Path | None, dict[str, Any] | None, dict[str, Any]]:
     sidecar_path = benchmark_request_path(generated_dir)
     if sidecar_path.exists():
         data = read_json_file(sidecar_path)
         if isinstance(data, dict):
-            return sidecar_path, data
+            return sidecar_path.resolve(), data, {
+                "sourceKind": "request_sidecar",
+                "registryKey": None,
+                "requestResolvedFrom": "generated_sidecar",
+            }
 
     if isinstance(payload, dict):
-        request = build_benchmark_request_from_payload(payload)
+        request, trace = build_benchmark_request_from_payload(payload)
         if isinstance(request, dict):
             generated_dir.mkdir(parents=True, exist_ok=True)
             write_json_file(sidecar_path, request)
-            return sidecar_path, request
+            return sidecar_path.resolve(), request, trace
 
-    return None, None
+    return None, None, {
+        "sourceKind": None,
+        "registryKey": None,
+        "requestResolvedFrom": None,
+    }
 
 
 def collect_records_from_request(
@@ -1129,19 +1295,50 @@ def collect_records_from_request(
     return target_path.resolve()
 
 
-def resolve_records_path(payload: dict[str, Any] | None, generated_dir: Path) -> Path | None:
-    candidates: list[Path] = []
+def resolve_records_path(payload: dict[str, Any] | None, generated_dir: Path) -> tuple[Path | None, str | None]:
+    candidates: list[tuple[Path, str]] = []
     if isinstance(payload, dict):
         for key in ("benchmarkRecordsPath", "benchmark_records_path"):
             raw = str(payload.get(key) or "").strip()
             if raw:
-                candidates.append(Path(raw))
-    candidates.append(generated_dir / "benchmark-records.jsonl")
+                candidates.append((Path(raw), "payload"))
+    candidates.append((generated_dir / "benchmark-records.jsonl", "generated_records"))
 
-    for candidate in candidates:
+    for candidate, source in candidates:
         if candidate.exists():
-            return candidate.resolve()
+            return candidate.resolve(), source
+    return None, None
+
+
+def resolve_existing_request_path(generated_dir: Path) -> Path | None:
+    sidecar_path = benchmark_request_path(generated_dir)
+    if sidecar_path.exists():
+        return sidecar_path.resolve()
     return None
+
+
+def backfill_trace_from_payload(
+    *,
+    generated_dir: Path,
+    payload: dict[str, Any] | None,
+    existing_request_path: Path | None,
+) -> dict[str, Any] | None:
+    if not isinstance(payload, dict) or not existing_request_path or not existing_request_path.exists():
+        return None
+
+    inferred_request, inferred_trace = build_benchmark_request_from_payload(payload)
+    if not isinstance(inferred_request, dict):
+        return None
+    if inferred_trace.get("sourceKind") != "registry":
+        return None
+
+    existing_request = read_json_file(existing_request_path)
+    if not requests_match(existing_request, inferred_request):
+        return None
+
+    trace = dict(inferred_trace)
+    write_benchmark_trace(generated_dir, trace)
+    return trace
 
 
 def ensure_signal_artifacts(
@@ -1155,18 +1352,50 @@ def ensure_signal_artifacts(
     top_limit: int = 5,
 ) -> dict[str, Any]:
     artifact_paths = signal_artifact_paths(generated_dir)
-    resolved_records = (records_path.resolve() if records_path and records_path.exists() else None) or resolve_records_path(payload, generated_dir)
-    request_path, benchmark_request = (None, None)
+    records_resolved_from: str | None = None
+    if records_path and records_path.exists():
+        resolved_records = records_path.resolve()
+        records_resolved_from = "explicit_records"
+    else:
+        resolved_records, records_resolved_from = resolve_records_path(payload, generated_dir)
+
+    request_path, benchmark_request = (resolve_existing_request_path(generated_dir), None)
+    stored_trace = read_benchmark_trace(generated_dir) or {}
+    trace: dict[str, Any] = {
+        "sourceKind": None,
+        "registryKey": None,
+        "requestResolvedFrom": "generated_sidecar" if request_path else None,
+        "recordsResolvedFrom": records_resolved_from,
+    }
     if not resolved_records:
-        request_path, benchmark_request = resolve_benchmark_request(generated_dir, payload)
+        request_path, benchmark_request, request_trace = resolve_benchmark_request(generated_dir, payload)
+        trace.update(request_trace)
         if benchmark_request:
             resolved_records = collect_records_from_request(
                 generated_dir=generated_dir,
                 request=benchmark_request,
             )
+            if resolved_records:
+                trace["recordsResolvedFrom"] = "request_fetch"
+                write_benchmark_trace(generated_dir, trace)
+    elif records_resolved_from in {"generated_records", "explicit_records", "payload"}:
+        if records_resolved_from in {"generated_records", "explicit_records"}:
+            recovered_trace = stored_trace or backfill_trace_from_payload(
+                generated_dir=generated_dir,
+                payload=payload,
+                existing_request_path=request_path,
+            ) or {}
+            trace["sourceKind"] = str(recovered_trace.get("sourceKind") or "records_reused")
+            trace["registryKey"] = recovered_trace.get("registryKey")
+            trace["requestResolvedFrom"] = str(
+                recovered_trace.get("requestResolvedFrom") or trace["requestResolvedFrom"]
+            )
+        else:
+            trace["sourceKind"] = "payload"
     has_all_artifacts = all(path.exists() for path in artifact_paths.values())
 
     if resolved_records:
+        freshness = build_freshness_payload(request_path, resolved_records)
         result = run_content_signal_pipeline(
             resolved_records,
             generated_dir,
@@ -1179,6 +1408,8 @@ def ensure_signal_artifacts(
             "status": "completed",
             "recordsPath": str(resolved_records),
             "requestPath": str(request_path) if request_path else None,
+            **trace,
+            **freshness,
             **result,
         }
 
@@ -1187,6 +1418,8 @@ def ensure_signal_artifacts(
             "status": "reused_existing",
             "recordsPath": None,
             "requestPath": str(request_path) if request_path else None,
+            **trace,
+            **build_freshness_payload(request_path, None),
             **{key: str(path) for key, path in artifact_paths.items()},
         }
 
@@ -1194,6 +1427,8 @@ def ensure_signal_artifacts(
         "status": "pending_source",
         "recordsPath": None,
         "requestPath": str(request_path) if request_path else None,
+        **trace,
+        **build_freshness_payload(request_path, None),
         **{key: str(path) for key, path in artifact_paths.items()},
     }
 
