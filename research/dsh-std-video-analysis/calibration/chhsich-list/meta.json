@@ -1,0 +1,20 @@
+{
+ "platform": "bilibili",
+ "url": "https://www.bilibili.com/video/BV1WT8c6pEMK",
+ "bvid": "BV1WT8c6pEMK",
+ "cid": 41101297030,
+ "title": "DSH 开源一周，最火的 5 个插件项目",
+ "description": "DeepSeek 上周开源了智能体框架 DeepSeek Harness（dsh），一周 171,491 颗星。官方只开源了框架本身，桌面客户端、插件合集、终端界面、插件导航，全是社区一周做出来的。这期把这 5 个项目一次讲清楚，看完就能上手。\n\n看点：\n· 一周 171,491 星，awesome 清单收录插件破万\n· 「一切皆插件」连主循环都是插件\n· 梁神模式实测 98.5 分，官方预设只有 91\n· 桌面客户端零环境开箱即用\n· 12 款皮肤里的 Windows XP\n· 1425 款插件，一半认真一半玩\n\n关键内容：\n· dsh 本体：npx 一条命令跑起来，web/headless 随版自带\n· desktop：免装 Node.js，桌面壳本身是一个 dsh 插件\n· dsh-web-ui：任务看板关浏览器也执行、手机扫码远程、SSH 五件套、鲸鱼娘桌宠、皮肤中心 12 款\n· dsh-TUI：像素鲸鱼顶栏、TPS 仪表、双击 Esc 时间回溯，官方公众号收录\n· awesome-dsh-plugin：1425 款插件 20 分类，收录前有人对着源码核\n\n来源：\n· deepseek-harness：github.com/deepseek-ai/deepseek-harness\n· deepseek-harness-desktop：github.com/anywhere-labs/deepseek-harness-desktop\n· dsh-web-ui：github.com/zhu1090093659/dsh-web-ui\n· dsh-TUI：github.com/ccch1mneyyy/dsh-TUI\n· awesome-dsh-plugin：github.com/awesome-dsh-plugin/awesome-dsh-plugin\n\nstar 与插件数截至 2026-08-20。\n\n背景音乐：Wallpaper — Kevin MacLeod（incompetech.com，CC BY 4.0）。\n\n如有不准确之处，欢迎指出。",
+ "author": "ChHsich",
+ "author_uid": 588699709,
+ "duration_s": 306,
+ "publish_time": 1787230115,
+ "play_count": 28952,
+ "comment_count": 35,
+ "digg_count": 446,
+ "favorite_count": 999,
+ "coin_count": 60,
+ "share_count": 58,
+ "danmaku_count": 0,
+ "poster_url": "http://i0.hdslb.com/bfs/archive/35215c70d15893ebab6aa8caac067eecc9c7e379.jpg"
+}

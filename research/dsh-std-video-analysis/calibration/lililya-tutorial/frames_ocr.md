@@ -1,0 +1,82 @@
+# 画面文字时间线（OCR）
+
+- t=0s | 林粒粒呀 已册由 有 3 安疼教在 [Na Tc 人 女 衣 有 加 (信 DeepSeek Hormess 保姆级安装教程
+- t=3s | 林科粒呀 了hb涉we nd 信] 人了共计人
+- t=9s | 林粒粒呀 已册由 那这个新东西一定要坛一下
+- t=15s | 让 o 人 oa 侈 所入Dos0533站用
+- t=21s | 
+- t=27s | 下 和 ee [于 位 aa _ 天才你仆人。
+- t=33s | 后历地址:hittps://nodejs.org ES EEC aaarnarne anaa 腑0网
+- t=39s | 关 9adprint "v24.19.6 [mwneows | IE3 或者获得适用于 | 器 Windows 、 | x64 平台的 Nodejs田构建。 写作|以作乱人扫兴
+- t=45s | Ta 汪光 下载 Nodej or 医玛 加 已验证的发布者 Microsoft Windows 国梧 1 全” 晤寺村息 人 若要继续 ，请输入管理员用户名和密码. 1一ES 所 是下办好此应及好角冯昭雪进行时履。 “
+- t=51s | 足 Window's F载 Nodejs@ 本二 二 用于 是Windoa 8 于“ swson nede ED SEE Materarag砷 0 1 二ade.js 服本 均 - 2 ee 莽后襄员人下 光
+- t=57s | 人 wandovs FF载 Nodejs@ WE wmion 四 -上 nede ED von metatkasah放ee ee 1 Ragims de 目 2 in es [1 ee 堆后商话Jsi 和
+- t=63s | 天天3
+- t=69s | O macds凡aa 一TY 下载 Nodejs@ ER 人sniranaamssmswswswswssssss | 2 -- er Cs砚这0203多关中记'铝吉
+- t=75s | [ED ee 下载 Nodejs@ 加 na 人 zz na ie 二 | ES 1 En 时 人六刘各则
+- t=81s | Te 2 下上Nodejke aa 沁 人 下 | 2 册 上 5 二 oj 。 一 ET 有 Tooons交起吉可以出
+- t=87s | GE 0 上 二[区 7 [ES关 七 xmamm ) -st
+- t=93s | :02关ti大 <-国辐各mm xx ms 县佳区配 Windows Powershel al 厅 国 以管理员身份运行 应用 名 打开文件位置 ee 加 windows powershall 人固定到-开始-屏有 加 windows powershal 从固定避任务栏 呈本 国 windows powershel p86) > 国生 站下文作人 设轩 从四许可开赂民利 久 尖史划 |轩 沽司攻好 尖 个刘当站 E 号 Ar交后2二作少
+- t=99s | ni 玫 本 搜 E 本 级 1 > 示: 从师“国 Q z 国 文人天。 人 系统轩天片 于 国sm 。 | 国 ss乒 四 从。照片 从 加 域庆 加学放
+- t=105s | | 人
+- t=111s | | 国 国 MacBook-Air一~一-zsh一207x53 [下 四 改过 ~ npm -V 必本人 Y 代码块 Bash ，… 汪 node -V 2 npm -v 人
+- t=117s | 林粒粒呀 已册ib册 险deepseel (narness aa 下-秒
+- t=123s | [人 人全0可人7林本全7人大 本 四 | NS 葵入npX@deepseekroj/dsh web
+- t=129s | [村证证人人二EL二和 从0 江可人7林本全1人大广本 .1728 +* ~ npx @deepseek-扩/dsh web 和 lowing packages: 天 c.7 人 NS 本起
+- t=135s | Last 1 .官方下载并启动 DeepSeek Harness 的命念: 人本 全和7大玉二 4.17.8 *， ~ npx @deepseek-拉/dsh web MT 症六让本村 lowing packages: 和io:现 [玖4 由本4 NS 因为电脑里还没有对应的次件包
+- t=141s | 7 电 ai 站 人 deepseek-ai/dshoe.1.9-rc.7 EEC可 国 人和人有和 用 问我们是否继续安装
+- t=147s | 条Bi di: Thu Aug 28 14:11:19 on ttyse68 站 V26.5.9 的 人 + ~ npx @deepseek-ai/dsh web 有 deepseek-ai/dshee.1.6-rc.7 npm warn deprecated node-domexceptionQ1.6.6: Use your platform's dsh web: http://1权.6.6.1:3686 dsh web: opening [生生于三5站 [ 所以终端里会出现一连串安装信息
+- t=153s | 和Pr ~ npx @deepseek-ai/dsh web ed to install the following packages: jeepseek-ai/dshee.1.6-rc.7 (to proceed? (y) y 本4卫星克基站各个省，三 sh web: opening the default browser; pass 一no-open to disable 127.0.0.1 开头的本地地址
+- t=159s | pe ea 加 生 国E @ I-: 人间这候攻谎入;下
+- t=165s | emmmemmrAerrmm Cr 丙芝下到之当 这个网页之所以况软开训交他 N
+- t=171s | 区庄汪了了7 节2宇生生记过 导语交7半及二
+- t=177s | 和人本全3
+- t=183s | Sr ee mm- aoo me ER =- D 呈 em 人7起沪中几基 入1人
+- t=189s | 本 了 浊 从 口 二四:1 D 四 图 回 四 首 Q @ 四 日 裔932NO询风风3033效20 Da
+- t=195s | 用量信息 所有日期均按 GMT+8 时间显示，数据可能有 5 分钟延迟。 @ DeepSeek-V4-Pro 正式版发布，自北京时间 2026.87 00:00 起，全面上调 API 价格并# 一半，请查询价格页面详情，合理安排您的使用. 充值余额 @。 祭抽天和忆开启 去刘夺 累计消费金 Y1.91 和 Y18.0 时间维度 近30天 ~ APIKey ”全部 ~ 这型安弄开党户浸济
+- t=201s | 由 1 ao .ee deepseekam 本 Rn oo as 加 必 2.29 164 18.311.978 也。-- 区寺克风引引入必
+- t=207s | | so 下可中过王芝于二 一 本一一一区- 一一一 SET 区 游人许示过学浊到到人1 芝-
+- t=213s | 四 Egg
+- t=219s | 林粒粒呀 |出击 创建 APIkey X 请将此 API key 保存在安全且易于访问的地方。出于 安全原因，你将无法通过 AP| keys 管理界面再次查看 rpmrarrarrmer一 浏览器或其他客户端代码中。 有风汪二2全 它守由汉
+- t=225s | 林粒粒呀 ii汕 全于有志 入示二4 在省和有
+- t=231s | ii Ce 可 IT
+- t=237s | 林们Ye En ss verem。 全 探索未至之境 “mm 从 ee 开窜刘浊Dos03aa 当坦了
+- t=240s | 古本 辣二感人柬相关Vona-re7 硬砚人和池) 。 证们，Deepseek 开源的 Agert 各时宙工作台，坟心理筷一可量衣”Everyiawwe pg 本罗: 基于 cerdis 的季伯组合系统，protle 《了时W * 分展patch办 -入口: ea (Web 图形界面) 、aan -PetiNe Neatess 《人生天和了 sn ptugin 《二件儿理) 生生本，坟条化 Dashy艾件系纺、MCP 守户寻、 名及吧台入《espsesk 大1、于必昌站 生生 扳骨《NI 、工作次 worktiew) 、会放久化、可现性《QTe 得 . 现灼，o10-rc7 版本迁代中，社区生态中 在开始制作前， 需要确认几个问题: 提问 生生加和 Deep avina -zx 及出司式 3 可| 旨 人 2 E -R3ag:扩站可[有 ns 输出艳式? 出册is攻击及 ETRERRRRCEREE 2
+- t=246s | [区全记本7 .. 昌T区
+- t=252s | 林粒粒呀 已册|册 2了 也可以翅生成的新文件直接保存到这里
+- t=258s | iaannoan 各 人 ， 8 | mm mm mm 国 an 二 oa wanoio 。 222 用冯 es 本 _ < :|壮 CCD 相 玫weoee We 2 的 ra 生 = 0 晤喇
+- t=264s | 5两 Wo ， eek gm mea aa Gy 探索未至之境 wm omamx sowosenetanesippr 6 市 sm ve 北齐游的北允全大-个
+- t=270s | 2 ap。 eat rs，wT oraus manraagmat， prome meta * mm parenm曙 1 入口。 aa Se (web 图开办面) 、asn 一ratINE Neadvess 《生生无类) sh ptugin 《打件包理) _。 条力短阵: 沙藉化bash文件系统、MCP 客户喇、多可型要入Deepsesk 十)、于必王、旧有 《0 质能《ak 、工作注 (worktow) 、全放生入化、可队测性 《ore 更) . 现灼;010-rc7 版本迁代中，社区生态汪路 在开始制作前，需要确认几个问题 提问 “本和办 Deep aivine 这份 PPT 的汇报对铺是谁? (决定内容侧重点和术语深度) 过半四JI， 电力中桥，可肖隐全有路相术表 1 技术团队|开发者 对 入沪 全四下，本汪宇人 症蝇六艺从在坟让 攻1视尝。 we昌是理有 侧重价值、定位、生 六与页本 本
+- t=276s | 本 攻 生硬国 K 吕三加只 票- 浊二 最近全用 外二 导四 Cuuaa 局wonmm 。 本 网 Re ra as 号 从 本 ahang-vibecoding-prolects em As 下滞
+- t=282s | 器三四只 有 DO@ ”QQ 。 build_pptpy 4 check_pptpy 国 preview NS Harness 0 的 全 = DeepSeek-Harness-介绍.pptx 全 Do 六化用甸可菩抽名让六品泥汉- 一个PT 又储已名可有谢旭店文生下昌了
+- t=288s | 攻 LE |一 - 这DENG和06j5大的
+- t=294s | 林粒粒呀 已册[由 二入 = 人
+- t=300s | IE DeepSeek Harness 开发者预览版 二 DeepSeek Harness 开发者预览版面向全球 Harness 开发者开放测试， 源代码。 模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Ager ET 本
+- t=306s | 林粒粒呀 了由 II NI 0 7 7 剧 [汪汪 我们可以把 Cordls 理解成一块揪线板
+- t=312s | 林粒粒呀 已册ib册 工具“山 “模型 ] [们让汪生4 件的方式接 人 套系统里
+- t=318s | 林粒粒呀 已出|册 四 [和 了 四 下 C 框架 | 而是可以通过插件 白民
+- t=324s | 林粒粒呀 ii出 三ER 《1 ] [证 ‖ 角 罗
+- t=330s | dsh-marks dsh-market > 7人和 古几13 (1L ，， 人 WE 站 P 器 dsh-market Pubic 2 main ~ 2? 18 Branches Q 38 Tags Q_ Go 和 fktysly feat card芭洒扩贞这剖齐攻次避说人aightbox RN and abat
+- t=336s | 国 1ittps:7github.comydsh-maorket/ash-morket
+- t=342s | Ra 加 xy 探索未至之填 mms 二 游作可以可基则直久前 5 它育划外
+- t=348s | ER 和 人 放内由于间愉后 二 wa wa
+- t=354s | 划弄区册洲几9才谢gb昌oo
+- t=360s | 1 重启 dsh web: 停止当前实例，再用你平时的方式启动(如 dsh web ) 。这一步必须重启，因为 bundle 列表是在启动时读取的，光靠 HMR 不会加载新市场。 2. 打开网页端 http://27.0.0.13080 > 设置 > 播件市场，即可脖目录、一键安装插件 (1550+ 插件、分 类/搜索/蔗图/主题/备份恢复/更新/诊断等) 。 3. 首次打开时会实时请求 swesome-dsh-plugin.com/pluginsjson 拉取目录; 如果网络连不上会提示原因 并给 [重试」 按钮。 4. 若重启后设置里没有出现【播件市场」这一项，说明宿主太旧被市场自动禁用了一但你的是rc7，满 足要求，理论上不会发生; 真遇到的话告诉我，我再排查。 小提示: README 仓库 master 分支显示 115.0，但 npm 上解析到的是 114.1 (说明 115.0 尚未发布或镜 像汪后) 。不用管它-一市场本身支持通过同一通道自更新。 重启后如果界面有任何异常 (比如设置页没出现市场、报错等)， 和 我继续帮你处理。 避 wo 103530353佐车并小从下一落计有敌帮和
+- t=366s | ED 用 回到PowerShel 或次欠中
+- t=372s | 26.5.9 出 MU > \一/一 Si Ctrl+ C 终止当前运行 rt估CCATLEs 本人 LS全ER有二FS本 BS 然后再次输入语动人令
+- t=378s | [TEST 0 本 EN Re ce 人 .00人 CE 5 \ 和
+- t=384s | oj-人 匡 cm - -四四 时 ee bs 下 和 四
+- t=390s | 垃 探索未至之境 mm A _ 局池动力比说
+- t=396s | 一 911 走 探索未至之境 wm 心 才芝更方必昌革可叉操作
+- t=402s | 本 二 2 1 ae snns ，EEIEED ee 攻 和 | ppm 这汶力世二个Joaiu且上
+- t=408s | 一 ED 0 wa ED 四 SR 二 2 晕
+- t=414s | Eee一 - 。 Se 从 amoem ” 攻
+- t=420s | S 打开编辑 常可全选蔡换 ipt.py (可改文案后重新生成)、 check_ppt.py (自检) 接告诉我即可。 LN 电台 Dassaevera 3 1 1 首token 平均075. 157 tokls | 二信忠3p% |:科和Sog 3 二册as 这
+- t=426s | CE 村 ES 六 Wo e@， 国 En 2 和 人 aaaaan 让宝nn aaa wanenan 人 aema sp CTwoae eng ha 人 sa87es Ware cmcosanad ga 过 ea 人 站
+- t=432s | Q 0 TREEzhmd_ aaecheeahmadl， 是 心 = - 和 站
+- t=438s | deepseakai1deepseaichamess 后 回ommomo The official open-source Claude Design alternative. ES 二 夯区划关所和避
+- t=444s | 人 | 回到PowerShel 或终端窗口
+- t=450s | 答入启动命令: 全了 这 友玫和
+- t=456s | E ; 了 asia sea JpX@deepsSeek-oj/dsh web
+- t=462s | HS 腮97瑟航天
+- t=468s | 林粒粒呀 巧由册 [ 了曾午| 了本d 也求个点侈收藏

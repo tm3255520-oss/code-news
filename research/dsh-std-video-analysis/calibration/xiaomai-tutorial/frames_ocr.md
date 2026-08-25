@@ -1,0 +1,82 @@
+# 画面文字时间线（OCR）
+
+- t=0s | 5 人 3 要 Cap 有 TI 1
+- t=3s | 到天光到大现夺臣区克2 | 四| 局 要 CTzED Fe 个人其大全用丫| 了 国 oo 加了 ea 的 让
+- t=6s | 四| 加 因站 CTzEED 5 En 人
+- t=12s | 有 SS 5 Eap 1 人到 本: am 和 辐 本 case ooaog 99 必 本 ee 遇扣本 [| 相 二 wapa 站 @@ 局让二aa- co 让 人 RE CE 下 丁 本 ET
+- t=15s | 导 en Cerroeraais 四 PP ER 下载 Nodejs@ RE 机 站 ET ee 本 三三 的下载网站 ee 外 性
+- t=21s | 1 car 2 ES ET 下载 Nodejs@ 二 和 SS 六 WECE 0
+- t=24s | aol modee ”mm mr国士， 医生三一 本wx o TECHGEE -ET en 二 一 。 本 wa下载Windows安装程序(msj) 本
+- t=27s | ap 有 人 EEC ET 下载 Nodejs@ EL Ge -One en 四 本 二 1可 全 和 二一 ; 0 2 TI char
+- t=33s | EE Ia 和 Te 二二 ER有克汪 jiaowaibilibjl
+- t=36s | 下载 Nodejs@ 有 加 本 ea 人 人 xiao_waibiib
+- t=42s | 下载 Nodejs@ ie ea = 人 几 Marvelib站
+- t=45s | 下载 Nodejs@ NS 汪汪 四 an 人 Jar bb业
+- t=51s | ee Tanenss间 2 FE一 ET 下载 Nodejs@ aa : ET enooiecr vv短待安装完毕即可 局 EeeiroeeeemeeeeeeeeeeieasiNDi
+- t=54s | ent [craers PE EEC PE 二 生 ee 安装，待会配置镜像源 ER 站
+- t=57s | EPE ET rmmmmmeaaacmmmpmmmme 多 Cape ea 和 本 用目忆5 症梧百赂志 全全
+- t=63s | 呈 了 和 Co 和 | 二二 和本训-， 二 5 = 人 / 1 @@ aa 汪 CErreamrreDr 二 本
+- t=66s | 人 中 二 本 aa 加 上 = 国 3 本 ET 本 ee 人 而量因，和AI下外 La (CI 轴和ae 人 区 -1 0 惕本
+- t=72s | aa 2 人 人 Is FE 本 二 | 包 加eemae 固 区 1 入大，受关上区休内容振作， 1 且 ee 站 加 @ [arTT 拷贝换源命令 RE 国 1 亲光人
+- t=75s | Ca _ cs ee 和 本 所 有二也及间 9 有Do ee
+- t=81s | ns “二 本沪 吉 CR RE | 区入后国革，受对由任何内容作成， Po | 人 -En 要 JR SEE 2 上 0 ER 本 |、 。 人 人 本 和
+- t=84s | ee 昌 ee CE [ 本 。 四 = mm 和 Everything isa plugin 接下来，正式安装dsh Fe ar 和 Xiao_Mar bb站
+- t=87s | gg ER 二 和 0 | ERRB “一一 1 局 上 TO 让 yiao_Mai bi站
+- t=93s | ai 有 二 二 Ce ks 配置鲁像当 ER 了 列有 rr | En 生iron 1 有 es En 上 8 人 和 让 RE
+- t=96s | En X ee CCPS0 1 人 ee av 日ea ET 本 5 安装 ee 闪风是共用以下方式，芭使用px安检站， at (el 上 本 OO aas RE [AR 四RER 到zz 四 下 5 SR LE es La 本 下 从的Shis在-/ 和Ti。目村，只项要撤扒入相关文革瑟在ch用 兰 @@ 人 到 上 下 二 - 上辣 人 所
+- t=102s | 人 放罗 上 了 Ia和天 nany Gerapmamaaeaecemmpmaaae 一 E 四 兴 Eee @ 人 复制安装命令到多六 b E 人 有
+- t=105s | aa 和 “和 Er 5 安装 下 本 、 上 Er es an an anewwavpgen wen Emmaaomeea 有 8 四 上 ET
+- t=111s | ae 用: SS 相让 国 CTFCeeeC RS Pa 二本下本 Smmmmcmmmmemm ,一 namenttCEEagggeagpaggggggga it non in na tn ES 下 区 ne FE 二 和 | rn 人 EEC 1 Is TS ee RE 几 和 成功 了 Je 让 |
+- t=114s | 人 wo 站 ES 。 0
+- t=117s | 人 E CEeammmmzrmagagDrzepeggaEEgg -ee rporrrnpmirror ee ao oo | nn Sa aa aa人 overahea 二 可 下 RE
+- t=123s | . 证 避交大
+- t=126s | aa hPams 于 四 cm san本 - 有厅汪了沁基
+- t=132s | ecoroen em Gy 扣直至之填 mm
+- t=135s | Cr 咯 二 这沌人个个动才锣了现， 扰动同忆六个 RE天
+- t=141s | Cr地 到 这苛内项绽便史 了、 埃 7
+- t=144s | FE 有鸣 避放和到 * 工区; 生地 CR 到 这下可以吉星公天只朗、了区、 2 2
+- t=147s | 一 世放的人负贡全 带王风玖用全克AR
+- t=153s | 二 广汉时 o Eee -er
+- t=156s | ee 3 .. 的尖池汉 天 SEO
+- t=162s | EEE
+- t=165s | : 2 ea | . 人 四 CID 于二PE Pr
+- t=171s | 司 关中由 克用及洁天汪过池信二革帮 ED CE 本
+- t=174s | En 本 本 二证 . 放下下下丰用人 二
+- t=177s | 人 Eeeacec一rr 。 EC
+- t=183s | 日一一 " "四 a一-一 1二 R 有一人记 IEC
+- t=186s | CS
+- t=192s | 
+- t=195s | 站 CE CITIES 站rs
+- t=198s | 三1 国国三
+- t=204s | Cr地 本 局 加到 REED TO
+- t=207s | e 且 洽入/记加浊刘 REEDEETI ITC
+- t=213s | ooproenamm pe 本 ne [ay 1 ， Eee Ci过 CIDCTOCETSEES rr
+- t=216s | ydoepsocu gm -六em Eee 人 _， 大 芝下访其河内了。 CECTCTCTDDPTSRT- 的
+- t=222s | Cr到2才 e 4 时局了个现5洁 RE了 5
+- t=225s | 代 探索未至之境 “mm e RERERERERERIRERERRREREREREETEET omR和0
+- t=228s | 代 探过未至之境 “mm @ ERIC T5 证
+- t=234s | 2 ， xm - 人
+- t=237s | 2 aa ra ee 高级基油工程而 有 ar - 一 1 3
+- t=243s | CE as@ gm 一 dsh-mcp-install 人
+- t=246s | e 二 曙 9 四 1 二 7 0思拓可太湖 Eeesrrcrocr 。=raeucooc
+- t=252s | 1 二 m" 和 区直下 CE CETIGSEIC3E 一9
+- t=255s | : ea | 可 汪 家 下 吕 CC TCR 乓Pt:
+- t=258s | 本 -人 和 让 下天于坟 间 [CEEc=3 =下TGS 一
+- t=264s | 5 EDmCTe了人 一
+- t=267s | .- 到jsj 亲刘 困 Errroor- 。-一ae
+- t=273s | reoroen em @
+- t=276s | Ceoroen mm 人 扣林至之填 mm @
+- t=282s | 下 二 和 won pm EeerT-rrroor 。 :ee
+- t=285s | Cerroen em Gy 损束林至之境 mm @
+- t=288s | Cerroen em Gy 扣束直至之境 mm @
+- t=294s | = 代 探索未至之境 e 个人温炊这内，轩汶辣剧肌大台，当大因区内避昌一人和0请站动工区 RECT TS 了CR
+- t=297s | = 代 探索未至之境 e 个人温炊过内，团尖辣剧动大台，当大拓区内避站一人向0让动工区 RCI 了CR
+- t=303s | 二 滩元，。 8 ErrrTacr 。 一eeccac
+- t=306s | 到 la 先天 四 Errrrrr 。 一retcoocc
+- t=312s | Emo qd 到 过确汝而田击ga 鸭附 2 EEC 。 :OECD 下
+- t=315s | 晴信 全 克光了 RE
+- t=318s | 绢个 会 帮区了 2 RE
+- t=324s | 上 ee evb token 《9二) CT ER RE 。
+- t=327s | as 区: Ghhhub taken (近寺来)
+- t=333s | 2 | 有 多半冯唱和吕咏 7
+- t=336s | TU 本

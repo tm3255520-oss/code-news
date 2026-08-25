@@ -1,0 +1,20 @@
+{
+ "platform": "bilibili",
+ "url": "https://www.bilibili.com/video/BV1xDbk6gEva",
+ "bvid": "BV1xDbk6gEva",
+ "cid": 40933917699,
+ "title": "DeepSeek Harness中文插件",
+ "description": "DeepSeek Harness最近开源了，作为deepseek忠实用户十年老粉。我也是第一时间使用上了DSH。该说不说，体验下来非常不错，有一个查看轨迹的功能做的非常非常棒，这对于我来说十分有用，但是有一个问题，模型默认输出英文，导致我查看思考内容和输出内容有时只能看懂大概意思，为了让它输出内容和思维链内容都输出中文，我使用DSH自己开源了一个项目。",
+ "author": "哎呦哎呦李干嘛",
+ "author_uid": 1156068103,
+ "duration_s": 59,
+ "publish_time": 1786784733,
+ "play_count": 2935,
+ "comment_count": 26,
+ "digg_count": 64,
+ "favorite_count": 108,
+ "coin_count": 10,
+ "share_count": 2,
+ "danmaku_count": 1,
+ "poster_url": "http://i2.hdslb.com/bfs/archive/6532fa0428587e5780c9219846e6cf0e974195a5.jpg"
+}
