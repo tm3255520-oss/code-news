@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "description": "统一 MCP 工具箱：接线库内已有脚本/技能/MCP 为会话内可调用工具。5 个智能体共享同一入口（toolkit-mcp.cmd）。",
+  "defaults": {
+    "python": "C:/Users/Administrator/.hermes/hermes-agent/venv/Scripts/python.exe",
+    "timeoutSec": 300,
+    "resultEncoding": "utf-8"
+  },
+  "tools": {
+    "transcribe_video": {
+      "enabled": true,
+      "group": "transcribe",
+      "label": "转录视频 → Obsidian 笔记",
+      "script": "C:/Users/Administrator/.hermes/scripts/video_collect.py",
+      "python": null,
+      "timeoutSec": 900,
+      "notes": "6 平台自动检测（B站/知乎/头条/小红书/抖音/YouTube）。输出到 vault raw/videos/<平台>/。"
+    },
+    "make_slideshow_video": {
+      "enabled": true,
+      "group": "video",
+      "label": "图文TTS视频合成（幻灯片+配音+ffmpeg）",
+      "script": "C:/Users/Administrator/Documents/code-news/.agents/skills/viral-video-replicate/scripts/make_slideshow_video.py",
+      "python": null,
+      "timeoutSec": 600,
+      "notes": "输入页面定义 JSON → 幻灯片 PNG →（可选）edge-tts 配音 → ffmpeg 合成 720p。"
+    },
+    "make_voiceover": {
+      "enabled": true,
+      "group": "video",
+      "label": "逐段 TTS 配音 + 精确字幕（edge-tts 云健男声）",
+      "script": "C:/Users/Administrator/.hermes/scripts/video_enhance/voice_segmenter.py",
+      "python": null,
+      "timeoutSec": 600,
+      "notes": "输入口播 JSON（script 数组）→ voice_segmented.mp3 + .srt。voice 可选 yunjian/yunxi/xiaoxiao/yunyang。"
+    },
+    "collect_bili_candidates": {
+      "enabled": true,
+      "group": "collect",
+      "label": "B站 DSH 候选池采集（确定性无LLM）",
+      "script": "C:/Users/Administrator/Documents/code-news/.agents/skills/viral-video-breakdown/scripts/collect_bili_candidates.py",
+      "python": null,
+      "timeoutSec": 600,
+      "notes": "关键词搜索 → 全指标 → 质量代理指标 → 候选清单+指标表。默认读其 config.yaml。"
+    },
+    "web_scrape": {
+      "enabled": true,
+      "group": "research",
+      "label": "统一网页采集入口（复用 web-scraper-mcp 适配器）",
+      "script": "C:/Users/Administrator/Documents/code-news/scripts/web_scraper_mcp.py",
+      "python": null,
+      "timeoutSec": 120,
+      "notes": "request 为 JSON 文件路径；action: search_content/fetch_article/fetch_author_feed/extract_metrics/normalize_record。"
+    },
+    "collect_xhs": {
+      "enabled": true,
+      "group": "collect",
+      "label": "小红书收藏增量采集（no_agent cron 脚本，无参）",
+      "script": "C:/Users/Administrator/.hermes/scripts/xhs_collect.py",
+      "python": null,
+      "timeoutSec": 600,
+      "notes": "依赖 bsk 登录态 + vault 路径。只处理新增笔记，写 raw/articles/xiaohongshu/。"
+    },
+    "collect_toutiao": {
+      "enabled": true,
+      "group": "collect",
+      "label": "今日头条收藏增量采集（no_agent cron 脚本，无参）",
+      "script": "C:/Users/Administrator/.hermes/scripts/toutiao_collect.py",
+      "python": null,
+      "timeoutSec": 600,
+      "notes": "依赖 bsk 登录态 + vault 路径。只提取正文，写 raw/articles/toutiao/。"
+    },
+    "douyin_data_summary": {
+      "enabled": true,
+      "group": "collect",
+      "label": "抖音博主数据汇总（读本地采集 JSON）",
+      "script": "",
+      "python": null,
+      "data_dir": "C:/Users/Administrator/.hermes/scripts",
+      "timeoutSec": 30,
+      "notes": "聚合 douyin_user_data_*.json，返回各博主视频总数与最近视频描述。"
+    }
+  }
+}

@@ -110,6 +110,39 @@
       "primary": "Windows Task Scheduler",
       "fallbacks": [],
       "purpose": "后续自动调度"
+    },
+    "toolkit_mcp": {
+      "mode": "mcp_server",
+      "status": "active",
+      "primary": "scripts/mcp_toolkit_server.py",
+      "fallbacks": [],
+      "purpose": "统一MCP工具箱：接线库内脚本（转录/视频/TTS/B站/小红书/头条/抖音/素材）为会话内可调用工具；入口 toolkit-mcp.cmd"
+    },
+    "transcribe_skill": {
+      "mode": "toolkit_tool",
+      "status": "active",
+      "primary": "toolkit:transcribe_video",
+      "fallbacks": [
+        "scripts/video_collect.py"
+      ],
+      "purpose": "视频转录为 Obsidian 笔记（6 平台自动检测）"
+    },
+    "video_maker": {
+      "mode": "toolkit_tool",
+      "status": "active",
+      "primary": "toolkit:make_slideshow_video",
+      "fallbacks": [
+        "toolkit:make_voiceover"
+      ],
+      "purpose": "图文TTS视频合成（幻灯片+edge-tts配音+ffmpeg）"
+    },
+    "video_publisher": {
+      "mode": "external_mcp",
+      "status": "planned",
+      "primary": "matrixmedia",
+      "fallbacks": [],
+      "formalPublishEnabled": false,
+      "purpose": "8平台视频矩阵分发（MatrixMedia 矩媒，占位，正式发布默认关闭）"
     }
   }
 }
