@@ -1,0 +1,82 @@
+# 画面文字时间线（OCR）
+
+- t=0s | [| 全 儒生<
+- t=6s | 芒了萎. 本汪汪思区了3 ee ] 下 一有 下载安装“同时作汉后司 二二 国PS 2本FF站三 FE ”2 厂 9 源宝AI工作室 已iib册 本
+- t=15s | 丰 王 轩 | 不=和 产 归 让全 | 源宝AI工作室 |由 册 有 站 |
+- t=24s | 妥 人 |
+- t=33s | 人 源宝AI工作室 了ii 有硅煌你之前从来没有用过Agent
+- t=42s | 和 一 二 了 导 | ER 站 2 医NSS 和 本估了术基遍烦内容也会比绞K
+- t=51s | 侈 Git源宝 中 加 | 司 下 了 向
+- t=60s | Er 源宝AI工作室 bihi册 和
+- t=69s | 一 一全有 Re Y 》 源宝AI工作室 了由册 但其实不咱地
+- t=78s | nege 源宝AI工作室 也省 需要先安装node
+- t=87s | 18 。验证 Node.js 版本 号 ao 届 ohal 1 者和得用于 昌 Windois 1 平台的 Nodejeg 构建 雪 的 起 “于 了可 Nodejs 的更信息，外间和本示的 Ts “的SHASUNG 在投Nodejs的有人? 下志和名的Node 江介 ，. nighty 二雪人所 之前的本帮凶平咎的的“二六 pp 由 大虎贡风厅国只
+- t=96s | 14 np -ve Should print 11.17.6 oa ee eaagree aaanENR aooderg 生得泛用于 昌 wWindoue 64 平和的Nodejse攀建. 地 国 阅读此版本的 变更日志 “或博客文章。 JW 了可有关 Nodejs 的更信息，包间本本的- ins正 “的SHASUNS 村Nodejs的尖人有? 下志和和的 Node 江介 . 9间nighy 二轴人有 之前的了本用于下他平和的志方的“二间作- Eggopza0fprB 了ms下开交你好
+- t=105s | 1 te rw Should print va4.39.g er aaEN Dodarg 过用于“ Windons 6 平台的 Nodeje 和建 IE EEC 二 了可有关 Nodejs 和的更信息，包间和上本的 Togis到“的SHASUNG 下3找Nedejs的省? 下各的 Node上济代人 … nighay 二雪人所 之前的本丰用于愉他平和的革的“二文件- rpea Are ms雳让二过征用从
+- t=114s | 站 ]
+- t=123s | - 用1 二二人全 -~ Sm 2 站 作 La 售w Si 防 末 0 7/ 和 一一 上 ee 才 0 EN 供/ ee =让 6
+- t=132s | ma 有 区 二 中 ,重 ,种 ,钟 7) 终，众 一 Q zhong QuickTime Player 文本编辑 PDF WF 作 Safari浏览问 柬 置 国 sx | 所”打印中心 调度中心 一 然基吉海 攻
+- t=141s | FT TIE et 下 Fn 上生生和和 后们Wan人HPLC en 吓人人和 PT有ET人站区他和 人 仙me Ne Te相生 上 天 [on 源宝AI工作室 了了hb册 区二
+- t=150s | 再自 CS 汪本AI工作三北iiE浊 0 人
+- t=159s | 内测声明 Doeseos reress 目面站大二Horrors 开明本有 二六村人，而广大开发的反建议二t DeepSeek ess 和以用和 Ay 丰太下的一上时内人逮代、寺人- 向开发表一季，在天开拓可昌用可李人的划上共同了 上关。交全于 Haness 天有入 DSH 本人和 有 P必一Ps人TIRE 源宝AI工作室 蕊ilib潮 UN一人al
+- t=168s | 添加一个 API Key 开始使用 assca pa aa en me ED 源宝AI工作室 了由本 这昌居有天和好
+- t=177s | , 有 号愿 > 源宝AI工作宇伙 /天全机有后
+- t=186s | deepseek cea 用量信息 值 卫单 0.00 源宝AI工作室 也汕 售玫用声瘦懂局B E
+- t=195s | -em 从
+- t=204s | eey x qd 放 = 源宝AI工作室 |由机 党站能二泊闫汪外
+- t=213s | 35sAII人二 Dasps3尖i0253了
+- t=222s | 仆 探索未至之境 ”es 口 薄择工作区 六 怀准模式 起在蕊改作允池
+- t=231s | @惟”探索未至之志
+- t=240s | 人疏 探索未至之境 ms maom wouapacawie 全文介
+- t=249s | 确认启用 Fullaccess? x 人@@ 启用 Full access 后，agent 将减少确认步独，并且可以直 授执行更多斤作，包括敏却扒作、文件修改或外各命令，仅 建议在你信任当前任务时使用、 加 我已了解风险，并原意继搂 取消 沽AI作到 尼导一些天关中而刘订
+- t=258s | 确认启用 Full access? x @@ 自用 Full access 后，agent 将减少确认步圣，并且可以直 授执行更多扒作，包括敏钝扒作、文件修改或外印命令，仅 建议在你信任当前任务对使用。 加 腾已了解风险，并忻意继捷 取消 人 你电脑上蓉窜叉信动人有
+- t=267s | 疏 探索未至之境 ms 标准模式 Deepseekva-Flash v Deepseekrva-pr (二和而0邮人大可以党
+- t=276s | 疏 探索未至之境 ss 标准模式 peepseek-va-Fash v Deepseek-va-pmo 昂攻这贡关大发玫末类这广电
+- t=285s | 池sAII作三 和 和上
+- t=294s | CiasTff 概简模式 创造模式 需随区有死/由起蜂后骼
+- t=303s | _ a_n 标稚模式 1
+- t=312s | 口 选择工作区 机 2 PTC模式
+- t=321s | 口 选择工作区 PTC模式 E
+- t=330s | = 他 末入人式 能
+- t=339s | 极简模式 曙 Ar 人 - 极简模式 类识于好
+- t=348s | Ar 二 一 - 极简模式 人
+- t=357s | 二 极简模式
+- t=366s | HE rc HR CaaqTfE 航简模式 v 加 僻模十 人 只变涛jn
+- t=375s | 国表 有 正式版还有它官方的Harness发布 去坟 本 ET 0
+- t=384s | 本 和 属玫: 屋到 3
+- t=393s | 强化前 强化后 源宝AI工作室 已由由 用插件和不用插件的区别
+- t=402s | 强化前 - 强化后 源宝AI工作室 了由t汕 我将要代替成了之前的让我
+- t=411s | 强化前 . - 强化后 地sAII作室 biib几i。。 朋显能感觉得到合体的逻得更顺畅了
+- t=420s | < 应jmsss衣去几而友下委需进
+- t=429s | AI人 四
+- t=438s | SAI作 会生一信
+- t=447s | 8一一 一 1
+- t=456s | 人 探索未至之境 ms 四 yuanbao 六 奈准模式 httpsVlgithub com/dsh-marketdsh-market帮我安装这个揪作 人
+- t=465s | 5sAIf生 它区会衣当月
+- t=474s | 源宝AI工作室 8以和到谍博史了
+- t=483s | 人 探索未至之境 me 哆RD加Jess反数果了
+- t=492s | 十 Funa PTC 模式 Deepseek-v 航简模式 创造模式 局区虹红有史
+- t=501s | uaautstt 轩汪王 本 一~ 四 生人天大了站从 -
+- t=510s | 让 和 | 站
+- t=519s | 源宝AI工作宣 突才依有有
+- t=528s | 源宝AI工作室 下 党 了
+- t=537s | 源宝AI工作宣 遇共让大引出刚厅
+- t=546s | SAIIfE 加 列禾厅绑过允剖老代才直
+- t=555s | - 源宝AI工作宣 -7和列罗有上外
+- t=564s | 源宝AI工作室 3 要是人多有有人能这赂的模型A
+- t=573s | 人 3 和 全 于 站 源宝AI工作室 让让 总人
+- t=582s | | DRE5 妆 = 当 FA如= nk本、王广攻 | 一一上 EN攻 六和放六、
+- t=591s | 日上T广汪入 ， edespseskcaldsheystemeomg 日上ETysA -aleaao Tiek .The useriaat taid Halol Thiaisa sample geeting lahouid espond in Chinesa belbt and is 您好! 我是你的编程助手，可以帮你处理当前工作目录 7U5ET575J65T766655 里的代码、文件、GK操 作，也可以调用飞书 【Lart 系列能力、A 资刘询、图片J 还原等技能 有什么可以玫你的罗? 比如 。读代码、牙代码、中二令、直 GH其态 ，飞书文档/表烙 /多维表格审批|任务/消息等 ，反可图或设计图还原成网页界面 于最晰的 AI资讯 直接告诉我人的需求行- oem SpaooASEYRZ 这天归售拘前座籽砂
+- t=600s | EEEE TO 区-交 和向 人 (到 和 探索未至之十 出 SA 2 向 上 re | 人 让 候 人 SN -3 开旷三 沁测 曙 SS全了， 。 人 Se 国和沁外这些括从JR吉[R末区后中 |
+- t=609s | sa 四 kk 有 生作自己月及:芝局有 生= | 口
+- t=618s | 看完3609条热门后，我做了个播放量预届工上【站Al创造公开赛】 呈 Pr 二当 Cr 二 区 回关 - 三三 直接修改 昌 ci 上 生 ” 源 此大天抽庆于所
+- t=627s | 人 有AI短视 是 本 隐 https,/www .biibiicom/videoJBV1NbuM6ZEXbj? 人 share_source=copy_wWeb&vd_source=d238b837a87 4b050e2657f9ce0381822可我提取当前视频的音频 一
+- t=636s | aosen marasamara anaonm 。 加 3 四 WE 上 二 医 直接修改 [。] 较 + 慑要思到次供关让近
+- t=645s | 过 (16268) 现在开始天证转号(中文， 办 srVbdyion 三和格式) ，后人运行, 大 wa 忆 SPp问鲁 三全 汪 浆只慑本两39秒
+- t=654s | 哮”已党改正在括放的视频县 《DeepSeek Harness 首发实测 + 入门教程，夯爆了! 梁神我锚了) 【更序只角应，8 站 BV1Vkgk6NEZS，1633) 。我下载了音频并用本地 Whisper 逐字转写，生成了两份文件, 交付文件 。 逐字入 《革间可 + 分节，已校正明显误识别) :下宇畏_DeepSeek_Harness信门才程-ed 的结。 内总结 Deepkeek iarnessA站和. (9了 coeraweratearauaeraasianaviseonuonts ) 内容结构总结 一名话主居: 手把手教你从安装到实上于转 DeepSeek 最新开滨的 Al 篇程工具 Hamess (国产版Coder) ，并用4个实品 项目 + 4了模式 播系统，论证 [DeepSeek v4 Pro + Harness] 的能力可对标 Gaude Opu 5. ep 1 天。 oo00 wp + armess观Giltbs万。 su et ol he 习 然后克便我们舟豚去学 四
+- t=663s | 7 SS 源宝AI工作室 ihb出 在有
+- t=672s | 一 村 NS ] 源宝AI工作室 |由由 和
+- t=681s | ET
+- t=690s | 源宝AI工作室 了由[省 这
+- t=699s | 呈 FE 一口气学会Al 有 殴到- ET全坟和
+- t=708s | 加 E2EE 2 - 鉴定网络热门AI 三且和 国四三: as

@@ -13,3 +13,10 @@ venv/
 
 @AutomationLog.txt
 gcm-diagnose.log
+
+# viral-video-breakdown 研究产出二进制（不入库）
+research/dsh-std-video-analysis/**/*.mp4
+research/dsh-std-video-analysis/**/*.wav
+research/dsh-std-video-analysis/**/*.m4s
+research/dsh-std-video-analysis/**/*.jpg
+research/dsh-std-video-analysis/**/*.png

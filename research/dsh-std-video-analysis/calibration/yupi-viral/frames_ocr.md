@@ -1,0 +1,82 @@
+# 画面文字时间线（OCR）
+
+- t=0s | 一 ， LT 三是 | 二 1 村 人 二| 二汪汪这
+- t=12s | = 人 neo ienomnrornn - amaenee @.e- + onao介 Er ee 和 人 ERREEEEEEEEEE 六 er weree peren an mao agreereamvang moaa on ea earrengeaan 本 RAT 展 ps setatnk btonres ra OO 三 2 | 2 ae ad国四prevew paper ea 2本全人和 AR UN 人c 本 人 HR本ER-天-Rd 二 CR 全下@@和@加弓 |
+- t=24s | yaoepseek gmm E 二二 -一 3 有 术 ee eezearmm maoresaee eewanmarem aa | ao acem oa “人 on wwwineaneavewanwapaweacuwa f 5 CR 。 SS 呈: 生1 上 咏 站全- 认 R 一一<一 一 闪 人 木期访需我会从将蕉开始 .……… .。 | CT 是 -|
+- t=36s | Harness 翻译过来，就是驾驭) harness \攻5 《 [光 Marness 这个词翻译过来就是驾取
+- t=48s | 研究怎么让这匹马跑得更快、更稳 瑟 《 筷
+- t=60s | Agent= Model+ Harness 无避.攻本 At 蕊5 区 ASBs等于Model 加E Namess
+- t=72s | Agent= Model+ Harness 白 四 ] 二 由 At aaamaspse ones mm 5 e 下5 国王 模型只会 1想1，Harmess 把想法撞上文件系统、终笛、网页和工具鳞，AI 才真正蓄在现实环境里二活。，
+- t=84s | 一个可以高度定制的Al编程工具 的区全站 GE e 恒生 人 已 至吧丰一个可以高度证币的 A 编胆工具
+- t=99s | 和 本RU 二 运行有迹可循 :i se 国 3 = =: 、
+- t=111s | en 和 1 曼 必 程序员 -本 本 一 区 am 和 eeetatdo we Fe 日Rs Hi 四 ， 安装 DeepSeek Harness 非常简单
+- t=123s | 下载 Nodejs@ CANCER IE aa Le 蕊es nen m ET 下包
+- t=135s | + ~ npx @deepseek-ai/dsh web ET EN Need to instatL the fotlowing packages: 本 Ok to proceed? (y) y npm warn deprecated node-domexception8e1.9.0: Use your ptatform's native DOMExcepti 攻
+- t=147s | 程序员鱼皮 bihib册 ay Ce 中 看 汪; 因 生汪名奈二入 二
+- t=159s | deepseek mm 口 疏 探索未至之境 mw @ 汰喜你已经成功超越了 的同学
+- t=171s | rdeepseek gm 品 em Gy 探案未至之境 wm rr | 3 |
+- t=186s | deepseek mm 口 ne on 全 NE 人 官具备了一个Al 编程工具应有的全部能力 0
+- t=198s | deepseek mm 口 en en Ce 一 em HIMLURS 上meieam 全 is oa ii - seem renemenam 你武直它当成国产版绝_ 日 全 本
+- t=210s | Seeopeeok mm 吕 疏 探索未至之境 ms em ER 全 分析它自己的源到仓库 司
+- t=222s | 人doepseok gm 丫 。 mafReRE “ar et me 目的，一 aa 要用Monmad 过，二人丰人人暗自 0 日wen 个人的，天下目下
+- t=234s | deepseek gm。 口 ee ET 上 局闪师了 Mermaid 文本给国语法 Me 涂 _
+- t=246s | 了|
+- t=258s | 怎么一眼看懂这张图 1从上往下走一迄: 你从最上面四记(命令行/网页 /自动化接口) 进来 y 装配车间把需要的功能拉成 一个完整的 Al 智能体 > 核心大脑开始转。 2. 大脑的循环只有四步: 向大模型提问 {哺) > 章到回答 - 从工具箱里挑工具干活 【mm后@.) > 把每一 纱写进记忆，估后再癌、再于，直到任务完成. 3. 两个"安全闪"全程困着: 四 沙箱把执行命令关进笼子; 航 审批在危险操作前先征得你同意。 4 所有记忆都会盘(中，所以会话可以有时暂停、恢复、检索 一网页、CL 之间共享同一份记忆.| 图中括号蛙的小字是真实的代码目录名，方便对照仓库;大宇是它通俗易往的功能。Mermaid 代码可直 接粘贴到支持 Mermaid 的工具 (GitHub、Typora、Obsidian、Mermaid Live) 中泻染。 ooef 再 [TI和5忆区IISTEER和人SEIID
+- t=273s | 有 程序员鱼皮 由|汕 02 | 村 必我做一个用交互式动画讲和知识的网站，响应式多端兼容。 本 注意力残差是 Kimi K3 引入的核心架构创新: 在标准 Transformer 的注意力层之外增加一条残差路径，将 民力信息间接人深层，全下好长上下和多加不会下加沈失时有关银人 息。请先用 Firecrawl 联网搜索获取关于注意力残差机制的更多技术细节，确保讲解内容准确。 用户可以通过观看交互式动画、以及自主操作，一步步理解知识点，确保债子也能看昼. ee 本 让 Al 开发一个
+- t=285s | rdoepeeek ER 口 。 DONEREINRN ar gt 回话 设计腺二、抽和式布局、答各元于 货必全页的于关主乒， 2 en nenana ae 交互式讲解设计 〈僵子也能看屋) 主要的时间花在了 Al 的自我洽查上 o
+- t=297s | 耻风帮各、和列肌二二本上上义、公到下检谓八著八太、 下全本硬可不志本不下人 。枯本二十任 Shots/ 目录。 立即查看 本地服务器仍在运行:“*http://1270.0.18080*” (如需重启: “python3 -m http.server 8080 ) 。你也可以直接双击 index.html 打开。 产物 indexhtml stylescss 。 appjs READMEmd .glignore 回斩见习 1 Cn 实际达碳届作”ce 了 UNa0m455 工具505 | 首token 下要178. 67tONS | 本站中09% | 时入4SM OK 和
+- t=309s | 程序员旬皮 市 sama maamanmmesnaaazyn ， -es 跟之前Claude Opus 5 开发的效果一样 [
+- t=321s | 人 斑昌力天藉 Gronrion 关昌部。 丙比。工程 各 Ta 程序员色皮 i ii _先搞懂: 二 ec ee | raren nmonane 1 下 2 CE 人 RN Sr ee 人 5 本 ES 开之大 《时 上 而卫四的) 5本党 本
+- t=333s | 人 甸皮【Li ET aa 本 跑出来的效果 ev esseaarna ore eareasmsrae omseaawmn 本 和
+- t=345s | 人 nn 汪汪 an : 人 5 汰和直人让 机 5 aa | ro各 =做的是二万元以内最好的玩具作知了rar
+- t=357s | 人deepseek gm 口 。 fmT308RRR “am et ma < aaa ee oo ee 7 ES TY 0天 4 可以看到 AI 在开发过程中 上 | war e
+- t=372s | 服务器仍在运行:**http://1270.0.1.8123/"” (按住竹签来回搓! 空格自动搓，右上角开摄像头玩拖势; 后 绫部署: “npm run build 后把 dist/ 挂到任意 HTTPS 静态托管即可 (摄像头/揭一揭需要 HTTPS 或 localhost) 。 核心文件: src/audio-engine.js (合成引擎) 、src/physics.js (物理)、src/scene.js (3D场 景)、src/input-#*js (四种操控) 、src/game,js (挑战) 、 README.md 《完整文档) 。 加四见习 了 几 ULN 37mi7s 工具肌16m565 | 首token平向155 901OMS | 全而100% | 请入TMGK
+- t=384s | 
+- t=396s | 国2工pw “人 中 上 加 E 6
+- t=408s | 程序员鱼皮 上册汕 和 直 AI 网页 PPT 生成器 开发一个 TAI 网页 PPT 生成郑| Web 全栈应用 用记在网页上转贴和发文半，上击生成后，后调用 A) 大模交文自动为多页PPT 结析，拓后 志j结果浓成可全达示、可归和和的网责 PPT， 支持切所到少 3和配色主是，支持生上的PPT 导 本 本 电随上可，模型 为 doepeeek_vd_pxo。开时用 Coniext7 查所用和的新广和和 AP用法- 起后自主试验证玉得，确保个环节攻正和工作，发现是自主人复。呈应式多计容. 四
+- t=420s | 程序员鱼度 |计 和 有 AI 网页 PPT 生成器 开发一个 [Ai 网页 PPT 生成藉) Web 全栈应用 用户在网页上由和长家，训击生成后，后角调用 A 大模型将文自动折角为多贾 PT 结构，然后前 端把结果泻染成可全屏演示、可键盘翻页的网页 PPT。支持切换至少 3 大配色主题，支持把生成的 PPT 导 站 区 电脑上到到，模蜡 为deepaeek_v4-pro。开发用 Context7 查询所有和本的最新诗和 AP 用法。
+- t=432s | 人deepseek gm 。 门 。 “PPTE汪“Te et AR = ae 证 人 oawa 人 se Sega ip 口 seepaeetrhamess 本 pan ee 答立 HTML 导出下旨*香式+亲大本全内取 (0 外部信划)，允击珊线光示，导出生风人可的4 可 A 。 一和多成了任务 让 二ee eeoeoae 全
+- t=444s | 大表好，儿和序员生度. 本 程序员鱼皮 ii出 机 和用记 天成了 75 万人的请入，有人人间它角全代的全夺。还有人这这意儿-世表，久的 Tokan 自己一人月有的和多 让 自己学的，还是共同面册玖?中之胡的Agent 近有什么区91 民 相ER 国度思考顶式 下 有ER人 贡于汪有了7
+- t=459s | 国定 站 人 aa ms-anm- 本 可 5 IE
+- t=471s | 国王 程序员鱼皮 IE击 ”全国 3 手相[26 四 1天 有 二
+- t=483s | LA Je 站 Claude Opus5+ Cursor oonnwnamaa 。 跑出来的效果 让 0 - "ve ca nm 本 aoop Engoeeng ma padacoaohthescbonT07233075108698 本 Ag2TRR Re 什么是全? Couga coge 帮办，改了- Te | 。Bmwao mmie sen和 TI | 。 aas为4 0和 Claude Opus 5 媲美了 amva GE _克 人 光
+- t=495s | deepseek gm。 口 TiT 和 ms 一 is wm me 二 SR CE ap hnzz_rovahl aaant REaagaa haNgToana 而且岳行过程非党济HE明 0
+- t=507s | pespSesk。 DeepSeekr 。 DespSeek 。 DespSeskr aocs Benchmarks WPproe 。 VFlash。。 VHPro WeFash 0pus48 Rb 083 01 Preview Preview Eeeoa 42T1600 3781515 。 3771482 。 34.81451 。 49.31573 。 533163.0 Teaminaleenenai aa ampa as sa oemm aa 7 57 aa7 Ta al eepsw ez7 54 28 Ta sa mo Toothionwerifed 2 ra 559 sr 762 me Meet uaeam 257 252 165 58 257 aaomateneenchpuaia 318 325. 2 aa 272 21 seenehmulsaek CC seenatand 1 Deepseeky4 Pro 正式模型在 Agnt 相关请集上的表现以及与其他前泊术的对比 Gy decpseeke [本人
+- t=519s | HR 5 f 人 Si 5 计 村:省本和攻二可
+- t=531s | deepseek mm 。 sa 量动 机 pl 请次阴 Tokens Y4.60 377 34,376,532 全 因为缓存命中率基本都在 99% 以上
+- t=546s | DeepSeek API 价格更新调整 旬皮 ii由 Oo ao oo Oo oo of 逢 跟 Claude 比起来还是便宜很多的
+- t=558s | 人 程序员鱼皮 bi册tb册 | as 和 本 | 二
+- t=570s | 标准模式: 全套工具部装上 人 E 到 四 包全文件扩明
+- t=582s | 极简模式: 只留丙件最基础的工具 5 日 oo 吕 eg e 外 日 ee e 各 报将讽式只保固了 Bash 和文件纺提
+- t=594s | 极简模式: 只留两件最基础的工具 Ce 。 用
+- t=606s | PTC 模式: 程序化工具调用 中二- 了
+- t=618s | PTC 模式: 程序化工具调用
+- t=633s | 创造模式: 让Al 自己改装 Harness 主一-2 Eee [E 9 【er 9] E 引 RE 和
+- t=645s | 创造模式: 让Al 自己改装 Harness 全一 二 | 漳 后丁我们也会用这种资式来开发自己的括件
+- t=657s | 区别只有一个: 加载了哪些工具插件 鸭 > 上 @ @ 加 必用二 四 四 四 0 RE @ @ 四 折子hernt @@ 四 四 风 sale村 四 四 @ ea xx e ,蒜: $ 呈、 人极简漠式只留两件工具
+- t=669s | 区别只有一个: 加载了哪些工具插件 re 罗 六人 @ @ @ @ 加 和有全 @ @ @ @ RN 机 四 @ @ 上白于home 委 @ @ @ 浆 sa 着 @ @ @ aa wx xx e wx aa = s = o ES ma [ 区 : 但 DeepSeek Harness 真正让人兴兰的地方
+- t=681s | CE 人RDUIiU 由 跟 Codex Claude Code 这些工具最大的区别 由
+- t=693s | ERa上LiNibii em 和 RE 起 | | 起 有 二
+- t=705s | em 站 二革 七 站天 芭 再虹大家开发局于自间尘亲9
+- t=717s | SRSSE 二 OO 人 [7 RS SA COLLEAGUESKILL 人= 汪全着: / 上 [dsiEplugi标答的项目| 了 amwings1caleague-akal 二
+- t=732s | 俐 dah-deep-whale 5 和 dsh-deep-whale . 鲸鱼娘皮肤系列 Ce DeepSeek Harness Web GUI 的过鱼维主有上系列(扫立分发全良) Se we 二 ETE ea eax 你 wen 喇- 上大 人 有 Pi 小二 ”时 agooes
+- t=744s | daepseek gm。 口 。 erarhoom or Co me 和 人 hmprlamvacamvsmalrauowaaan ep oo Ts Rb个人9 上
+- t=756s | 全deepseek gm。 口 。 Rareepronit Too et ma is sttte ua ad scaaaraairdeguatalaatanatetler 玫 htennataiatlentralcaknralaatetier 已wb pohis 并 me op的ae届 (7 HeReHVBRHIGeaWeadog on) 二 3 且 as -paftte es 一agonfig 内 四 fen)， 下 saaltratetler 0 6全 (Bcl 27uB 天| ER po ne2 上和 不 位 1 ac enoretairean ve 全anve) naacorcfs mA- 人 Ra 1 pant xconovck aanwen aneRL ulEeagg pain (天次covpsck gbabte pnpe 加本3 pin -ft re etanaUeetlaatatrhlnrealtatatar mcc prhcsnan qt 我们按官说的 打开终笛 @
+- t=768s | ts 站呈 | < 上 mmzTat snaranoa yn攻信人本- 和 柑 枉 妈人 站从 .-习 六小 重|- 如果不起要这个皮肝了一…… “0上上 | 和
+- t=780s | 下 机 程序员鱼皮 |由b由 1 放二on 抽 dshztianshuz=tui 号 ET 有
+- t=792s | 画 me aeroaspecat 下: 站TO 天 aaaeaaasn aa -Coder wiiboma -日 am aeem 5 Sataaeaiiendeegrtals 一pghl woe 加有RH [工匠aigeaog CR aaaahahasgene-agaery 人个本，尖和，因051因由 es 1 会话与消和 es aeaotpahanosd -对 chen age 因和5工- ee tests -内本本人 Cuge Codn 一人并，下 ww aaa ha 一人9 uceee esteet esaage el 和月 区人 maovema arenagldlssochn ~ /ae 提交各在上io 放生、不要入主人 ,本 DIDalesnenoraahorshe 一分- 2 aero 一二 人这， 和 ee aecalgengepmgtatrde 一时用户内和open yet分 ww SnOG3heaeeerpe 一让 ch Couge coge全读音可抽的人放下《//过). hadoaedath_ahatingen 一昌caua coes1CoeerlChyigPTICuer1Genyngasonropencge 的天忆全入 0 deadath-lis-a -网-工作上并有人人从gangass， epengrg 三 hesaaehtaholgennect -了:经 henoonmeed必提个 DSH 一怕- 和 eedieshgeeret an 本、和的UFO 人和得时下和人 和 samevekara hl四蛤，丰生天中肖4人衣]， 和可六理 5 acddahrasaenggot -举凡 本clean 怕榴Warddonn 与J8ON 从，红wettenegert 工 本TITLE 了 了 其实圾乱储成效的 人 编程工具产品方向上年殷 司 eeda -ai 后和absgent天从4全则Satavpaaa
+- t=804s | [ee EL 者 我个最看好的是-miodiens .新党揪件””“
+- t=819s | Eeei|一一 - 相生 TI | 本了IEE= 二 | 所 汶 一 入 ] 忆 v ~ 全 硬上 eeR 0月有 |
+- t=831s | 疏 探索未至之境 was erauao 证而磊 aa aa 而二 并 是 5旺 有 可以阁你检查当前播体讨
+- t=843s | rdeepseek am。 品 mo seaoeaerneam 必 探索未至之境 wm [ET wearuoae oemamr 一个bsH 和人在Web 有下二未-个小下- 地 Codhx 目下的onLie 里订表，不用和了 了 Aoenl 的工人人才 人有所，党出 《二-) 的六 和 UnplDooiosd了np A
+- t=855s | 加 Think .As suspected 一3waiiing appro 插件已定义并提交激活请求，但当前会 批一按当前策略它会被自动拒绝。让和 7 全 Tool call ， cordis_inspect_self .kunpet 器 Think .ld waitforthe userto changep RE anpet-l Kun Like 磁 村惠拉 Deep diving ，13分39 在Web 界面下角显示 Kun Like 桌宠, 随A。、 以 X 人 避 -侨务 1已完成 . 1进行中 . 1待处理 全 cordis Plugin running 。 Ag Fullaccess 会完失你人工审批 外 让 1驼 -1步 | LUW 13m208 工具滑用9.4s
+- t=867s | deepseek gm 口 5 Ce sen eg衬 加有 JP wwwiamampatamtaeamigameame， 3 语必 本 就能听到 且
+- t=879s | yaoepseek am 噩 SS 疏 探索未至之境 ms 客 总 本 做各种有意思的播件
+- t=891s | ooepeeek ED 人 onto之 站 如果起把插件分享给其他人 员
+- t=906s | 忆Kun Like 桌宠 人 1 3 [ 人 ， 本 加 二 生 生 甚至帮我给 REAERIE 项目介绍文档中添加既灼三生因|
+- t=918s | aoepseek am。 口。e es 0 加 站 Deaaaaagsaaaea poromee 玫户针洒晃包间到了。开发会话茹加性过一个681-10-d6V6Hpaei 技机，它应读有 DSH 下件 2 9 本 java。 。 “=raseat ems aniairtent_ ur Baeayboammm am-Tosta Pu AGE [| ER 你就已经掌担了官的基础用法 o 承 0 和
+- t=930s | 时间原因，这些进阶玩法这次没展开 FE 可 。 忆
+- t=942s | 时间原因，这些进阶玩法这次没展开 二 : 二 区国壮 二、 感光地的朋友们可以先关注一下
+- t=954s | 开源+ 一切入插件= 极到的开放 ES 硬， 硬恒让pespsesk amess Ba了的而放
+- t=966s | 每个人手里的 Al 编程工具，都长得不一样 司 _ 而 国为每个人都可以根据自己的需求自由组装
+- t=978s | wansaexnemveocon ES ram 3 CT一“ 和haoomemmx en = 再= 于 se ty 由，全 Ge 地edty，一天 as 夺 国 完成设置 Netity 全 给 二

@@ -20,6 +20,13 @@
       ],
       "purpose": "选题诊断与内容方向收敛"
     },
+    "video_breakdown_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "viral-video-breakdown",
+      "fallbacks": [],
+      "purpose": "爆款视频拆解：B站候选池采集→证据提取→拆解报告→是否值得复刻"
+    },
     "writer_skill": {
       "mode": "manual_skill",
       "status": "active",

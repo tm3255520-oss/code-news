@@ -1,0 +1,66 @@
+# 画面文字时间线（OCR）
+
+- t=0s | DeepSeek Harness 开发省预疙版; 一切入措件 bowgscok eness 的 01 可) 和Heness MT 明和和，术怕人人 天 ees 开交9 epsoek homess -上庄有并和 Aocn essy 本工具、拒、侨、尖全环、潮、 和 Agent 的 有， = aa Cr 2枯mr 和
+- t=3s | DeepSeek Harness 开发者预览版; 一切皆插件 DeepSeek Harness 团队 今天，DeepSeek Harness 的开发者预必版【v0.1 版本) 面向全球 Harness 开发者开放测试， 并同步以 MIT 协议开放源代码 作为早期预览版本，当前仍有许多细节有待改进和打磨，核心插件与基础接口也将在后续快速和 代演进。我们期待听到广大 Harness 开发者的反馈与建议 Deepseek Harness 采取*一切和插件"的设计思路。我们采用插件式开放架构来构建 Agent Harness: 模型、工具、技能、会话、沙箱、存储、循环、调度、UI 等所有 Agent 能力均由播 件组合而成，可自由巷换、灵活重组、 人 apmmamn nn one @ 亚 有 和之前的很多产品不一样
+- t=6s | DeepSeek Harness 开发者预览版: 一切皆插件 Deepseek Harness 团队 今天，DeepSeek Harness 的开发者预览版 【v0.1 版本)面向全球 Harness 开发者开放测试， 并同步以 MIT 协议开放源代码。 作为时期预版本，当前仍有许多细节有待改进和打磨，核心揪件与基础接口也将在后续快速和 伐演进。我们期待听到广大 Harness 开发者的反局与建议- 人涉用括件式开放架构来构建 Aoent Harness: 模型工具、技能、会话、沙箱、存储、循环、调度、Ul 等所有 Agent 能力均由插 件组合而成，可自由奉换、灵活重组。 人apth an Ge 国王 ye 四 加 它使用了一种叫 “一切皆插件”的理念 全 Te
+- t=9s | 4 站 ET 呈
+- t=12s | - 4 二 用户能改的就只有 模型、Skill 等几项
+- t=15s | 二 一 4 2 四ER
+- t=18s | We - 安装好使用就行 央
+- t=21s | wenaaa一 病 它默认只提供了灵魂功能
+- t=24s | 四 包括模型工具、技能、会话
+- t=27s | 本 ww N 沙箱、存储、循环、调度、UI
+- t=30s | 呈 县 本 3
+- t=33s | 二 ee Le 生生一 2 2 it
+- t=36s | | 四
+- t=39s | | 2
+- t=42s | 1.社区共建，做各种插件 2.根据需求定制专属工具 定制出来最符合需求的 Harness
+- t=45s | 上 巧 也 图 本 图 购 中 可 看
+- t=48s | ES 王 生 本吉 和 一 出 和 不过未来肯定会有各种定制版 有 和
+- t=51s | Deveioper preview 开发天 Run 运行 opem npe 从apm npemaeuce Ma 有
+- t=54s | evaioper preview 开发者预旺 Run 运行 pom apm 人Amm non oue AR 汪汪
+- t=57s | Run 运行 Runfrom npm 从 npm 运行 nstall Node.j5 ,then run 安装 Node.j5 ，然后运行 px edeepseekraiydsh web 加 The command starts the Web Ul served at http:11127.8.6.1:3888 by default_ See Web Ulguide. 该命令启动 Web 界面，黑认在 httpi71127.6.6.153688 提供服务。请参阅 Web 界面指南 Run from source 从源代码运行 Tanunfrom areposiory checkout 要从仓库检出运行 on 有 加
+- t=60s | an 个Aplxey 用 和 . 二]
+- t=63s | >一一一 _ 4
+- t=66s | 人习 探索未至之境 me 国 默认情况下
+- t=69s | 人疏 探索未至之境 we 口过工作区 人 标准机式 四 可式 呈 Tc和 本 他过式 DeepSeek Harness 已经自带了四个配置好的模式
+- t=72s | 标准模式 V 标准模式类似 WorkBuddy、Codex 这些工具
+- t=75s | 标准模式 V 官方已经配置好了完整的 Agent 需要的各种插件
+- t=78s | PTC 模式 V PTC 模式和标准模式类似
+- t=81s | PTC 模式 V 但可以模型生成一段代码来组合多轮工具调用
+- t=84s | PTC 模式 V 适合复杂的多步骤工作流
+- t=87s | 极简模式 V 极简模式仅保留了一个 shell 工具
+- t=90s | 极简模式 SA 适合拿来测试模型的能力
+- t=93s | 创造模式 V 创造模式听名字就知道会非常自由
+- t=96s | 加 并根据需要创造一个用户需要的新模式
+- t=99s | 加 比如我可以在公司电脑上
+- t=102s | 因 并接入公司系统的内部模式
+- t=105s | 我的想法是
+- t=108s | ai LO Ca 8 用 国酌、目 上 Re an 网友已经玩出花了
+- t=111s | 这里给大家分享一些目前比较高星的插件
+- t=114s | ee 人0 dsh-web-ui-DSH Web ul 十=全 dsh-web-ui 杀 ER 氏 划击 上
+- t=117s | ES 程、远程连接、图作理解工具、名鱼娘宠物、实时令相统计，以及皮肤中心。所有插件上可独立安装，也可通过嫩包 一次亨。 Cr 和 这是一个 DeepSeek Harness 的插件、皮肤集合
+- t=120s | yaoepaook em。 口。Em ED …- 本 六 2 可以查看待办、进行中、已完成的任务 中
+- t=123s | 全 全
+- t=126s | x 网 凶 由 自动切换思考、等待、工作等动作
+- t=129s | 支持实时 Token 统计
+- t=132s | 展Er- 切换Windows XP 加
+- t=135s | [1 dsh-TUI mm ash-Tul pe FE :上 第二个是 dsh-TUI
+- t=138s | E 由 E 项昌 ， hatp 立人 Tas 日 二之1 人和4 机全的四有手。有什么的加 比细 -本全 1 外 bog 1 时天目 融和、人和。六和 人中训小和 机本。 放 [ 了 人 ET 四 IE
+- t=141s | dsh-better-sidebar ae 第三个是 dsh-better-sidebar
+- t=144s | ea 四 全| 。 oaeawoam Gamean tewoaanel ace 可以把 DeepSeek Harness
+- t=147s | [ee 和 昌9 二 Te 由 加 1 二 。 ER
+- t=150s | er 和 | | 有 ereoeoeoor 。 ES 本 碳 Git、浏览器、窗口随意拖搜 0
+- t=153s | 国定we -1 本 ua 站 = 人 3 。 ro | 机 后台任务等大量功能 和
+- t=156s | 0 二 SR DeepSeek、GLM 等纯文本模型
+- t=159s | 直接把图片粘贴到输入框
+- t=162s | 模型就能获取到其中的内容
+- t=165s | dsh-anchored-standard ma 正和的Deepssek enees end eset 天次 Wens 的和oriem grompt、_Mona 天开具 eqa (um + SrEPUNctLENter ]， 条有和入工作肚上下会扩因生【oo Catt 本次 osesoaan 宙 局和9bndynd 工具上和上下这. 社区大上，并和 DeepSeek pheset 人不代表 DeepSeek 的有 为什么这样做 espseak va pg全API中本的共目和这.在pragct2 下Shanaand 和 PTC 3、的分，间太Mnal 3、 8 全内 ny去Sbndarg和人工内- ear sin 两工内力听开 pt Mina 了的开上 schema于 ush + eveptact sltar ，与Mi 外和节-天saue nl :在whophg 了arene 1256060 下这Sema 人tw oad ， te 为9，症有abandang大chan peareoa 各pngh SsWeadl Th天和SROre 250009 下ho 人和人因此 相 亲自对和的上下六一AGENTS ndcLADDE ng 工作可用目录，下的Mona 本下和 作 《poontathp 的 grIKonttSSsrey 用语不订池生地: < 中 吕 ET 人
+- t=168s | ydeepseok gammam 收 探索未至之境 wm oo am 仙 DeepSeek-V4-Pro 如果第一次请求时 国
+- t=171s | 位 探索未至之境 ws 电 外 次 下 能力就会变强很多
+- t=174s | 极简模式 V 但这种模式没有完整的工具库
+- t=177s | dsh-anchored-standard 一个 Deopssek kenees agent eset 次有 Wen 的和riem gromgt、_Mon 天的开具 are (ah Mgptct HT， 关卡和和工作对上下文人人生《Mo catY seeaon 六汪局并S9bndsnd 时工内上站上下计和.1 区天目，并和DeeoSsek Beast 电表 Deepgeek 的有 为什么这样做 eegssek vd ng人Ar中国。 在 acta 让 Sundgd 和PTC 人人0分。玫方Ninal 09 08人办 eny， Sbondard和大人开具- err saw本-本工R开 rearaemanros im 的 scheme一-和和bash ，ttr_regtacs sdtr ， 与numa 和seven :在bepig Baqlans (256000) 下这chena 证t e Poat ， tt ie 为，志有andang系wa NT 0 正和的上下一AeNrs ndicLADE nd 工作可用 天，在的Nine 本下 作 《eatsetotrag 人的grtsVNKoetSoehy ) 有三，上商字人 < FPCTTErrr 所以就有人就做了这个插件 多
+- t=180s | 第一次请求: 伪装成极简模式史 获取最强模型 它会在第一次请求的时候伪装成极简模式
+- t=183s | 第一次请求: 伪装成极简模式史 获取最强模型 后续其它请求: 加上工具库吃 获取工具能力 后续请求的时候
+- t=186s | 第一次请求: 伪装成极简模式史 获取最强模型 后续其它请求: 加上工具库少 获取工具能力 获取各种工具带来的能力
+- t=189s | 二
