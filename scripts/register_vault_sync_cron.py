@@ -13,7 +13,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, r"C:\Users\Administrator\.hermes\hermes-agent")
-from cron.jobs import add as cron_add  # noqa: E402
+from cron.jobs import create_job as cron_add  # noqa: E402
 
 
 def main():
