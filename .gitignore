@@ -6,6 +6,7 @@ node_modules/
 !.agents/skills/
 .agents/skills/*
 !.agents/skills/video-production-analysis/
+!.agents/skills/knowledge-video-storyboard/
 
 __pycache__/
 *.py[cod]
