@@ -1,0 +1,240 @@
+{
+ "series": "AI 工作流",
+ "episode": "SERIES 003",
+ "breadcrumb": "自动流水线",
+ "style": "grid-dark",
+ "voice": "yunjian",
+ "lines": [
+  "很多人还在比较，哪个 AI 答得更准。",
+  "但真正拉开差距的，不是前台那个对话框，是后台有没有一条会自己跑的线。",
+  "这条线拆开，其实是三个 AI 在分工。",
+  "第一个负责采集，凌晨把素材扫进笔记库。",
+  "第二个负责改写，把素材按平台调性重写。",
+  "第三个负责发布，发完把数据写回日志。",
+  "三个角色串起来，人只在早上看报告。",
+  "所以值钱的不是提示词，是流程。你每天重复做的事，就是你该搭的那条线。"
+ ],
+ "cards": [
+  {
+   "title": "还在比\n哪个 AI 答得准",
+   "from": 1,
+   "to": 1,
+   "step": "01 / 04",
+   "motion": "SLAMS 标题",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "01 · 现状",
+   "units": [
+    {
+     "type": "list",
+     "numbered": true,
+     "drift": true,
+     "items": [
+      "比谁答得更准",
+      "比谁写得更像人",
+      "比谁响应更快"
+     ],
+     "note": "这些比较都停在同一个地方：前台"
+    }
+   ]
+  },
+  {
+   "title": "差距不在前台",
+   "from": 2,
+   "to": 2,
+   "step": "02 / 04",
+   "motion": "FLOATS 标题 → FLOATS 卡片",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "02 · 转折",
+   "blocks": [
+    {
+     "label": "关键",
+     "text": "真正拉开差距的是后台"
+    }
+   ],
+   "units": [
+    {
+     "type": "compare",
+     "items": [
+      {
+       "label": "前台",
+       "text": "一个会聊天的对话框"
+      },
+      {
+       "label": "后台",
+       "text": "一条会自己跑的线"
+      }
+     ],
+     "note": "前台看的是回答质量，后台看的是它能不能自己往前推"
+    }
+   ]
+  },
+  {
+   "title": "三个 AI 分工",
+   "from": 3,
+   "to": 3,
+   "step": "03 / 04",
+   "motion": "TYPES 标题",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "03 · 方法",
+   "units": [
+    {
+     "type": "steps",
+     "items": [
+      "采集：把素材扫进笔记库",
+      "改写：按平台调性重写",
+      "发布：发完把数据写回"
+     ],
+     "note": "高亮会按固定节拍，逐个往下走"
+    }
+   ]
+  },
+  {
+   "title": "采集员",
+   "from": 4,
+   "to": 4,
+   "step": "03 / 04",
+   "motion": "FLOATS 标题",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "04 · 深夜干活",
+   "units": [
+    {
+     "type": "stat",
+     "items": [
+      {
+       "label": "触发",
+       "value": "凌晨3点"
+      },
+      {
+       "label": "覆盖",
+       "value": "3个平台"
+      },
+      {
+       "label": "人工介入",
+       "value": "0次"
+      }
+     ],
+     "note": "数值从零爬到目标，刻度带在下方滑入"
+    }
+   ]
+  },
+  {
+   "title": "改写员",
+   "from": 5,
+   "to": 5,
+   "step": "03 / 04",
+   "motion": "SLIDES 标题",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "05 · 分清平台",
+   "units": [
+    {
+     "type": "list",
+     "numbered": true,
+     "drift": true,
+     "items": [
+      "不抄原文，只提炼核心观点",
+      "换成口语表达",
+      "加一个能站住的标题"
+     ],
+     "note": "同一份素材，投不同平台要换一套说法"
+    }
+   ]
+  },
+  {
+   "title": "发布员",
+   "from": 6,
+   "to": 6,
+   "step": "03 / 04",
+   "motion": "FLOATS 标题",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "06 · 早上开工",
+   "units": [
+    {
+     "type": "steps",
+     "items": [
+      "打开后台并登录",
+      "粘贴内容与配图",
+      "发布后回写数据"
+     ],
+     "note": "发完不是结束，数据回写才让下一天有依据"
+    }
+   ]
+  },
+  {
+   "title": "人退到早上",
+   "from": 7,
+   "to": 7,
+   "step": "03 / 04",
+   "motion": "RISES 标题",
+   "transition_in": "硬切",
+   "transition_out": "硬切",
+   "kicker": "07 · 串起来",
+   "units": [
+    {
+     "type": "stat",
+     "items": [
+      {
+       "label": "自动环节",
+       "value": "3段"
+      },
+      {
+       "label": "人的环节",
+       "value": "1个"
+      },
+      {
+       "label": "值守时长",
+       "value": "24h"
+      }
+     ],
+     "note": "人不是被替代，是从执行退到看结果"
+    }
+   ]
+  },
+  {
+   "title": "值钱的不是提示词\n是流程",
+   "from": 8,
+   "to": 8,
+   "step": "04 / 04",
+   "motion": "DRAWS 标题 → FLOATS 卡片",
+   "transition_in": "硬切",
+   "transition_out": "FADES 到黑",
+   "kicker": "08 · 结论",
+   "blocks": [
+    {
+     "label": "一句话",
+     "text": "提示词让你爽一次，流程让你省一个月"
+    }
+   ],
+   "units": [
+    {
+     "type": "compare",
+     "items": [
+      {
+       "label": "提示词",
+       "text": "用完就过期\n换个人就失效"
+      },
+      {
+       "label": "流程",
+       "text": "描述一次\n之后自己跑"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "_storyboard_role": [
+  "钩子",
+  "转折",
+  "方法总述",
+  "角色一：采集",
+  "角色二：改写",
+  "角色三：发布",
+  "串起来",
+  "收束"
+ ]
+}

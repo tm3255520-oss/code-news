@@ -1,0 +1,82 @@
+{
+  "generated_at": "2026-09-16T20:20:46.526303",
+  "engine": "edge",
+  "gap": 0.16,
+  "total_duration": 27.77,
+  "segments": [
+    {
+      "index": 1,
+      "text": "很多人还在比较，哪个 AI 答得更准。",
+      "start": 0.0,
+      "end": 2.42,
+      "duration": 2.42,
+      "sentences": 2
+    },
+    {
+      "index": 2,
+      "text": "但真正拉开差距的，不是前台那个对话框，是后台有没有一条会自己跑的线。",
+      "start": 2.58,
+      "end": 7.58,
+      "duration": 5.0,
+      "sentences": 4
+    },
+    {
+      "index": 3,
+      "text": "这条线拆开，其实是三个 AI 在分工。",
+      "start": 7.74,
+      "end": 10.43,
+      "duration": 2.69,
+      "sentences": 2
+    },
+    {
+      "index": 4,
+      "text": "第一个负责采集，凌晨把素材扫进笔记库。",
+      "start": 10.59,
+      "end": 13.42,
+      "duration": 2.83,
+      "sentences": 2
+    },
+    {
+      "index": 5,
+      "text": "第二个负责改写，把素材按平台调性重写。",
+      "start": 13.58,
+      "end": 16.44,
+      "duration": 2.86,
+      "sentences": 2
+    },
+    {
+      "index": 6,
+      "text": "第三个负责发布，发完把数据写回日志。",
+      "start": 16.6,
+      "end": 19.36,
+      "duration": 2.76,
+      "sentences": 2
+    },
+    {
+      "index": 7,
+      "text": "三个角色串起来，人只在早上看报告。",
+      "start": 19.52,
+      "end": 22.15,
+      "duration": 2.63,
+      "sentences": 2
+    },
+    {
+      "index": 8,
+      "text": "所以值钱的不是提示词，是流程。你每天重复做的事，就是你该搭的那条线。",
+      "start": 22.31,
+      "end": 27.77,
+      "duration": 5.46,
+      "sentences": 4
+    }
+  ],
+  "head_trim": [
+    0.12,
+    0.11,
+    0.11,
+    0.12,
+    0.12,
+    0.12,
+    0.1,
+    0.11
+  ]
+}

@@ -1,3 +1,4 @@
 # 渲染产物与配音（可由 build_card_video.py 重新生成，按仓库惯例不入库）
+# 例外：acceptance/ 是「验收基准」（每画幅一条基准成片 + 配套配音），有意入库，见其 README
 renders/
 assets/
