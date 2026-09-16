@@ -39,6 +39,34 @@ if hasattr(sys.stdout, "reconfigure"):
 
 W, H = 1440, 1080
 
+# ── 画幅 ─────────────────────────────────────────────────────────────
+# landscape 是历史归档画幅，geom 故意留空（沿用样式自带几何），保证历史输出逐字节不变。
+# vertical 只覆盖「与画幅强相关」的几何；配色/字号仍归样式管。
+FORMATS: dict[str, dict] = {
+    "landscape": {"size": (W, H), "geom": {}},
+    "vertical": {
+        "size": (1080, 1920),
+        "geom": {
+            # 上下留出外框装饰文字的位置（左上 stamp-l / 右下 stamp-b 是常驻层，
+            # 面板一旦压上去就会 text_occluded —— 竖屏首渲实测踩到）
+            "inset": (26, 100, 26, 96),
+            "card_inset": (58, 126, 58, 438),
+            "band_h": 208, "hud_b": 232, "pbar_b": 214, "frame_b": 296,
+            "list_w": 872, "compare_w": 900,
+            "blocks_w": 900, "title_max": 900, "cap_size": 46,
+            "center_rule": "display:flex; flex-direction:column; justify-content:center; ",
+            # 字号档位：竖屏画幅高，沿用横屏字号会显得内容小而画面空
+            "title_size": 112, "bl_size": 16, "bl_n1": 17,
+            "bt_size": 40, "bt_n1": 56, "bt_n2": 48,
+            "li_size": 34, "note_size": 26, "sv_size": 104,
+            "su_size": 32, "ct_size": 34, "sub_size": 30,
+            # steps 的行高、标记条位移、字号是一组联动值（位移 = 行高 + 行距，在 JS 里算），
+            # 必须一起改，否则标记条会与文字错位
+            "sp_h": 74, "stx_size": 33,
+        },
+    },
+}
+
 # ── 动效词表：分镜写动词，渲染器翻译成 GSAP ──────────────────────────
 # 分镜技能（knowledge-video-storyboard）只允许用这张表里的动词与目标。
 # 新增动词必须同时改这里和技能里的 references/动效词表.md，否则分镜会被判不合格。
@@ -202,6 +230,21 @@ def css_for(s: dict) -> str:
         "bracket_color": rgba(s["accent"], s.get("bracket_a", "0.25")),
         "readout_label": rgba(s["accent"], "0.55"),
         "grid_rules": grid_rules,
+        # 画幅相关几何：这些默认值 = 历史横屏版式，纵向画幅由 FORMATS 覆盖
+        "frame_b": s.get("frame_b", 222), "hud_b": s.get("hud_b", 168),
+        "pbar_b": s.get("pbar_b", 150), "band_h": s.get("band_h", 148),
+        "cap_size": s.get("cap_size", 34), "list_w": s.get("list_w", 640),
+        "steps_w": s.get("steps_w", 780), "compare_w": s.get("compare_w", 860),
+        "blocks_w": s.get("blocks_w", 1080), "title_max": s.get("title_max", 1180),
+        "center_rule": s.get("center_rule", ""),
+        "sp_h": s.get("sp_h", 58), "stx_size": s.get("stx_size", 26),
+        # 字号档位：横屏默认值 = 历史字面量（保证输出不变）；竖屏放大以填空、齐手机可读性
+        "bl_size": s.get("bl_size", 12), "bl_n1": s.get("bl_n1", 13),
+        "bt_size": s.get("bt_size", 27), "bt_n1": s.get("bt_n1", 38),
+        "bt_n2": s.get("bt_n2", 32), "li_size": s.get("li_size", 24),
+        "note_size": s.get("note_size", 19), "sv_size": s.get("sv_size", 76),
+        "su_size": s.get("su_size", 26), "ct_size": s.get("ct_size", 25),
+        "sub_size": s.get("sub_size", 22),
     }.items():
         out = out.replace("@@%s@@" % k, str(v))
     return out
@@ -252,7 +295,7 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
   font-size:13px; letter-spacing:.08em; color:@@crumb_ink@@; font-weight:700; }
 
 /* ── 四角括号（借 telemetry-hud 的框景语言，用强调色才看得见） ─ */
-.frame { position:absolute; left:52px; right:52px; top:58px; bottom:222px; }
+.frame { position:absolute; left:52px; right:52px; top:58px; bottom:@@frame_b@@px; }
 .bracket { position:absolute; width:40px; height:40px; border:0 solid @@bracket_color@@; }
 .b-tl { left:0; top:0; border-left-width:@@bracket_w@@px; border-top-width:@@bracket_w@@px; }
 .b-tr { right:0; top:0; border-right-width:@@bracket_w@@px; border-top-width:@@bracket_w@@px; }
@@ -270,42 +313,44 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
 .readout .rv small { font-size:14px; margin-left:2px; }
 
 /* ── 卡片内容 ───────────────────────────── */
-.card-inner { position:absolute; left:@@cl@@px; right:@@cr@@px; top:@@ct@@px; bottom:@@cb@@px; }
+.card-inner { position:absolute; left:@@cl@@px; right:@@cr@@px; top:@@ct@@px; bottom:@@cb@@px; @@center_rule@@}
+/* 纵向画幅下 .card-inner 是 flex 列：kicker 是 inline-block，不限定就会横向拉伸成整条 */
+.card-inner > .kicker { align-self:flex-start; }
 .kicker { display:inline-block; border:1px solid @@accent@@; border-radius:14px;
   padding:6px 16px; font-size:13px; letter-spacing:.16em; font-weight:800; color:@@accent@@;
   font-family:ui-monospace, Consolas, "Courier New", monospace; }
 .title { margin-top:24px; font-size:@@title_size@@px; line-height:1.10; font-weight:900;
-  color:@@title@@; letter-spacing:-.02em; max-width:1180px; white-space:pre-line; }
+  color:@@title@@; letter-spacing:-.02em; max-width:@@title_max@@px; white-space:pre-line; }
 .title .ln { display:block; }
 .title .ch { display:inline; }
 .rule { height:5px; width:240px; margin-top:18px; background:@@accent@@; border-radius:2px; }
-.blocks { margin-top:40px; display:flex; flex-direction:column; gap:18px; max-width:1080px; }
+.blocks { margin-top:40px; display:flex; flex-direction:column; gap:18px; max-width:@@blocks_w@@px; }
 .block { border:@@block_border@@; border-radius:@@block_radius@@px; padding:20px 28px;
   background:@@block_bg@@; }
-.block .bl { font-size:12px; letter-spacing:.18em; font-weight:800; color:@@accent_ink@@; }
-.block .bt { margin-top:7px; font-size:27px; line-height:1.35; font-weight:800;
+.block .bl { font-size:@@bl_size@@px; letter-spacing:.18em; font-weight:800; color:@@accent_ink@@; }
+.block .bt { margin-top:7px; font-size:@@bt_size@@px; line-height:1.35; font-weight:800;
   color:@@block_ink@@; white-space:pre-line; }
 /* 内容单元少时按块数放大，避免画面出现大片空白 */
 .blocks.n1 { gap:0; }
 .blocks.n1 .block { padding:40px 36px; }
-.blocks.n1 .block .bl { font-size:13px; }
-.blocks.n1 .block .bt { font-size:38px; line-height:1.25; }
+.blocks.n1 .block .bl { font-size:@@bl_n1@@px; }
+.blocks.n1 .block .bt { font-size:@@bt_n1@@px; line-height:1.25; }
 .blocks.n2 { gap:26px; }
 .blocks.n2 .block { padding:32px 34px; }
-.blocks.n2 .block .bt { font-size:32px; }
+.blocks.n2 .block .bt { font-size:@@bt_n2@@px; }
 
 /* ── 信息单元：list（逐项找位 + 容器线性漂移，借 list-reveal） ── */
-.unit-list { display:flex; flex-direction:column; gap:9px; width:640px; margin-top:40px; }
+.unit-list { display:flex; flex-direction:column; gap:9px; width:@@list_w@@px; margin-top:40px; }
 .unit-list .li { display:flex; align-items:center; gap:16px;
   padding:15px 20px; background:@@block_bg@@;
   border:@@block_border@@; border-radius:@@block_radius@@px; }
 .unit-list .li .lic { width:26px; height:26px; border-radius:7px; flex:0 0 auto;
   background:@@accent@@; opacity:.85; }
-.unit-list .li .lit { font-size:24px; font-weight:700; color:@@block_ink@@;
+.unit-list .li .lit { font-size:@@li_size@@px; font-weight:700; color:@@block_ink@@;
   white-space:nowrap; }
 .unit-list .li .lin { font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:15px; color:@@accent_ink@@; font-weight:700; margin-right:2px; }
-.unit-note { margin-top:18px; font-size:19px; color:@@muted@@; font-weight:600; }
+.unit-note { margin-top:18px; font-size:@@note_size@@px; color:@@muted@@; font-weight:600; }
 /* blocks 与 units 同现时收紧间距：两者各自的 margin-top 叠加会把内容压进 HUD 区
    （实测过一次真实重叠：末卡「标题两行 + 卡片 + 对照 + 说明」超出内容区） */
 .blocks + .unit-list, .blocks + .unit-stat,
@@ -320,17 +365,17 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
   font-size:12px; letter-spacing:.16em; color:@@accent_ink@@; font-weight:700; }
 .unit-stat .srow { display:flex; align-items:baseline; gap:5px; }
 .unit-stat .sv { font-family:ui-monospace, Consolas, "Courier New", monospace;
-  font-size:76px; line-height:1.14; font-weight:800; color:@@accent@@;
+  font-size:@@sv_size@@px; line-height:1.14; font-weight:800; color:@@accent@@;
   letter-spacing:-.02em; display:block; }
 .unit-stat .su { font-family:ui-monospace, Consolas, "Courier New", monospace;
-  font-size:26px; font-weight:700; color:@@accent@@; opacity:.7; }
+  font-size:@@su_size@@px; font-weight:700; color:@@accent@@; opacity:.7; }
 .unit-stat .stape { position:relative; height:11px; margin-top:8px; overflow:hidden; }
 .unit-stat .stape i { position:absolute; top:0; width:1px; height:11px;
   background:@@divider@@; display:block; }
 
 /* ── 信息单元：compare（并列面板，借 quad-split-parallel-scenes 的错拍） ── */
 .unit-compare { display:grid; grid-template-columns:repeat(2, 1fr); gap:18px;
-  margin-top:40px; max-width:860px; position:relative; }
+  margin-top:40px; max-width:@@compare_w@@px; position:relative; }
 .unit-compare.n4 { grid-template-columns:repeat(2, 1fr); max-width:900px; }
 /* 两格对照时加一条中轴分隔，让两侧留白读作刻意而非空 */
 .unit-compare.n2::before { content:""; position:absolute; left:50%; top:8px; bottom:8px;
@@ -339,23 +384,23 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
   background:@@block_bg@@; padding:24px 26px; }
 .unit-compare .cl { font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:12px; letter-spacing:.18em; color:@@accent_ink@@; font-weight:700; }
-.unit-compare .ct { margin-top:9px; font-size:25px; line-height:1.38;
+.unit-compare .ct { margin-top:9px; font-size:@@ct_size@@px; line-height:1.38;
   font-weight:700; color:@@block_ink@@; white-space:pre-line; }
 
 /* ── 信息单元：steps（纵向步骤 + 高亮逐拍推进，借 beat-step-list-theme-cycle） ── */
-.unit-steps { position:relative; margin-top:38px; width:780px;
+.unit-steps { position:relative; margin-top:38px; width:@@steps_w@@px;
   display:flex; flex-direction:column; gap:12px; padding-left:16px; }
-.unit-steps .marker { position:absolute; left:0; top:0; width:4px; height:58px;
+.unit-steps .marker { position:absolute; left:0; top:0; width:4px; height:@@sp_h@@px;
   background:@@accent@@; border-radius:2px; }
-.unit-steps .sp { display:flex; align-items:center; gap:20px; height:58px;
+.unit-steps .sp { display:flex; align-items:center; gap:20px; height:@@sp_h@@px;
   padding:0 22px; border-radius:@@block_radius@@px; opacity:.42; }
 .unit-steps .sp .sn { font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:16px; font-weight:800; color:@@accent_ink@@; }
-.unit-steps .sp .stx { font-size:26px; font-weight:700; color:@@block_ink@@; }
+.unit-steps .sp .stx { font-size:@@stx_size@@px; font-weight:700; color:@@block_ink@@; }
 .bignum { font-size:132px; font-weight:900; color:@@accent@@; line-height:1; }
 .row { display:flex; align-items:center; gap:34px; }
 .arrow { font-size:70px; color:@@muted@@; font-weight:900; }
-.subtitle { margin-top:26px; font-size:22px; line-height:1.5; color:@@muted@@; font-weight:600; }
+.subtitle { margin-top:26px; font-size:@@sub_size@@px; line-height:1.5; color:@@muted@@; font-weight:600; }
 
 /* ── 页眉页码 / 进度点（右上，随卡片切换） ── */
 .pagebar { position:absolute; right:56px; top:0; height:86px;
@@ -366,27 +411,27 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
 .progress i.on { background:@@accent@@; }
 
 /* ── 面板下部：HUD 读数 / 步骤标号 / 分段进度条 ── */
-.hud { position:absolute; left:52px; bottom:168px;
+.hud { position:absolute; left:52px; bottom:@@hud_b@@px;
   display:flex; flex-direction:column;
   font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:12px; line-height:1.75; letter-spacing:.06em; color:@@muted@@; }
 .hud b { color:@@accent@@; font-weight:700; }
-.steplabel { position:absolute; right:52px; bottom:calc(@@pb@@px + 168px); text-align:right;
+.steplabel { position:absolute; right:52px; bottom:calc(@@pb@@px + @@hud_b@@px); text-align:right;
   display:flex; flex-direction:column;
   font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:12px; line-height:1.75; letter-spacing:.10em; color:@@muted@@; }
 .steplabel b { color:@@accent@@; font-weight:700; }
-.pbar { position:absolute; left:52px; right:52px; bottom:calc(@@pb@@px + 150px); height:3px;
+.pbar { position:absolute; left:52px; right:52px; bottom:calc(@@pb@@px + @@pbar_b@@px); height:3px;
   display:flex; gap:5px; }
 .pbar i { flex:1; background:@@pbar_off@@; display:block; }
 .pbar i.on { background:@@accent@@; }
 
 /* ── 字幕条（底板常驻，仅文字随句切换） ──── */
-.cap-band { position:absolute; left:@@pl@@px; right:@@pr@@px; bottom:@@pb@@px; height:148px;
+.cap-band { position:absolute; left:@@pl@@px; right:@@pr@@px; bottom:@@pb@@px; height:@@band_h@@px;
   background:@@band@@; border-top:3px solid @@accent@@; }
-.cap-layer { position:absolute; left:@@pl@@px; right:@@pr@@px; bottom:@@pb@@px; height:148px;
+.cap-layer { position:absolute; left:@@pl@@px; right:@@pr@@px; bottom:@@pb@@px; height:@@band_h@@px;
   display:flex; align-items:center; justify-content:center; padding-bottom:8px; }
-.cap-layer span { font-size:34px; font-weight:900; color:@@band_ink@@; letter-spacing:.01em; }
+.cap-layer span { font-size:@@cap_size@@px; font-weight:900; color:@@band_ink@@; letter-spacing:.01em; }
 
 /* ── 结尾淡出黑幕 ───────────────────────── */
 .fadeclip { pointer-events:none; }
@@ -582,7 +627,13 @@ def build(deck: dict) -> str:
     cards = deck["cards"]
     total = len(cards)
     end = max(c["start"] + c["duration"] for c in cards)
-    st = STYLES.get(str(deck.get("style", "grid-dark")), STYLES["grid-dark"])
+    # 画幅在样式之上叠加（局部遮蔽模块级 W/H：本函数后半段的骨架按它渲染画布尺寸）
+    fmt = FORMATS.get(str(deck.get("format", "landscape")), FORMATS["landscape"])
+    W, H = fmt["size"]
+    st = {**STYLES.get(str(deck.get("style", "grid-dark")), STYLES["grid-dark"]),
+          **fmt["geom"]}
+    # steps 标记条每拍位移 = 行高 + 行距（随画幅一起变，否则标记条与文字错位）
+    steps_pitch = int(st.get("sp_h", 58)) + 12
     avg = sum(c["duration"] for c in cards) / max(total, 1)
     hud = (
         f'<span>CARDS:<b>{total:02d}</b></span>'
@@ -699,7 +750,7 @@ def build(deck: dict) -> str:
                 t = base + (k - 1) * spec["beat_s"]
                 anim.append(
                     f'  tl.to("#card{i} .unit-steps .marker", '
-                    f'{{ y: {(k - 1) * spec["step_px"]}, duration: {spec["snap_s"]}, '
+                    f'{{ y: {(k - 1) * steps_pitch}, duration: {spec["snap_s"]}, '
                     f'ease: "{spec["ease"]}" }}, {t:.3f});')
                 anim.append(
                     f'  tl.to("#card{i} .unit-steps .sp[data-i=\\"{k}\\"]", '

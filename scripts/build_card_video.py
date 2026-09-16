@@ -430,6 +430,10 @@ def main() -> int:
     ap.add_argument("--voice-root", default=str(DEFAULT_VOICE_DIR),
                     help="voice_segmenter.py 所在目录")
     ap.add_argument("--quality", default="looks", help="draft/looks/delivery")
+    ap.add_argument("--format", default="landscape",
+                    choices=("landscape", "vertical"),
+                    help="画幅：landscape=1440x1080（默认，历史归档画幅）；"
+                         "vertical=1080x1920（视频号/抖音/小红书竖屏投放）")
     ap.add_argument("--skip-render", action="store_true")
     ap.add_argument("--no-check", action="store_true",
                     help="跳过渲染后的 hyperframes check 质量门")
@@ -476,6 +480,7 @@ def main() -> int:
     print("[3/4] 生成 HyperFrames 合成")
     deck = {k: script[k] for k in ("series", "episode", "breadcrumb", "style") if k in script}
     deck["audio"] = "assets/voice_segmented.mp3"
+    deck["format"] = args.format
     deck["cards"] = [{k: v for k, v in c.items() if not k.startswith("_")} for c in cards]
     (out_dir / "cards.json").write_text(
         json.dumps(deck, ensure_ascii=False, indent=1), encoding="utf-8")

@@ -222,6 +222,69 @@ class DeckBuilderTests(unittest.TestCase):
         self.assertEqual(timing_problems(html), [])
 
 
+class FormatTests(unittest.TestCase):
+    """画幅：横屏是历史归档画幅（默认），竖屏是投放画幅。
+
+    切画幅只允许改「版式」，不允许改「结构」——元素、动效目标、时间轴都要一模一样，
+    否则竖屏就不是同一条片子了。
+    """
+
+    def setUp(self) -> None:
+        self.deck = synthetic_deck()
+        self.land = B.build(self.deck)
+        self.vert = B.build({**self.deck, "format": "vertical"})
+
+    @staticmethod
+    def canvas(html: str) -> tuple[str, str]:
+        m = re.search(r'data-width="(\d+)" data-height="(\d+)"', html)
+        assert m is not None
+        return m.groups()
+
+    @staticmethod
+    def font(html: str, what: str) -> int:
+        m = re.search(what, html)
+        assert m is not None, f"没找到字号：{what}"
+        return int(m.group(1))
+
+    def test_landscape_is_default(self) -> None:
+        self.assertEqual(self.canvas(self.land), ("1440", "1080"))
+        self.assertEqual(self.land, B.build({**self.deck, "format": "landscape"}),
+                         "不写 format 时必须等同 landscape")
+
+    def test_vertical_canvas_and_placeholders_all_replaced(self) -> None:
+        self.assertEqual(self.canvas(self.vert), ("1080", "1920"))
+        self.assertEqual(re.findall(r"@@\w+@@", self.vert), [], "有用占位符没被替换")
+
+    def test_switching_format_changes_layout_only(self) -> None:
+        self.assertNotEqual(self.land, self.vert)
+        ids = lambda h: re.findall(r'id="([^"]+)"', h)  # noqa: E731
+        self.assertEqual(ids(self.land), ids(self.vert), "切画幅不该增删元素")
+        self.assertEqual(sorted(set(gsap_selectors(self.land))),
+                         sorted(set(gsap_selectors(self.vert))),
+                         "切画幅不该改动效目标集合")
+
+    def test_both_formats_keep_structural_invariants(self) -> None:
+        for html in (self.land, self.vert):
+            self.assertEqual(selector_problems(html), [])
+            self.assertEqual(timing_problems(html), [])
+            self.assertEqual(js_literal_problems(html), [])
+
+    def test_vertical_geometry_is_self_consistent(self) -> None:
+        # steps：行高 / 标记条高度 / 每拍位移三者必须自洽（不一致标记条会与文字错位）
+        sp_h = self.font(self.vert, r"\.unit-steps \.sp \{ display:flex[^}]*height:(\d+)px")
+        marker_h = self.font(self.vert, r"\.unit-steps \.marker \{[^}]*height:(\d+)px")
+        pitch = self.font(self.vert, r"unit-steps \.marker\", \{ y: (\d+)")
+        self.assertEqual(sp_h, marker_h)
+        self.assertEqual(pitch, sp_h + 12, "标记条每拍位移必须 = 行高 + 行距")
+        # 竖屏：内容垂直居中 + 字号放大（否则高画幅里内容偏小、画面发空）
+        inner = lambda h: re.search(r"\.card-inner \{([^}]*)\}", h).group(1)  # noqa: E731
+        self.assertIn("justify-content:center", inner(self.vert))
+        self.assertNotIn("justify-content:center", inner(self.land),
+                         "横屏是块级流式版面，不该被加上 flex 居中")
+        self.assertGreater(self.font(self.vert, r"\.title \{ margin-top:24px; font-size:(\d+)px"),
+                           self.font(self.land, r"\.title \{ margin-top:24px; font-size:(\d+)px"))
+
+
 class TimingTests(unittest.TestCase):
     """时间轴分组：配音先行推出来的卡片时间轴必须无空洞、字幕归属正确。"""
 
