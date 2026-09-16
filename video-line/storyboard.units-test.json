@@ -1,0 +1,113 @@
+{
+  "video": {
+    "title": "四类信息单元测试",
+    "platform": "视频号",
+    "core_message": "四类单元全部可渲染",
+    "density": "讲清楚型：每镜一个信息点",
+    "tone": "冷静直给，像同事在工位旁讲解",
+    "series": "内部测试",
+    "episode": "UNITS TEST",
+    "breadcrumb": "信息单元",
+    "style": "grid-dark"
+  },
+  "voice": "yunjian",
+  "lines": [
+    "这一轮要把四类信息单元全部验证一遍。",
+    "第一类是列表，逐项找位落定。",
+    "第二类是数据，数字会自己爬上去。",
+    "第三类是对照，两块面板错拍入场。",
+    "第四类是步骤，高亮会逐拍往下推进。"
+  ],
+  "beats": [
+    {"name": "起头", "role": "说明这是单元级验证", "scene_from": 1, "scene_to": 1},
+    {"name": "逐个验证", "role": "四类单元各占一镜", "scene_from": 2, "scene_to": 5}
+  ],
+  "scenes": [
+    {
+      "id": 1, "from": 1, "to": 1, "role": "起头", "type": "A",
+      "narration": "这一轮要把四类信息单元全部验证一遍。",
+      "screen": {
+        "title": "四类信息单元",
+        "kicker": "UNITS TEST",
+        "blocks": [{"label": "目标", "text": "list / stat / compare / steps"}]
+      },
+      "content_expect": "观众知道这次要逐类验证四种信息单元",
+      "effect_expect": "建立预期，知道接下来每个镜头验证什么",
+      "visual": "标题左对齐，下方一个说明卡片列出四类单元名",
+      "motion": "FLOATS 标题 → FLOATS 卡片",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 2, "from": 2, "to": 2, "role": "验证 list", "type": "A",
+      "narration": "第一类是列表，逐项找位落定。",
+      "screen": {
+        "title": "list · 逐项找位",
+        "kicker": "单元 01 / 04",
+        "units": [{"type": "list", "numbered": true, "drift": true,
+          "items": ["每项按固定间隔 scale 找位", "容器同时做线性漂移", "两层运动互相解耦"],
+          "note": "项与项之间没有一帧是钉死的"}]
+      },
+      "content_expect": "让观众看到列表逐项落位，且画面在项与项之间保持活动",
+      "effect_expect": "读得清每一项，同时感觉画面一直是活的",
+      "visual": "三行列表，等宽序号配荧光绿方块，容器缓慢上移",
+      "motion": "FLOATS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 3, "from": 3, "to": 3, "role": "验证 stat", "type": "A",
+      "narration": "第二类是数据，数字会自己爬上去。",
+      "screen": {
+        "title": "stat · 数字爬升",
+        "kicker": "单元 02 / 04",
+        "units": [{"type": "stat",
+          "items": [
+            {"label": "列表卡密度", "value": "3.16%"},
+            {"label": "对标片密度", "value": "2.66%"},
+            {"label": "超出", "value": "+19%"}
+          ],
+          "note": "刻度带在数字下方滑入，数值从零数到目标"}]
+      },
+      "content_expect": "用真实测量数字证明列表卡密度已超过对标片",
+      "effect_expect": "对数字产生信任，因为它是被测出来的",
+      "visual": "三个大数字并排，等宽字体，下方有细刻度带，错峰爬升",
+      "motion": "FLOATS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 4, "from": 4, "to": 4, "role": "验证 compare", "type": "A",
+      "narration": "第三类是对照，两块面板错拍入场。",
+      "screen": {
+        "title": "compare · 错拍入场",
+        "kicker": "单元 03 / 04",
+        "units": [{"type": "compare",
+          "items": [
+            {"label": "渲染后拦截", "text": "检查已经画好的画面\n只有做错了才发现"},
+            {"label": "生成前约束", "text": "控制还没画的东西\n把它挡在渲染之前"}
+          ],
+          "note": "两块面板错开入场，不同时动才不会读成复制粘贴"}]
+      },
+      "content_expect": "讲清事后拦截与事前约束的区别",
+      "effect_expect": "理解两者的成本差异，倾向事前约束",
+      "visual": "两块并排面板，各自有等宽小标签与两行说明，错拍浮入",
+      "motion": "FLOATS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 5, "from": 5, "to": 5, "role": "验证 steps", "type": "A",
+      "narration": "第四类是步骤，高亮会逐拍往下推进。",
+      "screen": {
+        "title": "steps · 逐拍推进",
+        "kicker": "单元 04 / 04",
+        "units": [{"type": "steps",
+          "items": ["素材采集：挑反复出现的观点", "框架建模：整理成一条推理链",
+                    "封装技能：一句话即可触发", "校验：不符合就不出片"],
+          "note": "跳变只占拍头，其余时间静置——要跳不要滑"}]
+      },
+      "content_expect": "展示一个四步流程，高亮按固定节拍向下推进",
+      "effect_expect": "跟上当前进行到第几步",
+      "visual": "四行步骤，左侧一根荧光绿标记条逐拍下移，当前行提亮",
+      "motion": "FLOATS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "FADES 到黑", "assets": []
+    }
+  ]
+}

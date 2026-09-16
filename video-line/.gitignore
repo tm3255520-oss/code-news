@@ -1,0 +1,3 @@
+# 渲染产物与配音（可由 build_card_video.py 重新生成，按仓库惯例不入库）
+renders/
+assets/

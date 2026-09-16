@@ -1,0 +1,166 @@
+{
+  "video": {
+    "title": "三个 AI，一条流水线",
+    "platform": "视频号",
+    "core_message": "值钱的不是提示词，是流程",
+    "density": "讲清楚型：每镜一个信息点，不堆名词",
+    "tone": "冷静直给，像同事在工位旁讲一个做法；不要惊呼、不要成功学",
+    "series": "AI 工作流",
+    "episode": "SERIES 003",
+    "breadcrumb": "自动流水线",
+    "style": "grid-dark",
+    "notes": "素材来源：vault 知识库/归档/outputs-legacy 的《我用3个AI搭了一条自动赚钱管道》。原文为第一人称个人经历，本稿已改写为「一种做法」的第三人称叙述，不主张任何个人战绩。"
+  },
+  "voice": "yunjian",
+  "lines": [
+    "很多人还在比较，哪个 AI 答得更准。",
+    "但真正拉开差距的，不是前台那个对话框，是后台有没有一条会自己跑的线。",
+    "这条线拆开，其实是三个 AI 在分工。",
+    "第一个负责采集，凌晨把素材扫进笔记库。",
+    "第二个负责改写，把素材按平台调性重写。",
+    "第三个负责发布，发完把数据写回日志。",
+    "三个角色串起来，人只在早上看报告。",
+    "所以值钱的不是提示词，是流程。你每天重复做的事，就是你该搭的那条线。"
+  ],
+  "beats": [
+    {"name": "钩子", "role": "指出大家比错了东西", "scene_from": 1, "scene_to": 1},
+    {"name": "转折", "role": "把注意力从前台拉到后台", "scene_from": 2, "scene_to": 2},
+    {"name": "方法", "role": "三个角色分工，各自的职责与时段", "scene_from": 3, "scene_to": 7},
+    {"name": "收束", "role": "给出结论与可执行动作", "scene_from": 8, "scene_to": 8}
+  ],
+  "scenes": [
+    {
+      "id": 1, "from": 1, "to": 1, "role": "钩子", "type": "A",
+      "narration": "很多人还在比较，哪个 AI 答得更准。",
+      "screen": {
+        "title": "还在比\n哪个 AI 答得准",
+        "kicker": "01 · 现状",
+        "units": [{"type": "list", "numbered": true, "drift": true,
+          "items": ["比谁答得更准", "比谁写得更像人", "比谁响应更快"],
+          "note": "这些比较都停在同一个地方：前台"}]
+      },
+      "content_expect": "让观众意识到自己也在用这几个标准选工具",
+      "effect_expect": "先认同再起疑，愿意听下去",
+      "visual": "标题两行左对齐，下方三行列表逐项找位落定",
+      "motion": "SLAMS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 2, "from": 2, "to": 2, "role": "转折", "type": "A",
+      "narration": "但真正拉开差距的，不是前台那个对话框，是后台有没有一条会自己跑的线。",
+      "screen": {
+        "title": "差距不在前台",
+        "kicker": "02 · 转折",
+        "blocks": [{"label": "关键", "text": "真正拉开差距的是后台"}],
+        "units": [{"type": "compare",
+          "items": [{"label": "前台", "text": "一个会聊天的对话框"},
+                    {"label": "后台", "text": "一条会自己跑的线"}],
+          "note": "前台看的是回答质量，后台看的是它能不能自己往前推"}]
+      },
+      "content_expect": "讲清前台与后台是两件不同的事，差距在后者",
+      "effect_expect": "把注意力从「换个更好的模型」转到「搭一条线」",
+      "visual": "标题左对齐，一个关键卡片，下方两格对照并排，错拍浮入",
+      "motion": "FLOATS 标题 → FLOATS 卡片",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 3, "from": 3, "to": 3, "role": "方法总述", "type": "A",
+      "narration": "这条线拆开，其实是三个 AI 在分工。",
+      "screen": {
+        "title": "三个 AI 分工",
+        "kicker": "03 · 方法",
+        "units": [{"type": "steps",
+          "items": ["采集：把素材扫进笔记库", "改写：按平台调性重写", "发布：发完把数据写回"],
+          "note": "高亮会按固定节拍，逐个往下走"}]
+      },
+      "content_expect": "给出整条线的三段式骨架，让后面三个镜头有位置可放",
+      "effect_expect": "记住这是三个角色而不是一个工具",
+      "visual": "标题左对齐，下方三行步骤，左侧标记条逐拍下移",
+      "motion": "TYPES 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 4, "from": 4, "to": 4, "role": "角色一：采集", "type": "A",
+      "narration": "第一个负责采集，凌晨把素材扫进笔记库。",
+      "screen": {
+        "title": "采集员",
+        "kicker": "04 · 深夜干活",
+        "units": [{"type": "stat",
+          "items": [{"label": "触发", "value": "凌晨3点"}, {"label": "覆盖", "value": "3个平台"},
+                    {"label": "人工介入", "value": "0次"}],
+          "note": "数值从零爬到目标，刻度带在下方滑入"}]
+      },
+      "content_expect": "说明这一步是定时自动执行、不需要人刷手机攒素材",
+      "effect_expect": "意识到素材积累可以不再靠人手动收集",
+      "visual": "标题左对齐，三个大数字并排错峰爬升，下方细刻度带",
+      "motion": "FLOATS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 5, "from": 5, "to": 5, "role": "角色二：改写", "type": "A",
+      "narration": "第二个负责改写，把素材按平台调性重写。",
+      "screen": {
+        "title": "改写员",
+        "kicker": "05 · 分清平台",
+        "units": [{"type": "list", "numbered": true, "drift": true,
+          "items": ["不抄原文，只提炼核心观点", "换成口语表达", "加一个能站住的标题"],
+          "note": "同一份素材，投不同平台要换一套说法"}]
+      },
+      "content_expect": "讲清改写不是洗稿，是按平台调性做结构与语气的转换",
+      "effect_expect": "理解为什么一份素材要产出多个版本",
+      "visual": "标题从左侧滑入，下方三行列表逐项落位",
+      "motion": "SLIDES 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 6, "from": 6, "to": 6, "role": "角色三：发布", "type": "A",
+      "narration": "第三个负责发布，发完把数据写回日志。",
+      "screen": {
+        "title": "发布员",
+        "kicker": "06 · 早上开工",
+        "units": [{"type": "steps",
+          "items": ["打开后台并登录", "粘贴内容与配图", "发布后回写数据"],
+          "note": "发完不是结束，数据回写才让下一天有依据"}]
+      },
+      "content_expect": "把发布拆成三步，并强调数据回写是闭环的一部分",
+      "effect_expect": "发现闭环的最后一环是数据，不是发布",
+      "visual": "标题左对齐，三行步骤，标记条逐拍下移",
+      "motion": "FLOATS 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 7, "from": 7, "to": 7, "role": "串起来", "type": "A",
+      "narration": "三个角色串起来，人只在早上看报告。",
+      "screen": {
+        "title": "人退到早上",
+        "kicker": "07 · 串起来",
+        "units": [{"type": "stat",
+          "items": [{"label": "自动环节", "value": "3段"}, {"label": "人的环节", "value": "1个"},
+                    {"label": "值守时长", "value": "24h"}],
+          "note": "人不是被替代，是从执行退到看结果"}]
+      },
+      "content_expect": "说明人的位置从执行者变成看报告的人",
+      "effect_expect": "理解自动化不是没人，是人的位置往后移",
+      "visual": "标题左对齐，两个大数字爬升，说明行在下方",
+      "motion": "RISES 标题",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "硬切", "assets": []
+    },
+    {
+      "id": 8, "from": 8, "to": 8, "role": "收束", "type": "A",
+      "narration": "所以值钱的不是提示词，是流程。你每天重复做的事，就是你该搭的那条线。",
+      "screen": {
+        "title": "值钱的不是提示词\n是流程",
+        "kicker": "08 · 结论",
+        "blocks": [{"label": "一句话", "text": "提示词让你爽一次，流程让你省一个月"}],
+        "units": [{"type": "compare",
+          "items": [{"label": "提示词", "text": "用完就过期\n换个人就失效"},
+                    {"label": "流程", "text": "描述一次\n之后自己跑"}]}]
+      },
+      "content_expect": "给出可带走的结论：该投资的是流程不是提示词",
+      "effect_expect": "开始回想自己每天重复做了什么",
+      "visual": "标题两行最大字号收束，一句话卡片，下方两格对照",
+      "motion": "DRAWS 标题 → FLOATS 卡片",
+      "sfx": "无", "transition_in": "硬切", "transition_out": "FADES 到黑", "assets": []
+    }
+  ]
+}
