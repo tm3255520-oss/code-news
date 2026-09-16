@@ -27,6 +27,101 @@
       "fallbacks": [],
       "purpose": "爆款视频拆解：B站候选池采集→证据提取→拆解报告→是否值得复刻"
     },
+    "video_fetch_browser": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/fetch_video_with_browser.py",
+      "fallbacks": [],
+      "purpose": "需登录态平台的视频获取（抖音等）。从浏览器进程读明文 cookie，绕开 Chrome/Edge v20 App-Bound 加密导致的 yt-dlp DPAPI 失败"
+    },
+    "production_analyzer": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "video-production-analysis",
+      "fallbacks": [
+        "viral-video-breakdown"
+      ],
+      "purpose": "视频制作工艺反推：技术指纹/镜头节奏/声画耦合/配音类型/配色/溯源六组证据 → 制作工具与制作顺序结论，用于对标改良自有视频产线"
+    },
+    "storyboard_skill": {
+      "mode": "manual_skill",
+      "status": "active",
+      "primary": "knowledge-video-storyboard",
+      "fallbacks": [],
+      "purpose": "口播稿→分镜表：每镜的叙事角色/屏显文案/信息载荷/动效要点/转场。产出 storyboard.json，经 scripts/storyboard_to_cards.py 强校验并适配后进入卡片产线；分镜方法论借鉴 video-spec-builder(MIT)"
+    },
+    "storyboard_adapter": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/storyboard_to_cards.py",
+      "fallbacks": [],
+      "purpose": "分镜表 storyboard.json → 产线输入 script.json；转换前做强校验（旁白逐字对齐口播稿、行号连续全覆盖、节拍无缝隙、禁空话、动效只许动词），不过则不出片"
+    },
+    "video_renderer": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/build_card_deck.py",
+      "fallbacks": [],
+      "project": "video-line",
+      "purpose": "知识卡片视频模板生成器：把 cards.json 渲染成 HyperFrames 合成 index.html（1440×1080 暗色卡片模板、封闭动效词表 9 动词×5 目标、四类信息单元 list/stat/compare/steps）。index.html 是产物，改版面只能改本生成器并重渲验证"
+    },
+    "video_orchestrator": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/build_card_video.py",
+      "fallbacks": [],
+      "project": "video-line",
+      "purpose": "知识卡片视频编排层（一条命令出成片）：配音先行 edge-tts → 按实测时长分组卡片与字幕 → 生成合成 → hyperframes render → 质量门 check；--preview N 只渲前 N 秒样片作确认点。资产指纹与边界见 skills/knowledge-video-storyboard/references/视频生成环节-冻结资产.md"
+    },
+    "untrusted_guard": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/untrusted.py",
+      "fallbacks": [],
+      "purpose": "外部内容守门：把「数据」与「指令」分开。扫描平台元数据（标题/简介是用户生成内容）、ASR 转写稿、抓取素材里的提示注入特征（中英双语 15 类模式），命中即标注且一律不执行。已接进取视频与制作分析两个入口"
+    },
+    "motion_check": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/motion_check.py",
+      "fallbacks": [],
+      "purpose": "动效密度校验：内容区静止帧占比与最长静止。默认 --style card = 只报告不拦截（实测卡片形态静止是正常的：对标 C 静止率 98.7%、对标 D 99.2%）；--style mg 才按 40%/1.0s 判据拦截，供未来 MG 讲解线使用"
+    },
+    "storyboard_split": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/storyboard_split.py",
+      "fallbacks": [],
+      "purpose": "把分镜按节拍切成 N 个构建组供多 Agent 并行撰写（节拍优先不拆散），并生成所有权契约 CONTRACT.md。切的是撰写不是渲染——HyperFrames render 自带 --workers auto 并行"
+    },
+    "storyboard_merge": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/storyboard_merge.py",
+      "fallbacks": [],
+      "purpose": "合并组分镜并强校验合并不变量（scene id 连续无重无缺 / 行号连续覆盖 / beats 无缝隙覆盖 / 各组 lines 与 beats 一致）。不过则不写文件"
+    },
+    "material_index": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/material_index.py",
+      "fallbacks": [],
+      "purpose": "素材总览（选题池数据层，零 LLM 成本）：扫 raw/articles + raw/videos，按体积/是否带核心要点/能否溯源排出可挑选题的清单。取材指向 = raw/，不是已退役的 知识库/归档/"
+    },
+    "backfill_summary_links": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/backfill_summary_links.py",
+      "fallbacks": [],
+      "purpose": "回填摘要缺失的原文链接（默认 dry-run，--apply 才写且自动备份）。根因：wiki_ingest.py 只读 url: 字段，而 raw/articles 有 111 篇用 source:，已在该脚本加兜底"
+    },
+    "material_collect_keyword": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/toutiao_keyword_collect.py",
+      "fallbacks": [],
+      "purpose": "素材主动采集（头条，已打通）：按 material_sources.json 的关键词 + 对标账号搜索头条，规则闸门打分后取 Top5 写入 raw/articles/toutiao/，全量候选写 内容生产/情报与选题/素材候选/toutiao/。无登录 / 无浏览器 / 零 LLM；cron 每日 04:35（d4496eb47a73）。其他平台逐个接入，公众号与视频号排最后"
+    },
     "writer_skill": {
       "mode": "manual_skill",
       "status": "active",
@@ -123,7 +218,7 @@
       "status": "active",
       "primary": "toolkit:transcribe_video",
       "fallbacks": [
-        "scripts/video_collect.py"
+        "C:/Users/Administrator/.hermes/scripts/video_collect.py"
       ],
       "purpose": "视频转录为 Obsidian 笔记（6 平台自动检测）"
     },
@@ -138,11 +233,25 @@
     },
     "video_publisher": {
       "mode": "external_mcp",
-      "status": "planned",
+      "status": "active",
       "primary": "matrixmedia",
       "fallbacks": [],
       "formalPublishEnabled": false,
-      "purpose": "8平台视频矩阵分发（MatrixMedia 矩媒，占位，正式发布默认关闭）"
+      "purpose": "8平台视频矩阵分发（MatrixMedia 矩媒 HTTP API，30088 已通，抖音定时发布实测 success；正式发布默认关闭）"
+    },
+    "mcp__qwen__qwen3_8_max": {
+      "model": "qwen-max-3.8",
+      "provider": "ali-baichuan",
+      "endpoint": "https://dashscope.aliyuncs.com/v1/services/aigc/text-generation/generation",
+      "max_tokens": 32768,
+      "purpose": "Qwen 3.8 Max 模型 (阿里百炼)"
+    },
+    "mcp__deepseek__deepseek_flash": {
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "endpoint": "https://api.deepseek.com/v1/chat/completions",
+      "max_tokens": 128000,
+      "purpose": "DeepSeek-V4.1-Flash 模型（2026-09-10 发布，1M 上下文）"
     }
   }
 }
