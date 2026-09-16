@@ -1,7 +1,11 @@
 .tmp/
 node_modules/
 
-.agents/
+# 自研技能默认可被忽略，只放行已入库（git 管理）的技能目录
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/video-production-analysis/
 
 __pycache__/
 *.py[cod]
