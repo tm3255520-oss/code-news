@@ -36,6 +36,17 @@ TARGET_NAMES = set(build_card_deck.TARGET_SEL)
 STYLE_NAMES = set(build_card_deck.STYLES)
 UNIT_NAMES = set(build_card_deck.UNITS)
 
+# 动效目标 → 该镜必须存在的画面元素。
+# 渲染器只会去这些选择器里找目标，缺了不会报错，只会静默失效
+# （历史事故：单元类卡片写「FLOATS 卡片」→ 找 .blocks .block 找不到 → GSAP 警告）。
+TARGET_NEEDS = {
+    "标题": ("title", "screen.title"),
+    "副标题": ("subtitle", "screen.subtitle"),
+    "标签": ("kicker", "screen.kicker"),
+    "卡片": ("blocks", "screen.blocks"),
+    "大字": ("big", "screen.big"),
+}
+
 # 空话黑名单：content_expect / effect_expect 里出现即判不合格
 EMPTY_WORDS = ("好看", "高级", "大气", "有质感", "讲一下", "介绍一下背景",
                "铺垫一下", "过渡一下", "简单说说", "随便聊聊", "科技感")
@@ -179,6 +190,11 @@ def check(sb: dict) -> tuple[list[str], list[str]]:
                 if tg and tg not in TARGET_NAMES:
                     fail(errs, f"Scene {n} 用了未登记的目标「{tg}」"
                                f"（可用：{'/'.join(sorted(TARGET_NAMES))}）")
+                elif tg in TARGET_NEEDS:
+                    field, path = TARGET_NEEDS[tg]
+                    if not screen.get(field):
+                        fail(errs, f"Scene {n} 的 motion 要动「{tg}」，但这一镜没有 {path}"
+                                   f"（渲染器找不到目标会静默失效；请补内容，或改用本镜已有的目标）")
         t_in = (sc.get("transition_in") or "").strip()
         t_out = (sc.get("transition_out") or "").strip()
         for lbl, tv in (("transition_in", t_in), ("transition_out", t_out)):
