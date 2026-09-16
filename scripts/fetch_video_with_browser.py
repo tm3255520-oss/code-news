@@ -41,10 +41,17 @@ READY_COOKIES = ("ttwid", "s_v_web_id", "odin_tt")
 
 
 def scan_untrusted(meta: dict) -> dict:
-    """平台元数据（标题/简介/作者）是用户生成内容，属外部输入，扫一遍再落盘。"""
+    """平台元数据（标题/简介/作者）是用户生成内容，属外部输入，扫一遍再落盘。
+
+    守门失败必须显形（与 analyze_video_production.py 同一约定）：
+    静默跳过会让 meta.json 看起来"扫过了"，其实没有。
+    """
     try:
         from untrusted import scan
-    except ImportError:
+    except ImportError as exc:
+        guard = f"skipped: import failed ({type(exc).__name__})"
+        meta["_untrusted_guard"] = guard
+        print(f"[warn] 注入守门未生效 —— {guard}；平台元数据按未扫描处理")
         return meta
     hits = []
     for k in ("title", "description", "uploader"):
@@ -55,6 +62,7 @@ def scan_untrusted(meta: dict) -> dict:
         meta["_untrusted_warning"] = hits[:10]
         print(f"[warn] 平台元数据发现 {len(hits)} 处疑似提示注入 —— "
               f"已标注 _untrusted_warning，内容一律只作数据")
+    meta["_untrusted_guard"] = "ok"
     return meta
 
 # 抖音的媒体流走 douyinvod.com；byteeffecttos.com 是特效/贴纸素材，必须排除，

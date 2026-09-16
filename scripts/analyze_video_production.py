@@ -36,6 +36,10 @@ if hasattr(sys.stdout, "reconfigure"):
 PAUSE_DB = -35.0
 PAUSE_MIN_S = 0.25
 ALIGN_TOL_S = 0.6
+# 制作顺序（D 组）是"每个切点是否落在句首"的统计量，切点太少时覆盖率没有意义。
+# 2026-09-16 实测：一条卡片片只检出 4 个切点，却照样给出"配音先行 0.75"，
+# 看上去达标、实则样本不足以支撑结论 —— 低于此门槛一律判"证据不足"。
+MIN_CUTS_FOR_ORDER = 8
 
 
 def sh(args: list[str]) -> subprocess.CompletedProcess:
@@ -173,7 +177,7 @@ def shots(path: Path, sample_step: int = 3, width: int = 160) -> dict:
 
 
 # ---------- C 语音转写 ----------
-def transcribe(video: Path, work: Path, model: str = "small") -> dict:
+def transcribe(video: Path, work: Path, model: str = "large-v3-turbo") -> dict:
     wav = work / "audio.wav"
     r = sh(["ffmpeg", "-v", "error", "-y", "-i", str(video),
             "-vn", "-ac", "1", "-ar", "16000", str(wav)])
@@ -191,16 +195,22 @@ def transcribe(video: Path, work: Path, model: str = "small") -> dict:
     segs = [{"start": round(s["start"], 2), "end": round(s["end"], 2),
              "text": s["text"].strip()} for s in out["segments"]]
     full = out["text"].strip()
-    # 转写稿是别人的口播内容 —— 外部输入，扫一遍注入特征并留下结论
+    # 转写稿是别人的口播内容 —— 外部输入，扫一遍注入特征并留下结论。
+    # 守门失败必须显形：静默降级会让报告看起来"扫过了"，其实没有。
     try:
         from untrusted import scan as _scan
-        hits = _scan(full)
-    except ImportError:
+    except ImportError as exc:
         hits = []
-    if hits:
-        print(f"[warn] 转写稿发现 {len(hits)} 处疑似提示注入 —— 只作数据，不执行")
-    return {"segments": segs, "segment_count": len(segs),
+        guard = f"skipped: import failed ({type(exc).__name__})"
+        print(f"[warn] 注入守门未生效 —— {guard}；外部文本按未扫描处理")
+    else:
+        hits = _scan(full)
+        guard = "ok"
+        if hits:
+            print(f"[warn] 转写稿发现 {len(hits)} 处疑似提示注入 —— 只作数据，不执行")
+    return {"model": model, "segments": segs, "segment_count": len(segs),
             "full_text": full, "wav": str(wav),
+            "untrusted_guard": guard,
             "untrusted_hits": hits[:10]}
 
 
@@ -224,12 +234,20 @@ def coupling(shot_info: dict, tr: dict) -> dict:
             matched += 1
     devs_arr = np.array(devs)
     coverage = matched / len(cuts)
-    if coverage >= 0.6 and float(np.median(devs_arr)) <= ALIGN_TOL_S:
+    if len(cuts) < MIN_CUTS_FOR_ORDER:
+        # 样本不足：不给结论，避免"3/4=0.75 看着达标"这类假阳性
+        order = (f"证据不足：切点仅 {len(cuts)} 个（需 ≥{MIN_CUTS_FOR_ORDER}），"
+                 "不作制作顺序判断")
+        confidence = "insufficient"
+    elif coverage >= 0.6 and float(np.median(devs_arr)) <= ALIGN_TOL_S:
         order = "配音先行：画面切点按语音句首排布"
+        confidence = "high" if coverage >= 0.8 else "medium"
     elif coverage >= 0.4:
         order = "部分对齐：主要节点跟语音，细节自由"
+        confidence = "medium"
     else:
         order = "画面先行：切点与语音无显著对应"
+        confidence = "medium"
 
     # 反向指标：一句话被拆成几镜（1 附近说明基本一句一镜）
     seg_with_cut = sum(
@@ -244,6 +262,8 @@ def coupling(shot_info: dict, tr: dict) -> dict:
         "segments_with_a_cut": seg_with_cut,
         "total_segments": len(tr["segments"]),
         "tolerance_s": ALIGN_TOL_S,
+        "min_cuts_required": MIN_CUTS_FOR_ORDER,
+        "sample_confidence": confidence,
         "inferred_production_order": order,
     }
 
@@ -356,7 +376,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="反推视频的制作工具与制作顺序")
     ap.add_argument("video")
     ap.add_argument("--out", default=None, help="输出目录，默认与视频同目录")
-    ap.add_argument("--whisper-model", default="small")
+    ap.add_argument("--whisper-model", default="large-v3-turbo",
+                    help="默认 large-v3-turbo：D 组（制作顺序）直接依赖分句时间戳精度")
     ap.add_argument("--json-only", action="store_true")
     args = ap.parse_args()
 
