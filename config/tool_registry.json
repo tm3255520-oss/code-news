@@ -55,6 +55,13 @@
       "fallbacks": [],
       "purpose": "Windows 自带 OCR（Windows.Media.Ocr / WinRT）取词与像素坐标，零安装零依赖；需 Language.OCR~~~zh-CN 语言包，必须用 Windows PowerShell 5.1 执行（PS7 不支持 WinRT 投影），脚本为纯 ASCII（PS5.1 按 GBK 解码）。被 video-production-analysis 的 F2 组调用"
     },
+    "proxy_health_check": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/proxy_health_check.py",
+      "fallbacks": [],
+      "purpose": "出网体检：对每个目标分别测直连与走环境代理，区分「目标挂了」与「代理挂了」。2026-09-17 实战教训：本机代理上游故障时 redfox 在 TLS 层被 RST，表面像 redfox 挂了；取视频链路排障第一步"
+    },
     "tool_inventory": {
       "mode": "local_script",
       "status": "active",
@@ -113,7 +120,15 @@
       "status": "active",
       "primary": "scripts/motion_check.py",
       "fallbacks": [],
-      "purpose": "动效密度校验：内容区静止帧占比与最长静止。默认 --style card = 只报告不拦截（实测卡片形态静止是正常的：对标 C 静止率 98.7%、对标 D 99.2%）；--style mg 才按 40%/1.0s 判据拦截，供未来 MG 讲解线使用"
+      "purpose": "动效密度校验：内容区静止帧占比与最长静止。内容区按画幅取（横屏/竖屏各一套，取自 build_card_deck 的几何定义），分辨率不在表内拒绝出结论。默认 --style card = 只报告不拦截；--style mg 才按 40%/1.0s 判据拦截。注意：2026-09-16 修正了采样实现（旧实现只采到原图左上角窄带），修前标定全部作废，卡片形态是否该豁免需重新评估"
+    },
+    "card_quality_check": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/card_quality_check.py",
+      "fallbacks": [],
+      "project": "video-line",
+      "purpose": "卡片视频质量自检（产线质量层）：吃产物目录（deck.json，兼容旧名 cards.json）+ 可选 final.mp4/script.json，出「质量自检卡」。本地自算四维（Hook/信息密度/节奏控制/转化引导）+ 画幅适配（声明 vs 实际 vs 目标平台，硬判据），产品展示/情绪曲线标 external_pending 不假装能算。门槛分「实测锚点/建议区间/待标定」三档，默认追加一条进 video-line/quality/history.jsonl（--no-record 关闭）。它自己是改动验收的判据，故自带回归门 tests/scripts/test_card_quality_check.py；口径与对照记录见 video-line/quality/README.md"
     },
     "storyboard_split": {
       "mode": "local_script",
@@ -149,6 +164,52 @@
       "primary": "C:/Users/Administrator/.hermes/scripts/toutiao_keyword_collect.py",
       "fallbacks": [],
       "purpose": "素材主动采集（头条，已打通）：按 material_sources.json 的关键词 + 对标账号搜索头条，规则闸门打分后取 Top5 写入 raw/articles/toutiao/，全量候选写 内容生产/情报与选题/素材候选/toutiao/。无登录 / 无浏览器 / 零 LLM；cron 每日 04:35（d4496eb47a73）。其他平台逐个接入，公众号与视频号排最后"
+    },
+    "video_transcript": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/video_transcript_redfox.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/video_collect.py"
+      ],
+      "purpose": "给一个视频链接就出文案（视频号/抖音/小红书/B站）：经 RedFoxHub 中转，不需要登录态、不需要浏览器、不需要本地 Whisper；返回纯文本 + 逐句时间轴。提交 0.6 积分/次，轮询免费。硬约束：视频时长上限 10 分钟。失败不扣积分。用法 python video_transcript_redfox.py \"<链接>\""
+    },
+    "material_collect_wechat": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/wechat_redfox_collect.py",
+      "fallbacks": [],
+      "purpose": "素材主动采集（公众号，已打通，解决公众号只能人工收藏的问题）：RedFox 三路取料 —— 榜单(10W+/原创爆款，自带正文) + 对标账号最新文章 + 关键词搜索；AI 相关性过滤 + 两段闸门（先按互动筛、只对过线者取正文再二次打分）；Top5 含正文写入 raw/articles/wechat/。cron 每日 04:40（60612f3342b7），单次约 40 次调用"
+    },
+    "material_collect_douyin": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/douyin_redfox_collect.py",
+      "fallbacks": [],
+      "purpose": "素材主动采集（抖音，已打通）：关键词搜索作品（带赞/藏/评/转 + 作者粉丝数）-> 规则闸门 -> 对过线者提文案 -> raw/videos/douyin/。抖音搜索返回 workUrl(iesdouyin 分享链接)，提文案接口认它，实测端到端可跑通。cron 每日 04:50（9ddca43f41c3），含 5 条转录约 6 分钟"
+    },
+    "material_discover_shipinhao": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/shipinhao_redfox_collect.py",
+      "fallbacks": [],
+      "purpose": "视频号素材【发现层】：关键词搜索作品（带赞/藏/转发/评论）-> 闸门排序 -> 候选区清单。注意：视频号搜索结果不带可用分享链接，无法自动提文案（实测构造链接后端下载失败），要文案需人工拿分享链接走 video_transcript。cron 每日 04:45（b5f4d5b9e926）"
+    },
+    "redfox_account_finder": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/Documents/agent-work/素材入口-信号源筛选-20260916/benchmark_account_finder.py",
+      "fallbacks": [],
+      "purpose": "对标账号发现：用 RedFox 各平台账号搜索找 AI 领域高粉博主（抖音/小红书/公众号/B站/视频号）。关键：不能用平台「最热排序」——实测会破坏关键词相关性；要按相关性拉大样本再本地 AI 过滤 + 按粉丝数排序。带当日缓存，重跑不重复花积分。产出 内容生产/情报与选题/素材候选/_对标账号发现-<日期>.md"
+    },
+    "videos_ingest": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/wiki_ingest_videos_cron.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/wiki_ingest.py --source-root raw/videos"
+      ],
+      "purpose": "视频素材加工（补断点）：wiki_ingest.py 默认只扫 raw/articles，raw/videos（抖音/视频号/B站转录）此前没有任何定时加工任务，素材进去就出不来。现独立挂在 05:15（08729679c6af），排在文章线 05:00 之后、选题池 05:30 之前。实测口语转录可直接加工成摘要，无需额外 LLM 校稿"
     },
     "writer_skill": {
       "mode": "manual_skill",

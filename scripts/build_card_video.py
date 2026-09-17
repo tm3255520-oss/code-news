@@ -262,7 +262,12 @@ def normalize_pauses(voice_dir: Path, gap: float, compress: bool = False) -> dic
     """
     seg_dir = voice_dir / "_segments"
     segs = sorted(seg_dir.glob("seg_*.mp3"))
+    mp3_path = voice_dir / "voice_segmented.mp3"
     if len(segs) < 2:
+        # 单段/复用已有配音（如 --skip-tts，没有 _segments/）走这里。
+        # ⚠️ 2026-09-17 实测踩到：原来的 `return` 写在 loudnorm 之前，
+        # 于是**复用配音时母带归一被静默跳过**。母带处理必须两条路径都执行。
+        _finalize_loudness(mp3_path, compress)
         return json.loads((voice_dir / "voice_timeline.json").read_text(encoding="utf-8"))
 
     durs = [media_duration(p) for p in segs]
@@ -361,14 +366,7 @@ def normalize_pauses(voice_dir: Path, gap: float, compress: bool = False) -> dic
         out = [f"{i}\n{fmt(r[0])} --> {fmt(r[1])}\n{r[2]}" for i, r in enumerate(rows, 1)]
         srt.write_text("\n\n".join(out) + "\n", encoding="utf-8")
 
-    # 母带响度：在音轨定稿处做（此后音轨不再改动）——两遍式 loudnorm 到 −14 LUFS / TP −1.5
-    ln = apply_loudnorm(mp3, compress=compress)
-    if ln.get("failed"):
-        print(f"      [warn] 响度归一失败（{ln.get('error')}），音轨保持原样")
-    else:
-        print(f"      响度: {ln['before_lufs']:.2f} → {ln['after_lufs']:.2f} LUFS | "
-              f"TP {ln['before_tp']:.2f} → {ln['after_tp']:.2f} dBTP "
-              f"({'合规' if ln['ok'] else '仍越界'})")
+    _finalize_loudness(mp3, compress)          # 母带响度：音轨定稿处做
     return tl
 
 
@@ -392,6 +390,24 @@ def measure_loudness(path: Path) -> dict:
              "-af", "loudnorm=print_format=json", "-f", "null", "-"])
     m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", r.stderr or "")
     return json.loads(m.group(0)) if m else {}
+
+
+def _finalize_loudness(mp3: Path, compress: bool = False) -> None:
+    """音轨定稿处的母带归一（两条路径都会调到：正常重建 / 复用已有配音）。
+
+    为什么单独抽成函数：原来直接写在 normalize_pauses 尾部，而函数开头有
+    「分段文件不足则 return」的早退 → 复用配音时静默跳过归一（2026-09-17 实测）。
+    """
+    if not mp3.exists():
+        print(f"      [warn] 找不到音轨 {mp3}，跳过响度归一")
+        return
+    ln = apply_loudnorm(mp3, compress=compress)
+    if ln.get("failed"):
+        print(f"      [warn] 响度归一失败（{ln.get('error')}），音轨保持原样")
+    else:
+        print(f"      响度: {ln['before_lufs']:.2f} → {ln['after_lufs']:.2f} LUFS | "
+              f"TP {ln['before_tp']:.2f} → {ln['after_tp']:.2f} dBTP "
+              f"({'合规' if ln['ok'] else '仍越界'})")
 
 
 def apply_loudnorm(path: Path, target: dict = None, compress: bool = False) -> dict:

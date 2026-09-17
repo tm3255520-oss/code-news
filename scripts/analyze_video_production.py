@@ -710,7 +710,10 @@ def layout_and_type(video: Path, work: Path, every_s: float = 2.5,
 
 
 # ---------- G 溯源 ----------
-MARKERS = [b"c2pa", b"C2PA", b"uuid", b"xmp", b"Lavf", b"isom", b"hvc1", b"avc1"]
+# 注意 xmp 这一项：2026-09-17 实测在一条元数据已被平台洗干净的抖音视频里扫出 "xmp"，
+# 一查是**压缩数据里的随机字节**（假阳性）。改用真正的 XMP 包起始标记 `xmpmeta`，
+# 它出现在真实 XMP 里（<?xpacket … <x:xmpmeta），随机字节撞上的概率极低。
+MARKERS = [b"c2pa", b"C2PA", b"uuid", b"xmpmeta", b"Lavf", b"isom", b"hvc1", b"avc1"]
 
 
 def provenance(path: Path) -> dict:
@@ -727,7 +730,7 @@ def provenance(path: Path) -> dict:
     return {
         "boxes_found": found,
         "has_c2pa": any(m in blob for m in (b"c2pa", b"C2PA")),
-        "has_xmp": b"xmp" in blob,
+        "has_xmp": b"xmpmeta" in blob,
         "note": ("未发现 C2PA/XMP 溯源信息；平台交付件通常已被转码洗掉原元数据，"
                  "不能据此反推创作者工具"),
         "scan_bytes": len(blob),
