@@ -34,6 +34,13 @@
       "fallbacks": [],
       "purpose": "需登录态平台的视频获取（抖音等）。从浏览器进程读明文 cookie，绕开 Chrome/Edge v20 App-Bound 加密导致的 yt-dlp DPAPI 失败"
     },
+    "tool_inventory": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/tool_inventory.py",
+      "fallbacks": [],
+      "purpose": "开发前的能力盘点（协作原则 4 的落地工具）：给关键词扫注册表/仓库脚本与技能/社区 hub/Hermes/toolkit 五类来源，列出已有实现候选，把「先扫描再开发」变成一条命令"
+    },
     "production_analyzer": {
       "mode": "manual_skill",
       "status": "active",
@@ -121,29 +128,6 @@
       "primary": "C:/Users/Administrator/.hermes/scripts/toutiao_keyword_collect.py",
       "fallbacks": [],
       "purpose": "素材主动采集（头条，已打通）：按 material_sources.json 的关键词 + 对标账号搜索头条，规则闸门打分后取 Top5 写入 raw/articles/toutiao/，全量候选写 内容生产/情报与选题/素材候选/toutiao/。无登录 / 无浏览器 / 零 LLM；cron 每日 04:35（d4496eb47a73）。其他平台逐个接入，公众号与视频号排最后"
-    },
-    "video_fetch_browser": {
-      "mode": "local_script",
-      "status": "active",
-      "primary": "scripts/fetch_video_with_browser.py",
-      "fallbacks": [],
-      "purpose": "需登录态平台的视频获取（抖音等）。从浏览器进程读明文 cookie，绕开 Chrome/Edge v20 App-Bound 加密导致的 yt-dlp DPAPI 失败"
-    },
-    "production_analyzer": {
-      "mode": "manual_skill",
-      "status": "active",
-      "primary": "video-production-analysis",
-      "fallbacks": [
-        "viral-video-breakdown"
-      ],
-      "purpose": "视频制作工艺反推：技术指纹/镜头节奏/声画耦合/配音类型/配色/溯源六组证据 → 制作工具与制作顺序结论，用于对标改良自有视频产线"
-    },
-    "untrusted_guard": {
-      "mode": "local_script",
-      "status": "active",
-      "primary": "scripts/untrusted.py",
-      "fallbacks": [],
-      "purpose": "外部内容守门：把「数据」与「指令」分开。扫描平台元数据（标题/简介是用户生成内容）、ASR 转写稿、抓取素材里的提示注入特征（中英双语 15 类模式），命中即标注且一律不执行。已接进取视频与制作分析两个入口"
     },
     "writer_skill": {
       "mode": "manual_skill",

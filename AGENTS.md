@@ -17,7 +17,10 @@
 
 ## 启动须知
 
-1. 能力路由先查 `config/tool_registry.json`（接口 → primary → fallback）。
+1. 能力路由先查 `config/tool_registry.json`（接口 → primary → fallback）。**新建能力 / 新建脚本 /
+   新接平台前，先跑 `python scripts/tool_inventory.py <关键词>` 盘点已有实现，按
+   「直接调用 / 扩展合并 / 新建」三选一处置，并在提交信息里写明盘点结论**（复用守则 · 协作原则 4，
+   规则全文：vault `系统中枢/规则与权限/智能体共享/06-复用守则.md`）。
 2. 内容生产类任务入口：registry 的 monitor/analyzer/writer/humanizer/illustration/cover 等接口。
 3. 正式发布能力默认关闭（publisher/xhs 为占位），绝不自动公开发布。
 4. 开发前必读 vault `wiki/workflows/` 与 `wiki/postmortems/`（含铁律：确定性流程禁用 LLM）。

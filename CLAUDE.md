@@ -7,5 +7,8 @@
 - 本仓库是**管线/生产代码库**；日常调研/实验/草稿到 `C:\Users\Administrator\Documents\agent-work`（通用工作区，入口见其 AGENTS.md）。
 - 工作区分层（四层）：知识 → `D:\Obsidian Vault\obsidian Vault`（读写白名单见 vault 根 AGENTS.md 与 `智能体共享/01-总则与工作区划分.md`）；生产代码 → 本仓库；通用工作区 → `agent-work`；配置/技能/密钥 → `C:\.claude`。
 - 内容生产类任务先查 `config/tool_registry.json`；正式发布能力默认关闭（publisher/xhs 为占位）。
+- **新建能力 / 新建脚本 / 新接平台前**先跑 `python scripts/tool_inventory.py <关键词>` 盘点已有实现，
+  按「直接调用 / 扩展合并 / 新建」三选一处置并在提交信息里写明结论（复用守则 · 协作原则 4，
+  规则全文：vault `系统中枢/规则与权限/智能体共享/06-复用守则.md`）。
 - 开发前必读 vault `wiki/workflows/` 与 `wiki/postmortems/`（铁律：确定性流程禁用 LLM）。
 - vault 不做 git；代码改动只在本仓库做 git。
