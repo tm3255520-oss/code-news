@@ -1,0 +1,37 @@
+# viral-video-breakdown 生产配置（每日定时采集用）
+# 注：无密钥，可入库；tessdata/whisper 路径随运行环境（沙箱见注释）
+
+paths:
+  ffmpeg: ffmpeg
+  tesseract: tesseract
+  tessdata_prefix: /tmp/tessdata        # 沙箱环境；宿主机改为系统 tessdata
+
+whisper:
+  model_name: base                      # 沙箱用 base；生产按 video-pipeline 铁律改 large-v3-turbo
+  model_dir: /tmp/whisper-base          # 沙箱本地模型；null=自动下载
+  device: cpu
+  compute_type: int8
+
+extraction:
+  frame_interval: 3
+  frame_width: 640
+  transcript_language: zh
+  ocr_max_frames: 80
+  user_agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
+
+bili:
+  keywords:
+    - "deepseek harness"
+    - "dsh 插件"
+    - "dsh-std"
+    - "DeepSeek Harness 插件"
+    - "deepseek harness 教程"
+  seed_author_mids: [12890453]          # 程序员鱼皮等 DSH 头部作者
+  top_authors_to_scan: 3                # 沙箱限时，少扫作者
+  search_pages: 1                       # 每关键词 1 页（够覆盖）
+  request_interval_s: 2.0               # 防 412 且能跑完
+  min_play: 2000
+  min_fav_rate: 0.02
+  max_authors: 30
+  max_candidates: 60
+  max_stat_candidates: 40               # 抓全指标上限（防超时）

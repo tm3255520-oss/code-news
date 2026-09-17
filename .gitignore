@@ -1,5 +1,6 @@
 .tmp/
 node_modules/
+.firecrawl/
 
 # 自研技能默认可被忽略，只放行已入库（git 管理）的技能目录
 .agents/*
@@ -7,6 +8,9 @@ node_modules/
 .agents/skills/*
 !.agents/skills/video-production-analysis/
 !.agents/skills/knowledge-video-storyboard/
+!.agents/skills/viral-video-breakdown/
+!.agents/skills/viral-video-replicate/
+!.agents/skills/vault-sync/
 
 __pycache__/
 *.py[cod]
