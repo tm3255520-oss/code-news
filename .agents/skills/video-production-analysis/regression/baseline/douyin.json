@@ -1,0 +1,638 @@
+{
+  "source": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\douyin\\video.mp4",
+  "A_technical": {
+    "duration_s": 60.7,
+    "total_bitrate_kbps": 299,
+    "container": "mov,mp4,m4a,3gp,3g2,mj2",
+    "tags": {},
+    "width": 1440,
+    "height": 1080,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "video_bitrate_kbps": 242,
+    "aspect": "horizontal",
+    "audio_codec": "aac",
+    "audio_sample_rate": "44100",
+    "audio_channels": 2,
+    "audio_bitrate_kbps": 51
+  },
+  "B_shots": {
+    "video_class": "静态卡片型",
+    "scene_metric": "联合判据 幅度≥1.5 且 变化面积≥0.02（宽口径=D组主口径）；严口径面积≥0.05",
+    "counts_by_criteria": {
+      "tight": 7,
+      "loose": 23
+    },
+    "scene_count_range": [
+      7,
+      23
+    ],
+    "cut_count": 23,
+    "cut_times": [
+      1.77,
+      1.9,
+      10.9,
+      12.43,
+      13.33,
+      22.6,
+      23.97,
+      24.83,
+      30.63,
+      31.73,
+      32.63,
+      34.13,
+      36.17,
+      38.63,
+      39.93,
+      40.8,
+      47.3,
+      47.53,
+      50.53,
+      53.67,
+      55.27,
+      57.13,
+      58.27
+    ],
+    "hard_cut_count": 6,
+    "fade_count": 17,
+    "event_detail": [
+      {
+        "t": 1.77,
+        "peak": 8.06,
+        "area_ratio": 0.083,
+        "width_frames": 3,
+        "kind": "淡变"
+      },
+      {
+        "t": 1.9,
+        "peak": 4.48,
+        "area_ratio": 0.044,
+        "width_frames": 5,
+        "kind": "淡变"
+      },
+      {
+        "t": 10.9,
+        "peak": 11.25,
+        "area_ratio": 0.075,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 12.43,
+        "peak": 3.44,
+        "area_ratio": 0.038,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 13.33,
+        "peak": 3.26,
+        "area_ratio": 0.031,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 22.6,
+        "peak": 8.36,
+        "area_ratio": 0.051,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 23.97,
+        "peak": 3.57,
+        "area_ratio": 0.041,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 24.83,
+        "peak": 2.74,
+        "area_ratio": 0.026,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 30.63,
+        "peak": 8.15,
+        "area_ratio": 0.064,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 31.73,
+        "peak": 3.42,
+        "area_ratio": 0.036,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 32.63,
+        "peak": 3.26,
+        "area_ratio": 0.028,
+        "width_frames": 3,
+        "kind": "淡变"
+      },
+      {
+        "t": 34.13,
+        "peak": 1.68,
+        "area_ratio": 0.026,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 36.17,
+        "peak": 1.78,
+        "area_ratio": 0.028,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 38.63,
+        "peak": 14.84,
+        "area_ratio": 0.081,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 39.93,
+        "peak": 2.96,
+        "area_ratio": 0.04,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 40.8,
+        "peak": 3.29,
+        "area_ratio": 0.023,
+        "width_frames": 5,
+        "kind": "淡变"
+      },
+      {
+        "t": 47.3,
+        "peak": 9.12,
+        "area_ratio": 0.078,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 47.53,
+        "peak": 1.94,
+        "area_ratio": 0.027,
+        "width_frames": 9,
+        "kind": "淡变"
+      },
+      {
+        "t": 50.53,
+        "peak": 2.65,
+        "area_ratio": 0.035,
+        "width_frames": 3,
+        "kind": "淡变"
+      },
+      {
+        "t": 53.67,
+        "peak": 3.25,
+        "area_ratio": 0.039,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 55.27,
+        "peak": 2.07,
+        "area_ratio": 0.021,
+        "width_frames": 3,
+        "kind": "淡变"
+      },
+      {
+        "t": 57.13,
+        "peak": 11.13,
+        "area_ratio": 0.061,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 58.27,
+        "peak": 2.89,
+        "area_ratio": 0.029,
+        "width_frames": 4,
+        "kind": "淡变"
+      }
+    ],
+    "card_count": 24,
+    "shot_durations": [
+      1.77,
+      0.13,
+      9.0,
+      1.53,
+      0.9,
+      9.27,
+      1.37,
+      0.86,
+      5.8,
+      1.1,
+      0.9,
+      1.5,
+      2.04,
+      2.46,
+      1.3,
+      0.87,
+      6.5,
+      0.23,
+      3.0,
+      3.14,
+      1.6,
+      1.86,
+      1.14,
+      2.43
+    ],
+    "shots": 24,
+    "mean_shot_s": 2.53,
+    "median_shot_s": 1.56,
+    "min_shot_s": 0.13,
+    "max_shot_s": 9.27,
+    "short_shots_lt2s": 15,
+    "static_shot_ratio": 0.971,
+    "mean_frame_diff": 0.318,
+    "threshold": 1.5
+  },
+  "form": {
+    "verdict": "图文动效/幻灯片（画面几乎静止）",
+    "bits_per_pixel_per_frame": 0.00519,
+    "basis": [
+      "每像素每帧码率 0.0052 极低",
+      "静止镜头占比 97%"
+    ]
+  },
+  "C_transcript": {
+    "model": "large-v3-turbo",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 1.68,
+        "text": "给Codex装上这四个技能"
+      },
+      {
+        "start": 1.68,
+        "end": 3.4,
+        "text": "我把做一条视频的时间"
+      },
+      {
+        "start": 3.4,
+        "end": 5.12,
+        "text": "从三个小时压缩到五分钟"
+      },
+      {
+        "start": 5.12,
+        "end": 7.02,
+        "text": "只要把选题和素材丢进去"
+      },
+      {
+        "start": 7.02,
+        "end": 9.14,
+        "text": "剩下的脚本 配音 画面和字幕"
+      },
+      {
+        "start": 9.14,
+        "end": 10.56,
+        "text": "都是他自己跑完的"
+      },
+      {
+        "start": 10.56,
+        "end": 12.22,
+        "text": "第一个 Hyperframes"
+      },
+      {
+        "start": 12.22,
+        "end": 13.2,
+        "text": "负责的是响"
+      },
+      {
+        "start": 13.2,
+        "end": 14.54,
+        "text": "只需要给他一个主题"
+      },
+      {
+        "start": 14.54,
+        "end": 17.46,
+        "text": "他会先把内容整理成脚本和分镜"
+      },
+      {
+        "start": 17.46,
+        "end": 19.64,
+        "text": "再把每一段拆成具体场景"
+      },
+      {
+        "start": 19.64,
+        "end": 22.38,
+        "text": "相当于是把整条视频的骨架给搭好"
+      },
+      {
+        "start": 22.38,
+        "end": 23.84,
+        "text": "第二个 Eleven Labs"
+      },
+      {
+        "start": 23.84,
+        "end": 24.7,
+        "text": "负责的是说"
+      },
+      {
+        "start": 24.7,
+        "end": 27.6,
+        "text": "他会把文案变成自然音色的人工智能配音"
+      },
+      {
+        "start": 27.6,
+        "end": 29.16,
+        "text": "声音 语速和停顿"
+      },
+      {
+        "start": 29.16,
+        "end": 30.34,
+        "text": "都能提前设置好"
+      },
+      {
+        "start": 30.34,
+        "end": 31.6,
+        "text": "第三个 Remotion"
+      },
+      {
+        "start": 31.6,
+        "end": 32.44,
+        "text": "负责的是动"
+      },
+      {
+        "start": 32.44,
+        "end": 34.04,
+        "text": "他会按照分镜用代码"
+      },
+      {
+        "start": 34.04,
+        "end": 36.86,
+        "text": "把文字 图片和素材组合成动态画面"
+      },
+      {
+        "start": 36.86,
+        "end": 38.4,
+        "text": "完成动画和视频渲染"
+      },
+      {
+        "start": 38.4,
+        "end": 39.78,
+        "text": "第四个 Captions"
+      },
+      {
+        "start": 39.78,
+        "end": 40.6,
+        "text": "负责的是字"
+      },
+      {
+        "start": 40.6,
+        "end": 42.1,
+        "text": "他会识别配音内容"
+      },
+      {
+        "start": 42.1,
+        "end": 44.28,
+        "text": "把每一句字幕准确对到时间轴"
+      },
+      {
+        "start": 44.28,
+        "end": 47.0,
+        "text": "再统一字体 大小 颜色和关键词高亮"
+      },
+      {
+        "start": 47.0,
+        "end": 48.68,
+        "text": "这四个技能各做一件事"
+      },
+      {
+        "start": 48.68,
+        "end": 50.38,
+        "text": "Codex负责把它们串起来"
+      },
+      {
+        "start": 50.38,
+        "end": 53.34,
+        "text": "以前我要在几个软件之间反复导出修改"
+      },
+      {
+        "start": 53.34,
+        "end": 55.26,
+        "text": "现在只要替换文案和素材"
+      },
+      {
+        "start": 55.26,
+        "end": 56.84,
+        "text": "就能批量生成视频"
+      },
+      {
+        "start": 56.84,
+        "end": 58.12,
+        "text": "想要这四个技能"
+      },
+      {
+        "start": 58.12,
+        "end": 59.26,
+        "text": "评论区留下我要"
+      },
+      {
+        "start": 59.26,
+        "end": 60.44,
+        "text": "直接就可以拿去用"
+      }
+    ],
+    "segment_count": 35,
+    "full_text": "给Codex装上这四个技能我把做一条视频的时间从三个小时压缩到五分钟只要把选题和素材丢进去剩下的脚本 配音 画面和字幕都是他自己跑完的第一个 Hyperframes负责的是响只需要给他一个主题他会先把内容整理成脚本和分镜再把每一段拆成具体场景相当于是把整条视频的骨架给搭好第二个 Eleven Labs负责的是说他会把文案变成自然音色的人工智能配音声音 语速和停顿都能提前设置好第三个 Remotion负责的是动他会按照分镜用代码把文字 图片和素材组合成动态画面完成动画和视频渲染第四个 Captions负责的是字他会识别配音内容把每一句字幕准确对到时间轴再统一字体 大小 颜色和关键词高亮这四个技能各做一件事Codex负责把它们串起来以前我要在几个软件之间反复导出修改现在只要替换文案和素材就能批量生成视频想要这四个技能评论区留下我要直接就可以拿去用",
+    "wav": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\douyin\\audio.wav",
+    "untrusted_guard": "ok",
+    "untrusted_hits": []
+  },
+  "D_coupling": {
+    "aligned_cuts": 22,
+    "total_cuts": 23,
+    "cut_coverage": 0.957,
+    "median_deviation_s": 0.2,
+    "max_deviation_s": 0.69,
+    "segments_with_a_cut": 20,
+    "total_segments": 35,
+    "tolerance_s": 0.6,
+    "cut_sample": 23,
+    "min_cuts_required": 8,
+    "min_cuts_weak": 5,
+    "sample_confidence": "high",
+    "inferred_production_order": "配音先行：画面切点按语音句首排布"
+  },
+  "E_voice": {
+    "pause_count_ge_0.25s": 0,
+    "rms_db_p10": -17.5,
+    "rms_db_p50": -15.4,
+    "rms_db_p90": -14.4,
+    "dynamic_range_db": 3.1,
+    "speech_density": 1.0,
+    "verdict": "强推断 TTS：全程无换气停顿",
+    "caveat": "只能判停顿规律，不能判音色；需人工听一次确认"
+  },
+  "H_loudness": {
+    "integrated_lufs": -13.25,
+    "true_peak_dbtp": -1.09,
+    "lra_lu": 2.2,
+    "true_peak_ok": true,
+    "verdict": "真峰值合规",
+    "measured_on": "原视频音轨（非转码后的 wav）",
+    "note": "参考基准：整体响度约 -14 LUFS、真峰值 ≤ -1.0 dBTP"
+  },
+  "F_palette": {
+    "dominant_colors": [
+      {
+        "hex": "#121617",
+        "share": 0.674
+      },
+      {
+        "hex": "#DDD5C4",
+        "share": 0.197
+      },
+      {
+        "hex": "#2C3031",
+        "share": 0.095
+      },
+      {
+        "hex": "#63655A",
+        "share": 0.022
+      },
+      {
+        "hex": "#CAF445",
+        "share": 0.012
+      }
+    ],
+    "dark_pixel_ratio": 0.766,
+    "scheme": "暗色系"
+  },
+  "F2_layout": {
+    "ocr_frames": 25,
+    "sampled_every_s": 2.5,
+    "block_count": 453,
+    "text_lines": 83,
+    "y_bands": [
+      {
+        "band": "0–5%",
+        "blocks": 70
+      },
+      {
+        "band": "5–10%",
+        "blocks": 50
+      },
+      {
+        "band": "10–15%",
+        "blocks": 50
+      },
+      {
+        "band": "15–20%",
+        "blocks": 17
+      },
+      {
+        "band": "20–25%",
+        "blocks": 26
+      },
+      {
+        "band": "25–30%",
+        "blocks": 49
+      },
+      {
+        "band": "30–35%",
+        "blocks": 23
+      },
+      {
+        "band": "35–40%",
+        "blocks": 24
+      },
+      {
+        "band": "40–45%",
+        "blocks": 20
+      },
+      {
+        "band": "45–50%",
+        "blocks": 25
+      },
+      {
+        "band": "50–55%",
+        "blocks": 34
+      },
+      {
+        "band": "55–60%",
+        "blocks": 17
+      },
+      {
+        "band": "80–85%",
+        "blocks": 23
+      },
+      {
+        "band": "95–100%",
+        "blocks": 25
+      }
+    ],
+    "y_dense_bands": [
+      {
+        "band": "0–5%",
+        "blocks": 70
+      },
+      {
+        "band": "5–10%",
+        "blocks": 50
+      },
+      {
+        "band": "10–15%",
+        "blocks": 50
+      }
+    ],
+    "y_bands_note": "各卡版式不同时 y 分布准连续，全局槽位不存在；这里给占用直方图与密集带，不做聚类",
+    "type_tiers_px": [
+      {
+        "h_px": 103.4,
+        "blocks": 7,
+        "range": [
+          100,
+          104
+        ]
+      },
+      {
+        "h_px": 71.0,
+        "blocks": 33,
+        "range": [
+          65,
+          87
+        ]
+      },
+      {
+        "h_px": 18.8,
+        "blocks": 411,
+        "range": [
+          1,
+          55
+        ]
+      }
+    ],
+    "type_tiers_ungrouped": 2,
+    "centered_ratio": 0.373,
+    "centered_scope": "内容区（y 20–80%）按行判定；并排块算一行",
+    "layout_verdict": "多框/多栏版式（非单栏居中）",
+    "note": "槽位=文字块中心的 y 百分比聚类（间隔 2.5%）；字号档=块高像素聚类（间隔 12px）。颜色『语义』（工具/系统/收益）属判断，脚本只给强调色清单，标注留给报告作者。",
+    "accent_color": {
+      "hex": "#BAE644",
+      "frames_with_accent": 25,
+      "accent_pixel_ratio_median": 0.0074,
+      "verdict": "正常（0.5–3%）：对标区间 1–3%"
+    }
+  },
+  "G_provenance": {
+    "boxes_found": [
+      "Lavf",
+      "isom",
+      "avc1"
+    ],
+    "has_c2pa": false,
+    "has_xmp": false,
+    "note": "未发现 C2PA/XMP 溯源信息；平台交付件通常已被转码洗掉原元数据，不能据此反推创作者工具",
+    "scan_bytes": 2271403
+  }
+}

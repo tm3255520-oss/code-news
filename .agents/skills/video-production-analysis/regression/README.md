@@ -1,0 +1,60 @@
+# 回归基线（video-production-analysis）
+
+> 建立于 2026-09-17。目的：**改了取证逻辑之后，能用一条命令确认没把已有的结论改坏**。
+> 此前每次改动都靠人肉重跑 + 人眼比对（第一批整改就是这么做验证的），容易漏。
+
+## 怎么跑
+
+```bash
+python C:/Users/Administrator/Documents/code-news/scripts/analyze_video_link.py --regress
+```
+
+输出一张对照表：每个用例的每项指标「期望 / 实测 / PASS|FAIL」，末尾给合计。
+退出码 0 = 全过；1 = 有不通过；2 = 用例文件或依赖缺失。
+
+**首次基线结果（2026-09-17）**：`33/33 通过`，而且**逐项完全一致**（不是"落在容差内"）——
+说明取证链在这台机器上是确定性可复现的（whisper / Windows OCR / ffmpeg / 逐帧差分都不抖动）。
+容差表因此是**防御性配置**：留给换机器、升级 whisper 或平台改版时用，而不是当前的实际波动。
+
+## 用例（`cases.json`）
+
+| 名称 | 样本 | 特征 |
+|---|---|---|
+| `douyin` | 抖音《给 codex 装上这 4 个技能》60.7s | 静态卡片型、多框版式、7 张卡 |
+| `weixin` | 视频号《DeepSeek Harness 公测 7 天》43.2s | 静态卡片型、单栏居中、9 段 |
+| `bilibili` | B站《7×24 免费 AI 客服》168.2s | 动态素材型、字幕型 |
+
+每条用例记录 `link`（重取用）与 `local`（本机缓存路径，存在则直接用、不再下载）。
+
+## 容差（`scripts/analyze_video_link.py` 里的 `TOLERANCE`）
+
+| 指标 | 容差 | 为什么 |
+|---|---|---|
+| `scene_tight` / `scene_loose` | 0 | 逐帧差分是确定性的，应当完全稳定 |
+| `cut_sample` | ±1 | 语音分句边界偶尔抖动 |
+| `median_shot_s` | ±0.15s | 同上 |
+| `cut_coverage` | ±0.05 | whisper 分句抖动会传播 |
+| `median_deviation_s` | ±0.05s | 同上 |
+| `speed_cps` | ±0.35 字/秒 | 转录字数会因模型/版本小幅变化 |
+| `integrated_lufs` / `true_peak_dbtp` | ±0.5 | ffmpeg 版本差异 |
+| `tier1_px` | ±6px | OCR 字号档受抽帧位置影响 |
+| `video_class` | 精确 | 片型判定必须稳定 |
+
+## 为什么不把视频入库
+
+三个样本合计约 18 MB。仓库已有先例（`video-line/acceptance/` 是有意放行的冻结基准），
+但这里选择**只入库 `baseline/*.json`（数字基线，约 50 KB）**：
+
+- 数字基线足以回答"改动有没有改变结论"；
+- 视频可随时按 `link` 重取（取视频脚本已支持三平台）；
+- 链接失效时，`baseline/*.json` 仍然记录了当时的全部数字与判读依据。
+
+`baseline/*.json` 就是 2026-09-17 定基线那一刻的 `production_analysis.json` 原件，
+未做任何编辑，可直接与重跑结果逐字段比对。
+
+## 什么时候该更新基线
+
+- **改了判据/阈值（有意行为变化）** → 重跑、确认新数字合理、更新 `cases.json` 的 `expected` 与 `baseline/`，
+  并在提交信息里写明"基线已更新，原因是 X"。
+- **改了实现但期望结论不变（重构/修 bug）** → 基线**不动**，靠回归跑出来证明。
+- 只加新组（如第一批加 H、第二批加 F2）→ 基线里补该字段即可，旧字段不动。

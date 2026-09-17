@@ -34,6 +34,20 @@
       "fallbacks": [],
       "purpose": "需登录态平台的视频获取（抖音等）。从浏览器进程读明文 cookie，绕开 Chrome/Edge v20 App-Bound 加密导致的 yt-dlp DPAPI 失败"
     },
+    "video_analysis_orchestrator": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/analyze_video_link.py",
+      "fallbacks": [],
+      "purpose": "分析链路薄编排：链接/文件 → 取视频 → 取证 → 抽帧 → 报告骨架，一条命令跑完；另支持 --regress 跑回归用例并与基线比对（33 项指标，容差见技能 regression/README.md）"
+    },
+    "video_analysis_report": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/video_production_report.py",
+      "fallbacks": [],
+      "purpose": "把 production_analysis.json 生成人读版报告骨架（确定性数字自动填，判断节留空）；--check 校验必填节（工具推断/可迁移工艺/差距对照/单一推荐），缺则拒绝通过。证据级别标签沿用产线 card_quality_check 的 实测/判断/待标定 三档"
+    },
     "ocr_win": {
       "mode": "local_script",
       "status": "active",

@@ -67,6 +67,24 @@ python C:/Users/Administrator/Documents/code-news/scripts/fetch_video_with_brows
 
 ## 工作流
 
+### 最快路径：一条命令（2026-09-17 起）
+
+```bash
+python C:/Users/Administrator/Documents/code-news/scripts/analyze_video_link.py "<链接或本地视频>" --out "<工作目录>" [--title "标题"]
+```
+
+它只做编排，不重复实现能力：① 取视频（redfox 优先 → 浏览器降级）→ ② 取证（A/B/C/D/E/H/F/F2/G）
+→ ③ 抽帧（contact sheet + 关键帧）→ ④ 报告骨架（确定性数字自动填，判断节留空）。
+**改过取证逻辑后先跑回归**：
+```bash
+python C:/Users/Administrator/Documents/code-news/scripts/analyze_video_link.py --regress
+```
+回归用例与容差见 `regression/README.md`；2026-09-17 首次基线 33/33 逐项一致。
+报告写完后用 `video_production_report.py --check <报告.md>` 校验必填节（缺工具推断/可迁移工艺/
+差距对照/单一推荐则拒绝通过）。
+
+下面是分步做法（要单独调某一步、或想看清每步产物时用）。
+
 ### 第 1 步 🔵 跑确定性取证（一条命令）
 
 ```bash

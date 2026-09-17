@@ -1,0 +1,65 @@
+[
+  {
+    "name": "douyin",
+    "title": "抖音《给 codex 装上这 4 个技能》",
+    "link": "https://v.douyin.com/oMqUOd_lLRc/",
+    "local": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\douyin\\video.mp4",
+    "baseline": "baseline/douyin.json",
+    "expected": {
+      "video_class": "静态卡片型",
+      "scene_tight": 7,
+      "scene_loose": 23,
+      "median_shot_s": 1.56,
+      "cut_sample": 23,
+      "cut_coverage": 0.957,
+      "median_deviation_s": 0.2,
+      "speed_cps": 5.24,
+      "integrated_lufs": -13.25,
+      "true_peak_dbtp": -1.09,
+      "tier1_px": 103.4,
+      "accent_hex": "#BAE644"
+    }
+  },
+  {
+    "name": "weixin",
+    "title": "视频号《DeepSeek Harness 公测 7 天》",
+    "link": "https://weixin.qq.com/sph/A29gykt7Qg",
+    "local": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\weixin\\video.mp4",
+    "baseline": "baseline/weixin.json",
+    "expected": {
+      "video_class": "静态卡片型",
+      "scene_tight": 2,
+      "scene_loose": 9,
+      "median_shot_s": 3.7,
+      "cut_sample": 9,
+      "cut_coverage": 1.0,
+      "median_deviation_s": 0.16,
+      "speed_cps": 4.77,
+      "integrated_lufs": -13.33,
+      "true_peak_dbtp": 0.25,
+      "tier1_px": 97.9,
+      "accent_hex": "#1ABB98"
+    }
+  },
+  {
+    "name": "bilibili",
+    "title": "B站《7×24 免费 AI 客服》",
+    "link": "https://www.bilibili.com/video/BV1RiXCYQECq/",
+    "local": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\bilibili\\video.mp4",
+    "baseline": "baseline/bilibili.json",
+    "expected": {
+      "video_class": "动态素材型",
+      "scene_tight": 53,
+      "scene_loose": 53,
+      "median_shot_s": 2.74,
+      "cut_sample": 53,
+      "cut_coverage": 0.962,
+      "median_deviation_s": 0.06,
+      "speed_cps": 6.07,
+      "integrated_lufs": -9.15,
+      "true_peak_dbtp": 1.77,
+      "tier1_px": 34.6,
+      "accent_hex": "#6C7176"
+    }
+  }
+]

@@ -1,0 +1,445 @@
+{
+  "source": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\weixin\\video.mp4",
+  "A_technical": {
+    "duration_s": 43.23,
+    "total_bitrate_kbps": 262,
+    "container": "mov,mp4,m4a,3gp,3g2,mj2",
+    "tags": {},
+    "width": 1080,
+    "height": 1920,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "video_bitrate_kbps": 157,
+    "aspect": "vertical",
+    "audio_codec": "aac",
+    "audio_sample_rate": "44100",
+    "audio_channels": 1,
+    "audio_bitrate_kbps": 96
+  },
+  "B_shots": {
+    "video_class": "静态卡片型",
+    "scene_metric": "联合判据 幅度≥1.5 且 变化面积≥0.02（宽口径=D组主口径）；严口径面积≥0.05",
+    "counts_by_criteria": {
+      "tight": 2,
+      "loose": 9
+    },
+    "scene_count_range": [
+      2,
+      9
+    ],
+    "cut_count": 9,
+    "cut_times": [
+      0.97,
+      4.9,
+      8.37,
+      11.97,
+      24.73,
+      29.1,
+      31.63,
+      35.43,
+      40.6
+    ],
+    "hard_cut_count": 4,
+    "fade_count": 5,
+    "event_detail": [
+      {
+        "t": 0.97,
+        "peak": 1.67,
+        "area_ratio": 0.02,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 4.9,
+        "peak": 6.27,
+        "area_ratio": 0.048,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 8.37,
+        "peak": 3.47,
+        "area_ratio": 0.025,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 11.97,
+        "peak": 5.48,
+        "area_ratio": 0.051,
+        "width_frames": 2,
+        "kind": "淡变"
+      },
+      {
+        "t": 24.73,
+        "peak": 2.58,
+        "area_ratio": 0.027,
+        "width_frames": 2,
+        "kind": "淡变"
+      },
+      {
+        "t": 29.1,
+        "peak": 3.2,
+        "area_ratio": 0.025,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 31.63,
+        "peak": 5.3,
+        "area_ratio": 0.033,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 35.43,
+        "peak": 2.85,
+        "area_ratio": 0.025,
+        "width_frames": 2,
+        "kind": "淡变"
+      },
+      {
+        "t": 40.6,
+        "peak": 4.75,
+        "area_ratio": 0.107,
+        "width_frames": 2,
+        "kind": "淡变"
+      }
+    ],
+    "card_count": 10,
+    "shot_durations": [
+      0.97,
+      3.93,
+      3.47,
+      3.6,
+      12.76,
+      4.37,
+      2.53,
+      3.8,
+      5.17,
+      2.63
+    ],
+    "shots": 10,
+    "mean_shot_s": 4.32,
+    "median_shot_s": 3.7,
+    "min_shot_s": 0.97,
+    "max_shot_s": 12.76,
+    "short_shots_lt2s": 1,
+    "static_shot_ratio": 0.991,
+    "mean_frame_diff": 0.178,
+    "threshold": 1.5
+  },
+  "form": {
+    "verdict": "图文动效/幻灯片（画面几乎静止）",
+    "bits_per_pixel_per_frame": 0.00252,
+    "basis": [
+      "每像素每帧码率 0.0025 极低",
+      "静止镜头占比 99%"
+    ]
+  },
+  "C_transcript": {
+    "model": "large-v3-turbo",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 1.18,
+        "text": "太炸裂了"
+      },
+      {
+        "start": 1.18,
+        "end": 2.78,
+        "text": "Deepseek Harness连夜更新了"
+      },
+      {
+        "start": 2.78,
+        "end": 3.7,
+        "text": "14项功能"
+      },
+      {
+        "start": 3.7,
+        "end": 4.74,
+        "text": "我连夜测完"
+      },
+      {
+        "start": 4.74,
+        "end": 6.64,
+        "text": "先点赞 收藏 转发"
+      },
+      {
+        "start": 6.64,
+        "end": 8.24,
+        "text": "直接说三个 最炸的"
+      },
+      {
+        "start": 8.24,
+        "end": 10.36,
+        "text": "第一个 他把Cloud Code和Codex"
+      },
+      {
+        "start": 10.36,
+        "end": 11.74,
+        "text": "装进了自己的子代理系统"
+      },
+      {
+        "start": 11.74,
+        "end": 13.18,
+        "text": "你在Harness里干活"
+      },
+      {
+        "start": 13.18,
+        "end": 14.76,
+        "text": "把写代码的活甩给Codex"
+      },
+      {
+        "start": 14.76,
+        "end": 16.18,
+        "text": "把沈代码的活甩给Code"
+      },
+      {
+        "start": 16.18,
+        "end": 17.66,
+        "text": "Harness当总指挥"
+      },
+      {
+        "start": 17.66,
+        "end": 18.5,
+        "text": "他们当外包工"
+      },
+      {
+        "start": 18.5,
+        "end": 20.72,
+        "text": "一个工具指挥另外两个工具帮你干活"
+      },
+      {
+        "start": 20.72,
+        "end": 22.82,
+        "text": "第二个 多模态正式上线"
+      },
+      {
+        "start": 22.82,
+        "end": 24.6,
+        "text": "截图 照片直接拖进去"
+      },
+      {
+        "start": 24.6,
+        "end": 26.62,
+        "text": "Go和Plan全都能带图发送"
+      },
+      {
+        "start": 26.62,
+        "end": 27.56,
+        "text": "不用打字描述"
+      },
+      {
+        "start": 27.56,
+        "end": 28.9,
+        "text": "截图给他看 直接懂"
+      },
+      {
+        "start": 28.9,
+        "end": 31.5,
+        "text": "第三个 Windows用户终于被当人了"
+      },
+      {
+        "start": 31.5,
+        "end": 33.08,
+        "text": "终端体验大幅优化"
+      },
+      {
+        "start": 33.08,
+        "end": 34.52,
+        "text": "不用再频繁重建环境"
+      },
+      {
+        "start": 34.52,
+        "end": 35.28,
+        "text": "开箱即用"
+      },
+      {
+        "start": 35.28,
+        "end": 36.94,
+        "text": "从公测到这次更新"
+      },
+      {
+        "start": 36.94,
+        "end": 37.82,
+        "text": "才七天"
+      },
+      {
+        "start": 37.82,
+        "end": 39.08,
+        "text": "你还在就界装哪个"
+      },
+      {
+        "start": 39.08,
+        "end": 40.42,
+        "text": "Harness已经全装进去了"
+      },
+      {
+        "start": 40.42,
+        "end": 42.08,
+        "text": "关注我AI实战局"
+      },
+      {
+        "start": 42.08,
+        "end": 42.98,
+        "text": "只分享实战"
+      }
+    ],
+    "segment_count": 29,
+    "full_text": "太炸裂了Deepseek Harness连夜更新了14项功能我连夜测完先点赞 收藏 转发直接说三个 最炸的第一个 他把Cloud Code和Codex装进了自己的子代理系统你在Harness里干活把写代码的活甩给Codex把沈代码的活甩给CodeHarness当总指挥他们当外包工一个工具指挥另外两个工具帮你干活第二个 多模态正式上线截图 照片直接拖进去Go和Plan全都能带图发送不用打字描述截图给他看 直接懂第三个 Windows用户终于被当人了终端体验大幅优化不用再频繁重建环境开箱即用从公测到这次更新才七天你还在就界装哪个Harness已经全装进去了关注我AI实战局只分享实战",
+    "wav": "C:\\Users\\Administrator\\Documents\\agent-work\\video-prod-analysis\\20260916-3links\\weixin\\audio.wav",
+    "untrusted_guard": "ok",
+    "untrusted_hits": []
+  },
+  "D_coupling": {
+    "aligned_cuts": 9,
+    "total_cuts": 9,
+    "cut_coverage": 1.0,
+    "median_deviation_s": 0.16,
+    "max_deviation_s": 0.23,
+    "segments_with_a_cut": 9,
+    "total_segments": 29,
+    "tolerance_s": 0.6,
+    "cut_sample": 9,
+    "min_cuts_required": 8,
+    "min_cuts_weak": 5,
+    "sample_confidence": "high",
+    "inferred_production_order": "配音先行：画面切点按语音句首排布"
+  },
+  "E_voice": {
+    "pause_count_ge_0.25s": 0,
+    "rms_db_p10": -15.1,
+    "rms_db_p50": -13.3,
+    "rms_db_p90": -11.6,
+    "dynamic_range_db": 3.4,
+    "speech_density": 1.0,
+    "verdict": "强推断 TTS：全程无换气停顿",
+    "caveat": "只能判停顿规律，不能判音色；需人工听一次确认"
+  },
+  "H_loudness": {
+    "integrated_lufs": -13.33,
+    "true_peak_dbtp": 0.25,
+    "lra_lu": 2.0,
+    "true_peak_ok": false,
+    "verdict": "真峰值越界（标准 ≤ -1.0 dBTP），导出前需过限幅",
+    "measured_on": "原视频音轨（非转码后的 wav）",
+    "note": "参考基准：整体响度约 -14 LUFS、真峰值 ≤ -1.0 dBTP"
+  },
+  "F_palette": {
+    "dominant_colors": [
+      {
+        "hex": "#0B0F1E",
+        "share": 0.714
+      },
+      {
+        "hex": "#111A2C",
+        "share": 0.264
+      },
+      {
+        "hex": "#E9EDF4",
+        "share": 0.01
+      },
+      {
+        "hex": "#17B7BA",
+        "share": 0.008
+      },
+      {
+        "hex": "#A98C8F",
+        "share": 0.004
+      }
+    ],
+    "dark_pixel_ratio": 0.972,
+    "scheme": "暗色系"
+  },
+  "F2_layout": {
+    "ocr_frames": 16,
+    "sampled_every_s": 2.5,
+    "block_count": 86,
+    "text_lines": 56,
+    "y_bands": [
+      {
+        "band": "30–35%",
+        "blocks": 1
+      },
+      {
+        "band": "35–40%",
+        "blocks": 10
+      },
+      {
+        "band": "40–45%",
+        "blocks": 14
+      },
+      {
+        "band": "45–50%",
+        "blocks": 14
+      },
+      {
+        "band": "50–55%",
+        "blocks": 16
+      },
+      {
+        "band": "55–60%",
+        "blocks": 19
+      },
+      {
+        "band": "60–65%",
+        "blocks": 10
+      },
+      {
+        "band": "65–70%",
+        "blocks": 2
+      }
+    ],
+    "y_dense_bands": [],
+    "y_bands_note": "各卡版式不同时 y 分布准连续，全局槽位不存在；这里给占用直方图与密集带，不做聚类",
+    "type_tiers_px": [
+      {
+        "h_px": 97.9,
+        "blocks": 15,
+        "range": [
+          96,
+          106
+        ]
+      },
+      {
+        "h_px": 53.6,
+        "blocks": 14,
+        "range": [
+          53,
+          55
+        ]
+      },
+      {
+        "h_px": 29.6,
+        "blocks": 55,
+        "range": [
+          13,
+          44
+        ]
+      }
+    ],
+    "type_tiers_ungrouped": 2,
+    "centered_ratio": 0.911,
+    "centered_scope": "内容区（y 20–80%）按行判定；并排块算一行",
+    "layout_verdict": "居中单栏纵向堆叠",
+    "note": "槽位=文字块中心的 y 百分比聚类（间隔 2.5%）；字号档=块高像素聚类（间隔 12px）。颜色『语义』（工具/系统/收益）属判断，脚本只给强调色清单，标注留给报告作者。",
+    "accent_color": {
+      "hex": "#1ABB98",
+      "frames_with_accent": 16,
+      "accent_pixel_ratio_median": 0.0107,
+      "verdict": "正常（0.5–3%）：对标区间 1–3%"
+    }
+  },
+  "G_provenance": {
+    "boxes_found": [
+      "Lavf",
+      "isom",
+      "avc1"
+    ],
+    "has_c2pa": false,
+    "has_xmp": false,
+    "note": "未发现 C2PA/XMP 溯源信息；平台交付件通常已被转码洗掉原元数据，不能据此反推创作者工具",
+    "scan_bytes": 1418198
+  }
+}
