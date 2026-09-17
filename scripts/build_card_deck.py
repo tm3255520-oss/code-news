@@ -316,6 +316,16 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
 .card-inner { position:absolute; left:@@cl@@px; right:@@cr@@px; top:@@ct@@px; bottom:@@cb@@px; @@center_rule@@}
 /* 纵向画幅下 .card-inner 是 flex 列：kicker 是 inline-block，不限定就会横向拉伸成整条 */
 .card-inner > .kicker { align-self:flex-start; }
+/* ── 背景素材层（2026-09-17 加）──
+   每卡一张深色底图（数据侧 card.bg），压暗铺底，内容浮在其上。
+   对标依据：抖音《只用了 Claude Code 30%能力》每卡换一张深色科技素材，
+   我们原来 9 张卡背景完全一样（同一网格底）→ 逐卡差异感为零。
+   压暗用 filter + 径向遮罩两层：既压住素材亮度保住文字对比度，又给中心留亮区。 */
+.bgimg { position:absolute; inset:0; background-size:cover; background-position:center;
+  filter:brightness(.55) saturate(.85); }
+.bgimg::after { content:""; position:absolute; inset:0;
+  background:radial-gradient(125% 95% at 50% 42%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.74) 100%); }
+.card-inner.has-bg > *:not(.bgimg) { position:relative; z-index:1; }
 .kicker { display:inline-block; border:1px solid @@accent@@; border-radius:14px;
   padding:6px 16px; font-size:13px; letter-spacing:.16em; font-weight:800; color:@@accent@@;
   font-family:ui-monospace, Consolas, "Courier New", monospace; }
@@ -411,7 +421,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
 .progress i.on { background:@@accent@@; }
 
 /* ── 面板下部：HUD 读数 / 步骤标号 / 分段进度条 ── */
-.hud { position:absolute; left:52px; bottom:@@hud_b@@px;
+/* z-index:3 是必需的：HUD 与 .card-inner 在纵向有约 30px 重叠，卡片内容透明时能透出，
+   但加了背景素材层（.bgimg 不透明）后会被盖住 —— 2026-09-17 实测被质量门 text_occluded 拦下 */
+.hud { position:absolute; left:52px; bottom:@@hud_b@@px; z-index:3;
   display:flex; flex-direction:column;
   font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:12px; line-height:1.75; letter-spacing:.06em; color:@@muted@@; }
@@ -513,6 +525,12 @@ def render_card(card: dict, idx: int, total: int) -> str:
     title_verbs = [v for v, t in beats if t == "标题" or t == ""]
     need_rule = any(v == "DRAWS" for v, _ in beats)
 
+    # 背景素材层（可选）：数据侧给 card.bg 就铺一张深色底图，不给则维持原样（向后兼容）
+    bg = card.get("bg")
+    bg_html = (f'<div class="bgimg" style="background-image:url(\'{esc(bg)}\')"></div>'
+               if bg else "")
+    inner_cls = "card-inner has-bg" if bg else "card-inner"
+
     blocks = ""
     n_blocks = len(card.get("blocks", []) or [])
     for b in card.get("blocks", []):
@@ -593,9 +611,10 @@ def render_card(card: dict, idx: int, total: int) -> str:
     title_html = typewriter(title_raw) if "TYPES" in title_verbs else esc(title_raw)
     rule = '<div class="rule"></div>' if need_rule else ""
     return f"""
-  <div class="clip card" data-start="{card['start']:.3f}" data-duration="{card['duration']:.3f}" data-track-index="1" id="card{idx}">
-    <div class="card-inner" data-motion="{esc(card.get('motion', ''))}">
-      <div class="kicker-wrap">{kicker}</div>
+    <div class="clip card" data-start="{card['start']:.3f}" data-duration="{card['duration']:.3f}" data-track-index="1" id="card{idx}">
+      <div class="{inner_cls}" data-motion="{esc(card.get('motion', ''))}">
+        {bg_html}
+        <div class="kicker-wrap">{kicker}</div>
       <div class="title">{title_html}</div>
       {rule}
       {blocks}
@@ -681,9 +700,9 @@ def build(deck: dict) -> str:
                                 f'{js_obj(spec["to"])}, {t:.3f});')
         else:
             # 未写分镜动效：回退到默认入场
-            anim.append(
-                f'  tl.fromTo("#card{i} .card-inner > *", '
-                f'{{ y: 26, opacity: 0 }}, {{ y: 0, opacity: 1, duration: .55, stagger: .09, ease: "power2.out" }}, {s:.3f});')
+              anim.append(
+                  f'  tl.fromTo("#card{i} .card-inner > *:not(.bgimg)", '
+                  f'{{ y: 26, opacity: 0 }}, {{ y: 0, opacity: 1, duration: .55, stagger: .09, ease: "power2.out" }}, {s:.3f});')
         # 相机推进：无论是否分镜驱动都保留（对标样本的推镜）
         if c["duration"] > 3:
             anim.append(
@@ -851,3 +870,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

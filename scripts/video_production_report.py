@@ -29,7 +29,7 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-REQUIRED_SECTIONS = ("## 八、差距对照与单一推荐", "## 六、工具推断", "## 七、可迁移工艺")
+REQUIRED_SECTIONS = ("## 八、差距对照与改进建议", "## 六、工具推断", "## 七、可迁移工艺")
 
 
 def _fmt(v, unit: str = "", nd: int = 2) -> str:
@@ -164,14 +164,20 @@ def build_report(data: dict, meta: dict, work: Path, title: str, source: str) ->
     L.append("1. ")
     L.append("2. ")
     L.append("")
-    L.append("## 八、差距对照与单一推荐（必填）")
+    L.append("## 八、差距对照与改进建议（必填）")
     L.append("")
-    L.append("| 这条片子要求的环节 | 我们现状 | 判定 | 改动项（指名到文件） |")
-    L.append("|---|---|---|---|")
-    for env in ("配音先行的对齐", "字幕层（样式/字号）", "强调色与配色语义", "场景切换与节奏", "母带响度"):
-        L.append(f"| {env} |  |  |  |")
+    L.append("> 规则（2026-09-17 用户要求，所有分析报告适用）：")
+    L.append("> 1. 每条对标结论都要过「**是否改进**」这一关——判「不改」也要写理由（现状已达标/收益不明/投入过大）；")
+    L.append("> 2. 「具体参数」要写出**参数名与目标值**（如 `TP ≤ −1.5 dBTP`、`字号档 52px`），不能只写环节名；")
+    L.append("> 3. 「怎么改」要写到**文件 + 做法**（改哪个函数/加什么字段），写不出来的标「待调研」，不许写「优化一下」。")
     L.append("")
-    L.append("**单一推荐下一步**：（只写一项，并说明理由）")
+    L.append("| 环节 | 具体参数（要改什么·目标值） | 我们现状 | 判定 | 怎么改（文件 + 做法） | 验收标准 |")
+    L.append("|---|---|---|---|---|---|")
+    for env in ("卡内信息单元", "背景素材层", "字幕层（样式/字号）", "强调色与配色语义",
+                "场景切换与节奏", "配音先行的对齐", "语速档位", "母带响度"):
+        L.append(f"| {env} |  |  |  |  |  |")
+    L.append("")
+    L.append("**单一推荐下一步**：（只写一项 + 理由 + 预计投入）")
     L.append("")
     L.append("## 九、无法确定项【自动汇总】")
     L.append("")
@@ -251,11 +257,11 @@ def check_report(path: Path) -> int:
     else:
         problems.append("缺第七节")
 
-    # 八、差距对照：判定列与改动项列都要有人写，且有单一推荐
+    # 八、差距对照：判定列（第4列）与"怎么改"列（第5列）都要有人写，且有单一推荐
     gap_rows = rows("## 八、差距对照")
-    if not any(len(r) >= 4 and r[2] not in ("", "—") and r[3] not in ("", "—")
+    if not any(len(r) >= 5 and r[3] not in ("", "—") and r[4] not in ("", "—")
                for r in gap_rows):
-        problems.append("第八节「差距对照」的判定/改动项列为空")
+        problems.append("第八节「差距对照」的判定列或「怎么改」列为空")
     rec = text.split("**单一推荐下一步**", 1)[-1].split("\n## ")[0]
     # 先丢掉括号里的填写提示（如"（只写一项，并说明理由）"），再看还剩什么
     rec_txt = re.sub(r"[（(][^）)]*[）)]", "", rec).strip(" ：:\n\t")

@@ -126,8 +126,24 @@ python C:/Users/Administrator/Documents/code-news/scripts/analyze_video_producti
 
 ### 第 4 步 🔴 产出报告
 
-按 `references/report-template.md` 生成人读版报告，落 `<工作目录>/制作分析报告.md`。
-必须包含：形态判定 / 制作顺序 / 工具推断（标注推断 + 依据）/ 可迁移工艺 / 无法确定项。
+优先用生成器出骨架（确定性数字自动填），再补判断节：
+
+```bash
+python C:/Users/Administrator/Documents/code-news/scripts/video_production_report.py "<工作目录>" --title "标题" --source "平台 + 链接"
+python C:/Users/Administrator/Documents/code-news/scripts/video_production_report.py --check "<工作目录>/制作分析报告.md"
+```
+
+必须包含：形态判定 / 制作顺序 / 工具推断（标注推断 + 依据）/ 可迁移工艺 / 无法确定项，
+以及**必填尾节「差距对照与改进建议」**。该节的三条硬规则（2026-09-17 用户要求）：
+
+1. **每条对标结论都要过「是否改进」这一关**——判定列必须填，判「不改」也要写理由
+   （现状已达标 / 收益不明 / 投入过大）；
+2. **具体参数要写参数名与目标值**（如 `TP ≤ −1.5 dBTP`、`字号档 52px`、`语速 4.9 字/秒`），
+   不能只写环节名；
+3. **「怎么改」要写到文件 + 做法**（改哪个函数、加什么字段）；写不出来的标「待调研」，
+   不许写「优化一下」。
+
+`--check` 会拒收缺节或该填列全空的报告——判据是"该由人填的那一列"，不是"有没有非空单元格"。
 
 ### 第 5 步 🔴 对标产线（可选但推荐）
 
