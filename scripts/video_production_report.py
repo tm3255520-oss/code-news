@@ -31,6 +31,96 @@ if hasattr(sys.stdout, "reconfigure"):
 
 REQUIRED_SECTIONS = ("## 八、差距对照与改进建议", "## 六、工具推断", "## 七、可迁移工艺")
 
+SKILL_DIR = Path(__file__).resolve().parents[1] / ".agents" / "skills" / "video-production-analysis"
+OUR_BASELINE = SKILL_DIR / "regression" / "our-baseline" / "ours-landscape.json"
+
+
+def _metrics(d: dict) -> dict:
+    """从 production_analysis.json 抽可比指标（口径与我们的基线一致）。"""
+    A = d.get("A_technical") or {}
+    B = d.get("B_shots") or {}
+    C = d.get("C_transcript") or {}
+    D = d.get("D_coupling") or {}
+    Lo = d.get("H_loudness") or {}
+    F2 = d.get("F2_layout") or {}
+    dur = A.get("duration_s") or 0
+    cjk = sum(1 for ch in (C.get("full_text") or "") if "\u4e00" <= ch <= "\u9fff")
+    tiers = [t["h_px"] for t in (F2.get("type_tiers_px") or [])][:3]
+    return {
+        "lufs": Lo.get("integrated_lufs"),
+        "tp": Lo.get("true_peak_dbtp"),
+        "speed": round(cjk / dur, 2) if dur else None,
+        "tier1": tiers[0] if tiers else None,
+        "tier_count": len(tiers),
+        "scene_loose": (B.get("scene_count_range") or [None, None])[1],
+        "median_shot": B.get("median_shot_s"),
+        "centered": F2.get("centered_ratio"),
+        "accent": (F2.get("accent_color") or {}).get("hex"),
+        "bitrate": A.get("video_bitrate_kbps"),
+        "codec": A.get("video_codec"),
+        "cut_sample": D.get("cut_sample"),
+    }
+
+
+def baseline_block(data: dict) -> list:
+    """§八 的第一步：与「我方基线」逐项对比。
+
+    为什么必须有这一步（用户 2026-09-17 提醒）：**播放量高 ≠ 物理质量高**。
+    有些片子数据好是文案/选题/标题的功劳，物理质量反而低于我们。
+    所以改进建议必须先过"对标片在该环节是否真的强过我们"这一关。
+    码率/编码不可比（我方是本地导出件，对标是平台转码交付件），单独标注。
+    """
+    if not OUR_BASELINE.exists():
+        return ["### 8.0 与我方基线对比", "",
+                "> ⚠️ 找不到我方基线"
+                f"（`{OUR_BASELINE.relative_to(REPO)}`），本次跳过对比——"
+                "**没有基线的对标不能出改进建议**（高播放不等于高物理质量）。", ""]
+    ours = _metrics(json.loads(OUR_BASELINE.read_text(encoding="utf-8")))
+    cur = _metrics(data)
+
+    def verdict(key, higher_is_better=True):
+        a, b = ours.get(key), cur.get(key)
+        if a is None or b is None:
+            return "—（缺数）"
+        try:
+            a, b = float(a), float(b)
+        except (TypeError, ValueError):
+            return "—"
+        if abs(a - b) < 1e-9:
+            return "持平"
+        better = (b > a) if higher_is_better else (b < a)
+        return ("对标更强 → 可考虑照它改" if better else "**低于我方 → 不改**")
+
+    rows = [
+        ("母带·整体响度（LUFS，越接近 −14 越好）", ours["lufs"], cur["lufs"],
+         "不可比" if cur["lufs"] is None else
+         ("对标更接近标准 → 可参考" if cur["lufs"] is not None and ours["lufs"] is not None
+          and abs(cur["lufs"] + 14) < abs(ours["lufs"] + 14) else "**我方更接近标准 → 不改**")),
+        ("母带·真峰值（dBTP，越小越安全）", ours["tp"], cur["tp"], verdict("tp", False)),
+        ("语速（字/秒）", ours["speed"], cur["speed"], "风格档位，非质量项"),
+        ("字号档数（层级丰富度）", ours["tier_count"], cur["tier_count"],
+         verdict("tier_count")),
+        ("最大字号档（px）", ours["tier1"], cur["tier1"], "随画幅变化，仅参考"),
+        ("场景数（宽口径）", ours["scene_loose"], cur["scene_loose"], "密度项，非质量项"),
+        ("中位镜头（s）", ours["median_shot"], cur["median_shot"], "节奏项，非质量项"),
+        ("居中率（版式）", ours["centered"], cur["centered"], "风格差异，不是质量差异"),
+        ("强调色", ours["accent"], cur["accent"], "风格差异"),
+        ("视频码率（kbps）", ours["bitrate"], cur["bitrate"],
+         "❌ **不可比**：我方为本地导出件，对标为平台转码交付件"),
+        ("编码", ours["codec"], cur["codec"], "❌ 不可比（平台会换编码）"),
+    ]
+    out = ["### 8.0 与我方基线对比（先比，再谈改进）", "",
+           "> 规则（2026-09-17 用户要求）：**播放量高 ≠ 物理质量高**。"
+           "只有当对标片在**该环节** ≥ 我方基线时才提「照它改」；低于我方一律写「不改（低于我方基线）」，"
+           "并注明它的高播放应归因于**文案 / 选题 / 标题**（那属 `viral-video-breakdown` 的职责）。"
+           "码率与编码**不可比**，不得据此下结论。", "",
+           "| 指标 | 我方基线（横屏 1440×1080） | 本条片子 | 对比结论 |",
+           "|---|---|---|---|"]
+    for name, a, b, v in rows:
+        out.append(f"| {name} | {a} | {b} | {v} |")
+    out.append("")
+    return out
+
 
 def _fmt(v, unit: str = "", nd: int = 2) -> str:
     if v is None:
@@ -171,6 +261,7 @@ def build_report(data: dict, meta: dict, work: Path, title: str, source: str) ->
     L.append("> 2. 「具体参数」要写出**参数名与目标值**（如 `TP ≤ −1.5 dBTP`、`字号档 52px`），不能只写环节名；")
     L.append("> 3. 「怎么改」要写到**文件 + 做法**（改哪个函数/加什么字段），写不出来的标「待调研」，不许写「优化一下」。")
     L.append("")
+    L += baseline_block(data)
     L.append("| 环节 | 具体参数（要改什么·目标值） | 我们现状 | 判定 | 怎么改（文件 + 做法） | 验收标准 |")
     L.append("|---|---|---|---|---|---|")
     for env in ("卡内信息单元", "背景素材层", "字幕层（样式/字号）", "强调色与配色语义",

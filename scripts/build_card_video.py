@@ -250,7 +250,7 @@ def _speech_bounds(wav: Path) -> tuple[float, float, float]:
     return loud[0] * 0.01, (loud[-1] + 1) * 0.01, len(a) / sr
 
 
-def normalize_pauses(voice_dir: Path, gap: float) -> dict:
+def normalize_pauses(voice_dir: Path, gap: float, compress: bool = False) -> dict:
     """用自己生成的合法静音片重建配音拼接，并按新时间轴重写 SRT 与 timeline。
 
     为什么不让 voice_segmenter 直接做：实测 `--gap 0` 时它生成的 silence.mp3 是坏的
@@ -360,7 +360,76 @@ def normalize_pauses(voice_dir: Path, gap: float) -> dict:
                 rows[i][1] = max(rows[i + 1][0] - 0.04, rows[i][0] + 0.12)
         out = [f"{i}\n{fmt(r[0])} --> {fmt(r[1])}\n{r[2]}" for i, r in enumerate(rows, 1)]
         srt.write_text("\n\n".join(out) + "\n", encoding="utf-8")
+
+    # 母带响度：在音轨定稿处做（此后音轨不再改动）——两遍式 loudnorm 到 −14 LUFS / TP −1.5
+    ln = apply_loudnorm(mp3, compress=compress)
+    if ln.get("failed"):
+        print(f"      [warn] 响度归一失败（{ln.get('error')}），音轨保持原样")
+    else:
+        print(f"      响度: {ln['before_lufs']:.2f} → {ln['after_lufs']:.2f} LUFS | "
+              f"TP {ln['before_tp']:.2f} → {ln['after_tp']:.2f} dBTP "
+              f"({'合规' if ln['ok'] else '仍越界'})")
     return tl
+
+
+# ── 母带响度（2026-09-17 加）─────────────────────────────
+# 为什么加：用同一套分析工具测我方验收成片，得到 −21.54 LUFS / −4.1 dBTP，
+# 而平台标准是约 −14 LUFS / TP ≤ −1.0 —— 我们比标准**低 7.5 dB**，播放时会被平台
+# 归一化提升、动态被压，听感发闷。同批测的 4 条对标片里 3 条响度都比我们更接近标准。
+# TP 取 −1.5 而不是 −1.0：hermes video_enhancer 的标定记录显示编码后会带来约
+# 0.16 dB overshoot（loudnorm 标 −1.0 实测解码后 −0.84），所以留 0.5 dB 余量。
+LOUDNORM_TARGET = {"I": -14.0, "TP": -1.5, "LRA": 8.0}
+# 可选：先压缩再归一。实测能把响度从 −16.08 推到 −15.06 LUFS（更接近平台标准 −14），
+# 但 LRA 会从 ~2 掉到 1.40（对标片 TTS 是 2.0 左右）→ 过度压平的听感风险，故默认不开。
+LOUDNORM_COMPRESSOR = "acompressor=threshold=-20dB:ratio=4:attack=5:release=150,"
+# 语速档位（edge-tts 速率字符串 → 实测语速，来自文件头标定表）
+SPEED_PROFILES = {"talk": "+28%", "list": "+16%"}
+
+
+def measure_loudness(path: Path) -> dict:
+    """测整合响度/真峰值/LRA（EBU R128）。"""
+    r = run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path),
+             "-af", "loudnorm=print_format=json", "-f", "null", "-"])
+    m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", r.stderr or "")
+    return json.loads(m.group(0)) if m else {}
+
+
+def apply_loudnorm(path: Path, target: dict = None, compress: bool = False) -> dict:
+    """两遍式 loudnorm：先测量再应用（一遍式会因实时动态处理而漂移）。
+
+    就地替换 path；返回 before/after 三值用于写进运行日志。
+    """
+    tgt = dict(LOUDNORM_TARGET if target is None else target)
+    before = measure_loudness(path)
+    if not before:
+        return {"failed": True, "error": "测量失败"}
+    # 为什么要挂一级限幅：我们的 TTS 音轨峰均比很高（实测 −24.56 LUFS 配 −4.11 dBTP
+    # ≈ 20 dB crest），只做线性 loudnorm 会为了不超峰而限制增益 → 只能到 −16.08 LUFS / −0.99 dBTP。
+    # 先 loudnorm 归一到目标响度，再用 alimiter 把越界的峰压回 TP 以内。
+    # ⚠️ alimiter 必须显式 `level=disabled`：默认 level=true 会做自动电平归一，抵消 loudnorm 的结果
+    #    （hermes video_enhancer 的标定记录里踩过这个坑）。
+    pre = LOUDNORM_COMPRESSOR if compress else ""
+    filt = (pre + f"loudnorm=I={tgt['I']}:TP={tgt['TP']}:LRA={tgt['LRA']}"
+            f":measured_I={before['input_i']}:measured_TP={before['input_tp']}"
+            f":measured_LRA={before['input_lra']}:measured_thresh={before['input_thresh']}"
+            f":offset={before['target_offset']}:linear=true:print_format=summary,"
+            # 注意：alimiter 的 limit 是**线性幅度**（范围 0.0625–1），不是 dB。
+            # 传 dB 会被当成比值 → 报 "Value 1.18 out of range"（2026-09-17 实测踩到）。
+            f"alimiter=limit={10 ** (tgt['TP'] / 20):.4f}:level=disabled")
+    tmp = path.with_name(path.stem + ".norm" + path.suffix)
+    r = run(["ffmpeg", "-v", "error", "-y", "-i", str(path), "-af", filt,
+             "-c:a", "libmp3lame", "-q:a", "2", str(tmp)])
+    if r.returncode != 0 or not tmp.exists():
+        return {"failed": True, "error": (r.stderr or "")[:200]}
+    tmp.replace(path)
+    after = measure_loudness(path)
+    return {
+        "before_lufs": float(before["input_i"]), "before_tp": float(before["input_tp"]),
+        "after_lufs": float(after["input_i"]) if after else None,
+        "after_tp": float(after["input_tp"]) if after else None,
+        "target": tgt,
+        "ok": bool(after) and float(after["input_tp"]) <= -1.0,
+    }
 
 
 def _srt_sec(t: str) -> float:
@@ -425,8 +494,15 @@ def main() -> int:
     # （edge-tts 句末自带约 0.84s 停顿，已由 normalize_pauses 裁掉）
     ap.add_argument("--gap", type=float, default=0.16,
                     help="段间额外静音秒数；最终停顿 ≈ 0.06 + gap，默认 0.16 ≈ 0.22s")
-    ap.add_argument("--rate", default="+28%",
-                    help="TTS 语速（默认 +28%%，对齐对标基线 6.03 字/秒；见文件头校准表）")
+    ap.add_argument("--rate", default=None,
+                    help="TTS 语速，如 +28%%；不给则由 --speed-profile 决定（见文件头校准表）")
+    # 语速档位（2026-09-17 加）：对标《只用了 Claude Code 30%能力》实测 4.84 字/秒、
+    # 抖音卡片样本 5.24 —— 清单型内容比讲解型慢一档，观众需要时间读清单。
+    ap.add_argument("--speed-profile", default=None, choices=("talk", "list"),
+                    help="语速档位：talk=讲解型 +28%%（6.07 字/秒）；"
+                         "list=清单型 +16%%（实测约 5.2 字/秒）。给了 --rate 则以 --rate 为准")
+    ap.add_argument("--loudnorm-compress", action="store_true",
+                    help="母带响度归一前先压缩（更接近 −14 LUFS，但 LRA 会降到约 1.4）")
     ap.add_argument("--voice-root", default=str(DEFAULT_VOICE_DIR),
                     help="voice_segmenter.py 所在目录")
     ap.add_argument("--quality", default="looks", help="draft/looks/delivery")
@@ -443,6 +519,8 @@ def main() -> int:
     ap.add_argument("--preview-name", default="preview.mp4")
     args = ap.parse_args()
 
+    if args.rate is None:                     # 未显式给 --rate → 按语速档位取
+        args.rate = SPEED_PROFILES[args.speed_profile or "talk"]
     script = json.loads(Path(args.script).read_text(encoding="utf-8"))
     if not script.get("lines") or not script.get("cards"):
         print("[fail] script.json 需要 lines 与 cards", file=sys.stderr)
@@ -465,7 +543,8 @@ def main() -> int:
         mp3, srt, timeline = step_tts(script, out_dir, Path(args.voice_root),
                                       voice, args.gap, args.rate)
         before = timeline["total_duration"]
-        timeline = normalize_pauses(out_dir / "voice", args.gap)
+        timeline = normalize_pauses(out_dir / "voice", args.gap,
+                                    compress=args.loudnorm_compress)
         print(f"      段间停顿重建为 {args.gap}s（拼接受损前的总长 {before}s → {timeline['total_duration']}s）")
         print(f"      {len(timeline['segments'])} 段 / 总时长 {timeline['total_duration']}s")
 

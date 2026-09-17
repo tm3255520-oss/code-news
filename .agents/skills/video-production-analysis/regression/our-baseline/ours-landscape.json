@@ -1,0 +1,454 @@
+{
+  "source": "C:\\Users\\Administrator\\Documents\\code-news\\video-line\\acceptance\\landscape\\final.mp4",
+  "A_technical": {
+    "duration_s": 32.5,
+    "total_bitrate_kbps": 1667,
+    "container": "mov,mp4,m4a,3gp,3g2,mj2",
+    "tags": {},
+    "width": 1440,
+    "height": 1080,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "video_bitrate_kbps": 1474,
+    "aspect": "horizontal",
+    "audio_codec": "aac",
+    "audio_sample_rate": "48000",
+    "audio_channels": 2,
+    "audio_bitrate_kbps": 185
+  },
+  "B_shots": {
+    "video_class": "静态卡片型",
+    "scene_metric": "联合判据 幅度≥1.5 且 变化面积≥0.02（宽口径=D组主口径）；严口径面积≥0.05",
+    "counts_by_criteria": {
+      "tight": 1,
+      "loose": 13
+    },
+    "scene_count_range": [
+      1,
+      13
+    ],
+    "cut_count": 13,
+    "cut_times": [
+      0.1,
+      2.57,
+      3.1,
+      7.73,
+      10.57,
+      13.57,
+      16.3,
+      16.5,
+      16.57,
+      19.5,
+      22.3,
+      22.83,
+      27.9
+    ],
+    "hard_cut_count": 9,
+    "fade_count": 4,
+    "event_detail": [
+      {
+        "t": 0.1,
+        "peak": 3.93,
+        "area_ratio": 0.035,
+        "width_frames": 5,
+        "kind": "淡变"
+      },
+      {
+        "t": 2.57,
+        "peak": 7.73,
+        "area_ratio": 0.044,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 3.1,
+        "peak": 2.19,
+        "area_ratio": 0.024,
+        "width_frames": 11,
+        "kind": "淡变"
+      },
+      {
+        "t": 7.73,
+        "peak": 7.92,
+        "area_ratio": 0.041,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 10.57,
+        "peak": 4.88,
+        "area_ratio": 0.03,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 13.57,
+        "peak": 3.61,
+        "area_ratio": 0.027,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 16.3,
+        "peak": 1.9,
+        "area_ratio": 0.026,
+        "width_frames": 3,
+        "kind": "淡变"
+      },
+      {
+        "t": 16.5,
+        "peak": 2.04,
+        "area_ratio": 0.02,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 16.57,
+        "peak": 4.72,
+        "area_ratio": 0.029,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 19.5,
+        "peak": 3.95,
+        "area_ratio": 0.025,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 22.3,
+        "peak": 6.46,
+        "area_ratio": 0.039,
+        "width_frames": 1,
+        "kind": "硬切"
+      },
+      {
+        "t": 22.83,
+        "peak": 2.8,
+        "area_ratio": 0.026,
+        "width_frames": 4,
+        "kind": "淡变"
+      },
+      {
+        "t": 27.9,
+        "peak": 15.03,
+        "area_ratio": 0.074,
+        "width_frames": 1,
+        "kind": "硬切"
+      }
+    ],
+    "card_count": 14,
+    "shot_durations": [
+      0.1,
+      2.47,
+      0.53,
+      4.63,
+      2.84,
+      3.0,
+      2.73,
+      0.2,
+      0.07,
+      2.93,
+      2.8,
+      0.53,
+      5.07,
+      4.6
+    ],
+    "shots": 14,
+    "mean_shot_s": 2.32,
+    "median_shot_s": 2.76,
+    "min_shot_s": 0.07,
+    "max_shot_s": 5.07,
+    "short_shots_lt2s": 5,
+    "static_shot_ratio": 0.967,
+    "mean_frame_diff": 0.53,
+    "threshold": 1.5
+  },
+  "form": {
+    "verdict": "低动态：口播/录屏/图文混合",
+    "bits_per_pixel_per_frame": 0.03159,
+    "basis": [
+      "每像素每帧码率 0.0316 偏低",
+      "静止镜头占比 97%"
+    ]
+  },
+  "C_transcript": {
+    "model": "large-v3-turbo",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 2.54,
+        "text": "很多人还在比较哪个AI打得更准"
+      },
+      {
+        "start": 2.54,
+        "end": 5.38,
+        "text": "但真正拉开差距的不是前台那个对话框"
+      },
+      {
+        "start": 5.38,
+        "end": 7.72,
+        "text": "是后台有没有一条会自己跑的线"
+      },
+      {
+        "start": 7.72,
+        "end": 10.38,
+        "text": "这条线拆开其实是三个AI在分工"
+      },
+      {
+        "start": 10.38,
+        "end": 13.34,
+        "text": "第一个负责采集凌晨把素材扫进笔记库"
+      },
+      {
+        "start": 13.34,
+        "end": 14.44,
+        "text": "第二个负责改写"
+      },
+      {
+        "start": 14.44,
+        "end": 16.56,
+        "text": "把素材按平台调性重写"
+      },
+      {
+        "start": 16.56,
+        "end": 17.54,
+        "text": "第三个负责发布"
+      },
+      {
+        "start": 17.54,
+        "end": 19.3,
+        "text": "发完把数据写回日志"
+      },
+      {
+        "start": 19.3,
+        "end": 20.8,
+        "text": "三个角色串起来"
+      },
+      {
+        "start": 20.8,
+        "end": 22.3,
+        "text": "人只在早上看报告"
+      },
+      {
+        "start": 22.3,
+        "end": 24.5,
+        "text": "所以值钱的不是提示词是流程"
+      },
+      {
+        "start": 24.5,
+        "end": 26.16,
+        "text": "你每天重复做的事"
+      },
+      {
+        "start": 26.16,
+        "end": 27.94,
+        "text": "就是你该搭的那条线"
+      },
+      {
+        "start": 27.94,
+        "end": 30.12,
+        "text": "先收藏要用的时候省得再找"
+      },
+      {
+        "start": 30.12,
+        "end": 31.68,
+        "text": "想看每一步怎么拆"
+      },
+      {
+        "start": 31.68,
+        "end": 32.42,
+        "text": "关注我"
+      }
+    ],
+    "segment_count": 17,
+    "full_text": "很多人还在比较哪个AI打得更准但真正拉开差距的不是前台那个对话框是后台有没有一条会自己跑的线这条线拆开其实是三个AI在分工第一个负责采集凌晨把素材扫进笔记库第二个负责改写把素材按平台调性重写第三个负责发布发完把数据写回日志三个角色串起来人只在早上看报告所以值钱的不是提示词是流程你每天重复做的事就是你该搭的那条线先收藏要用的时候省得再找想看每一步怎么拆关注我",
+    "wav": "C:\\Users\\Administrator\\Documents\\code-news\\.tmp\\ourbaseline\\landscape\\audio.wav",
+    "untrusted_guard": "ok",
+    "untrusted_hits": []
+  },
+  "D_coupling": {
+    "aligned_cuts": 13,
+    "total_cuts": 13,
+    "cut_coverage": 1.0,
+    "median_deviation_s": 0.1,
+    "max_deviation_s": 0.56,
+    "segments_with_a_cut": 9,
+    "total_segments": 17,
+    "tolerance_s": 0.6,
+    "cut_sample": 13,
+    "min_cuts_required": 8,
+    "min_cuts_weak": 5,
+    "sample_confidence": "high",
+    "inferred_production_order": "配音先行：画面切点按语音句首排布"
+  },
+  "E_voice": {
+    "pause_count_ge_0.25s": 0,
+    "rms_db_p10": -27.3,
+    "rms_db_p50": -24.5,
+    "rms_db_p90": -22.6,
+    "dynamic_range_db": 4.7,
+    "speech_density": 1.0,
+    "verdict": "强推断 TTS：全程无换气停顿",
+    "caveat": "只能判停顿规律，不能判音色；需人工听一次确认"
+  },
+  "H_loudness": {
+    "integrated_lufs": -21.54,
+    "true_peak_dbtp": -4.1,
+    "lra_lu": 1.4,
+    "true_peak_ok": true,
+    "verdict": "真峰值合规",
+    "measured_on": "原视频音轨（非转码后的 wav）",
+    "note": "参考基准：整体响度约 -14 LUFS、真峰值 ≤ -1.0 dBTP"
+  },
+  "F_palette": {
+    "dominant_colors": [
+      {
+        "hex": "#0D1613",
+        "share": 0.753
+      },
+      {
+        "hex": "#DCD6C3",
+        "share": 0.177
+      },
+      {
+        "hex": "#252F28",
+        "share": 0.031
+      },
+      {
+        "hex": "#B6BF9A",
+        "share": 0.029
+      },
+      {
+        "hex": "#606D55",
+        "share": 0.01
+      }
+    ],
+    "dark_pixel_ratio": 0.782,
+    "scheme": "暗色系"
+  },
+  "F2_layout": {
+    "ocr_frames": 13,
+    "sampled_every_s": 2.5,
+    "block_count": 279,
+    "text_lines": 50,
+    "y_bands": [
+      {
+        "band": "0–5%",
+        "blocks": 26
+      },
+      {
+        "band": "10–15%",
+        "blocks": 34
+      },
+      {
+        "band": "15–20%",
+        "blocks": 6
+      },
+      {
+        "band": "20–25%",
+        "blocks": 15
+      },
+      {
+        "band": "30–35%",
+        "blocks": 17
+      },
+      {
+        "band": "35–40%",
+        "blocks": 7
+      },
+      {
+        "band": "40–45%",
+        "blocks": 14
+      },
+      {
+        "band": "45–50%",
+        "blocks": 14
+      },
+      {
+        "band": "50–55%",
+        "blocks": 9
+      },
+      {
+        "band": "55–60%",
+        "blocks": 8
+      },
+      {
+        "band": "60–65%",
+        "blocks": 8
+      },
+      {
+        "band": "65–70%",
+        "blocks": 8
+      },
+      {
+        "band": "75–80%",
+        "blocks": 63
+      },
+      {
+        "band": "85–90%",
+        "blocks": 11
+      },
+      {
+        "band": "95–100%",
+        "blocks": 39
+      }
+    ],
+    "y_dense_bands": [
+      {
+        "band": "10–15%",
+        "blocks": 34
+      },
+      {
+        "band": "75–80%",
+        "blocks": 63
+      },
+      {
+        "band": "95–100%",
+        "blocks": 39
+      }
+    ],
+    "y_bands_note": "各卡版式不同时 y 分布准连续，全局槽位不存在；这里给占用直方图与密集带，不做聚类",
+    "type_tiers_px": [
+      {
+        "h_px": 81.8,
+        "blocks": 20,
+        "range": [
+          79,
+          86
+        ]
+      },
+      {
+        "h_px": 14.1,
+        "blocks": 256,
+        "range": [
+          7,
+          38
+        ]
+      }
+    ],
+    "type_tiers_ungrouped": 3,
+    "centered_ratio": 0.0,
+    "centered_scope": "内容区（y 20–80%）按行判定；并排块算一行",
+    "layout_verdict": "多框/多栏版式（非单栏居中）",
+    "note": "槽位=文字块中心的 y 百分比聚类（间隔 2.5%）；字号档=块高像素聚类（间隔 12px）。颜色『语义』（工具/系统/收益）属判断，脚本只给强调色清单，标注留给报告作者。",
+    "accent_color": {
+      "hex": "#B2ED5B",
+      "frames_with_accent": 13,
+      "accent_pixel_ratio_median": 0.0132,
+      "verdict": "正常（0.5–3%）：对标区间 1–3%"
+    }
+  },
+  "G_provenance": {
+    "boxes_found": [
+      "Lavf",
+      "isom",
+      "avc1"
+    ],
+    "has_c2pa": false,
+    "has_xmp": false,
+    "note": "未发现 C2PA/XMP 溯源信息；平台交付件通常已被转码洗掉原元数据，不能据此反推创作者工具",
+    "scan_bytes": 4194304
+  }
+}

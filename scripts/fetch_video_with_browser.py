@@ -65,6 +65,11 @@ def referer_for(url: str) -> str:
 
 def redfox_parse(url: str) -> dict | None:
     """调 redfox 通用解析接口取 videoUrl；不可用或未解析出地址时返回 None。"""
+    # 本机装了本地代理（HTTP(S)_PROXY=127.0.0.1:7897），requests 默认会走它；
+    # 2026-09-17 实测该代理上游挂掉时 redfox.hk 会在 TLS 层被 RST（ConnectionResetError 10054），
+    # 而绕过代理直连正常。所以这里对本进程显式放行 redfox，避免"代理坏了→取视频全挂"。
+    os.environ["NO_PROXY"] = ",".join(
+        filter(None, [os.environ.get("NO_PROXY", ""), "redfox.hk", "127.0.0.1", "localhost"]))
     if HERMES_SCRIPTS not in sys.path:
         sys.path.insert(0, HERMES_SCRIPTS)
     try:
@@ -99,7 +104,11 @@ def download_stream(url: str, target: Path, referer: str = "") -> bool:
     if referer:
         headers["Referer"] = referer
     try:
-        r = requests.get(url, headers=headers, timeout=180)
+        # trust_env=False：媒体 CDN（365yg / finder.video.qq / bilivideo）都是国内直连，
+        # 走本机代理反而会被坏上游 RST（与 redfox_parse 同一处理）
+        s = requests.Session()
+        s.trust_env = False
+        r = s.get(url, headers=headers, timeout=180)
     except Exception as exc:
         print(f"[warn] 下载失败: {type(exc).__name__}: {str(exc)[:100]}")
         return False

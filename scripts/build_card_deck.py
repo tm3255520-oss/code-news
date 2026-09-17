@@ -360,13 +360,26 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
   white-space:nowrap; }
 .unit-list .li .lin { font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:15px; color:@@accent_ink@@; font-weight:700; margin-right:2px; }
+/* ── 信息单元：checklist（图标 + 短句，2026-09-17 加；版式与 list 同族，只换前缀） ── */
+.unit-checklist { display:flex; flex-direction:column; gap:9px; width:@@list_w@@px; margin-top:40px; }
+.unit-checklist .li { display:flex; align-items:center; gap:14px;
+  padding:15px 20px; background:@@block_bg@@;
+  border:@@block_border@@; border-radius:@@block_radius@@px; }
+/* 不显式声明 emoji 字体族：写了会触发质量门"字体必须有 @font-face / local()"的检查
+   （2026-09-17 实测被拦），而系统会自己回退到 emoji 字体，去掉声明反而干净 */
+.unit-checklist .li .lici { flex:0 0 auto; font-size:20px; line-height:1; color:@@accent@@;
+  font-weight:900; }
+.unit-checklist .li .lit { font-size:@@li_size@@px; font-weight:700; color:@@block_ink@@;
+  white-space:nowrap; }
 .unit-note { margin-top:18px; font-size:@@note_size@@px; color:@@muted@@; font-weight:600; }
 /* blocks 与 units 同现时收紧间距：两者各自的 margin-top 叠加会把内容压进 HUD 区
    （实测过一次真实重叠：末卡「标题两行 + 卡片 + 对照 + 说明」超出内容区） */
 .blocks + .unit-list, .blocks + .unit-stat,
-.blocks + .unit-compare, .blocks + .unit-steps { margin-top:24px; }
+.blocks + .unit-compare, .blocks + .unit-steps,
+.blocks + .unit-checklist { margin-top:24px; }
 .unit-list + .unit-note, .unit-stat + .unit-note,
-.unit-compare + .unit-note, .unit-steps + .unit-note { margin-top:12px; }
+.unit-compare + .unit-note, .unit-steps + .unit-note,
+.unit-checklist + .unit-note { margin-top:12px; }
 
 /* ── 信息单元：stat（大数字 + 刻度带，借 gauge-readout-moves 式 B） ── */
 .unit-stat { display:flex; gap:52px; margin-top:46px; }
@@ -594,6 +607,22 @@ def render_card(card: dict, idx: int, total: int) -> str:
                           f'{esc(_item_field(it, "label"))}</div>'
                           f'<div class="ct">{esc(_item_field(it, "text"))}</div></div>')
             units_html += f'<div class="{cls}">{cells}</div>{note}'
+        elif ut == "checklist":
+            # 勾选清单（2026-09-17 加）：图标 + 短句，替代编号列表。
+            # 对标依据：抖音《只用了 Claude Code 30% 能力》每卡用 ✅/⭐ + 短句列 3–5 个功能点，
+            # 观众扫一眼抓要点；我们原来只有编号 / 圆点两种前缀，没有"图标 + 短句"的形态。
+            # 逐条进场复用 list 的 data-drift 机制（与 list 同款动效，无需新动画）。
+            rows = ""
+            for it in items:
+                # 默认用文本字形（✓）而不是 emoji：2026-09-17 实测 emoji 图标本身
+                # 过不了质量门的对比度检查（1.22:1），且 emoji 渲染依赖平台字体。
+                # 需要 emoji 时数据侧显式给 icon，但要自行承担 a11y 门风险。
+                icon = str(_item_field(it, "icon") or "✓").strip()
+                txt = _item_text(it)
+                rows += (f'<div class="li"><span class="lici">{esc(icon)}</span>'
+                         f'<span class="lit">{esc(txt)}</span></div>')
+            units_html += (f'<div class="unit-checklist" data-drift="'
+                           f'{1 if u.get("drift", True) else 0}">{rows}</div>{note}')
         elif ut == "steps":
             rows = ""
             for i, it in enumerate(items, 1):
