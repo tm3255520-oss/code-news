@@ -180,6 +180,30 @@ MEDIA_HOST_DENY = re.compile(r"byteeffecttos\.com|effectcdn|/ies\.fe\.effect/", 
 MEDIA_EXT = re.compile(r"\.(mp4|m4s)(\?|$)", re.I)
 
 
+# 浏览器通道：优先 msedge（profile 里有抖音登录态），起不来就换 chrome。
+# 2026-09-17 实测：本机 msedge 经 Playwright 启动会报 TargetClosedError（msedge.exe 自身异常），
+# 而 chrome 通道正常 —— 若不做回退，浏览器兜底整条路会断（redfox 一挂就取不到视频）。
+BROWSER_CHANNELS = ("msedge", "chrome")
+
+
+def launch_ctx(p, profile: Path, headless: bool):
+    """按 BROWSER_CHANNELS 顺序尝试启动持久化上下文，返回 (ctx, channel)。"""
+    last = None
+    for ch in BROWSER_CHANNELS:
+        try:
+            ctx = p.chromium.launch_persistent_context(
+                str(profile), headless=headless, channel=ch,
+                args=["--disable-blink-features=AutomationControlled"],
+                viewport=None if not headless else {"width": 1280, "height": 900},
+            )
+            print(f"[..] 浏览器通道: {ch}")
+            return ctx, ch
+        except Exception as exc:
+            last = exc
+            print(f"[warn] {ch} 启动失败（{type(exc).__name__}），尝试下一个通道")
+    raise RuntimeError(f"所有浏览器通道都起不来: {last}")
+
+
 def private_home() -> Path:
     root = os.environ.get("VIDEO_FETCH_HOME")
     base = Path(root) if root else Path.home() / ".codex" / "video-fetch"
@@ -214,13 +238,7 @@ def harvest_cookies(url: str, profile: Path, headless: bool, wait_s: float,
     from playwright.sync_api import sync_playwright
 
     with sync_playwright() as p:
-        ctx = p.chromium.launch_persistent_context(
-            str(profile),
-            headless=headless,
-            channel="msedge",
-            args=["--disable-blink-features=AutomationControlled"],
-            viewport=None if not headless else {"width": 1280, "height": 900},
-        )
+        ctx, _ = launch_ctx(p, profile, headless)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=60000)
@@ -278,11 +296,7 @@ def sniff_download(url: str, profile: Path, headless: bool, out_dir: Path,
     saved: list[Path] = []
     meta: dict = {}
     with sync_playwright() as p:
-        ctx = p.chromium.launch_persistent_context(
-            str(profile), headless=headless, channel="msedge",
-            args=["--disable-blink-features=AutomationControlled"],
-            viewport=None if not headless else {"width": 1280, "height": 900},
-        )
+        ctx, _ = launch_ctx(p, profile, headless)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
 
         def on_resp(resp):
