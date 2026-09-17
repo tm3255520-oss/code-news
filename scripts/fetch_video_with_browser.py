@@ -39,6 +39,105 @@ if hasattr(sys.stdout, "reconfigure"):
 
 READY_COOKIES = ("ttwid", "s_v_web_id", "odin_tt")
 
+# ---------- redfox 通用解析路由（2026-09-17 加） ----------
+# 为什么加：yt-dlp 对视频号没有 extractor、浏览器嗅探又撞登录墙（实测 0 条媒体流），
+# 而 redfox 的通用解析接口一次调用就给 videoUrl，覆盖抖音/视频号/B站，且不需要登录态。
+# 复用而非自建：鉴权与调用走 hermes 的共享客户端 redfox_client（同一套密钥/错误码处理），
+# 避免出现第三份 redfox 调用代码。
+HERMES_SCRIPTS = r"C:\Users\Administrator\.hermes\scripts"
+UA_FALLBACK = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+               "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+PLATFORM_REFERER = (
+    ("douyin", "https://www.douyin.com/"),
+    ("weixin", "https://channels.weixin.qq.com/"),
+    ("bilibili", "https://www.bilibili.com/"),
+    ("xiaohongshu", "https://www.xiaohongshu.com/"),
+)
+
+
+def referer_for(url: str) -> str:
+    low = url.lower()
+    for key, ref in PLATFORM_REFERER:
+        if key in low or (key == "weixin" and "sph" in low):
+            return ref
+    return ""
+
+
+def redfox_parse(url: str) -> dict | None:
+    """调 redfox 通用解析接口取 videoUrl；不可用或未解析出地址时返回 None。"""
+    if HERMES_SCRIPTS not in sys.path:
+        sys.path.insert(0, HERMES_SCRIPTS)
+    try:
+        from redfox_client import RedFox
+    except ImportError as exc:
+        print(f"[warn] redfox 共享客户端不可用，跳过该路由（{type(exc).__name__}: {exc}）")
+        return None
+    try:
+        # 注意：RedFox.call() 返回的是 data 本体，不是 {"code","msg","data"} 信封
+        data = RedFox().call("/story/api/parseWork/parse", {"url": url})
+    except Exception as exc:
+        print(f"[warn] redfox 解析异常，跳过该路由（{type(exc).__name__}: {exc}）")
+        return None
+    if not isinstance(data, dict):
+        print("[info] redfox 未返回可用结果，跳过该路由")
+        return None
+    if not (data.get("videoUrl") or "").strip():
+        print(f"[info] redfox 未解析出视频地址（awemeType={data.get('awemeType')}）")
+        return None
+    return data
+
+
+def download_stream(url: str, target: Path, referer: str = "") -> bool:
+    """下载媒体流。用 requests 而不是 urllib：实测抖音 365yg CDN 对 urllib 会
+    TLS 握手失败（UNEXPECTED_EOF），requests 正常。"""
+    try:
+        import requests
+    except ImportError:
+        print("[warn] 无 requests，跳过下载")
+        return False
+    headers = {"User-Agent": UA_FALLBACK}
+    if referer:
+        headers["Referer"] = referer
+    try:
+        r = requests.get(url, headers=headers, timeout=180)
+    except Exception as exc:
+        print(f"[warn] 下载失败: {type(exc).__name__}: {str(exc)[:100]}")
+        return False
+    if r.status_code != 200 or len(r.content) < 10000:
+        print(f"[warn] 下载异常: HTTP {r.status_code} / {len(r.content)} 字节")
+        return False
+    target.write_bytes(r.content)
+    return True
+
+
+def _redfox_path(url: str, out_dir: Path) -> int:
+    """redfox 路由：解析 → 下载 → 落 meta.json。失败返回非 0 让上层继续降级。"""
+    data = redfox_parse(url)
+    if not data:
+        return 7
+    target = out_dir / "video.mp4"
+    if not download_stream(data["videoUrl"], target, referer_for(url)):
+        return 7
+    probe = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "csv=p=0", str(target)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    meta = {
+        "platform": "redfox-parse",
+        "title": data.get("title") or "",
+        "duration": int(float((probe.stdout or "0").strip() or 0)),
+        "cover": data.get("cover"),
+        "aweme_type": data.get("awemeType"),
+        "webpage_url": url,
+        "method": "redfox-parse",
+    }
+    (out_dir / "meta.json").write_text(
+        json.dumps(scan_untrusted(meta), ensure_ascii=False, indent=2), encoding="utf-8")
+    print("[done] " + str(target))
+    print("       " + json.dumps({k: meta[k] for k in ("title", "duration", "method")},
+                                 ensure_ascii=False)[:200])
+    return 0
+
 
 def scan_untrusted(meta: dict) -> dict:
     """平台元数据（标题/简介/作者）是用户生成内容，属外部输入，扫一遍再落盘。
@@ -278,6 +377,8 @@ def main() -> int:
     ap.add_argument("--wait", type=float, default=40.0, help="等待关键 cookie 的秒数")
     ap.add_argument("--wait-sniff", type=float, default=15.0,
                     help="嗅探兜底时等待页面拉流加载的秒数")
+    ap.add_argument("--no-redfox", action="store_true",
+                    help="跳过 redfox 通用解析路由（默认先走它，失败再降级到浏览器）")
     args = ap.parse_args()
 
     home = private_home()
@@ -285,6 +386,12 @@ def main() -> int:
     cookie_file = home / "cookies.txt"
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    if not args.no_redfox:
+        print("[0/3] redfox 通用解析（无需登录态，覆盖抖音/视频号/B站）")
+        if _redfox_path(args.url, out_dir) == 0:
+            return 0
+        print("[info] redfox 路由未成功，降级到浏览器路由")
 
     print(f"[1/3] 启动浏览器取 cookie (profile={profile})")
     cookies = harvest_cookies(args.url, profile, args.headless, args.wait)

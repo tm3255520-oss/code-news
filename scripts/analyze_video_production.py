@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -37,9 +38,14 @@ PAUSE_DB = -35.0
 PAUSE_MIN_S = 0.25
 ALIGN_TOL_S = 0.6
 # 制作顺序（D 组）是"每个切点是否落在句首"的统计量，切点太少时覆盖率没有意义。
-# 2026-09-16 实测：一条卡片片只检出 4 个切点，却照样给出"配音先行 0.75"，
-# 看上去达标、实则样本不足以支撑结论 —— 低于此门槛一律判"证据不足"。
+# 2026-09-16 实测：一条卡片片只检出 4 个切点，却照样给出"配音先行 0.75"。
+# 2026-09-17 调整：门槛保留但分两级 ——
+#   n < MIN_CUTS_FOR_WEAK(5)          → 证据不足，不给结论
+#   5 ≤ n < MIN_CUTS_FOR_ORDER(8)     → 给结论但标"低置信"（7 卡结构天然只有 6–7 个切点，
+#                                        一味沉默会让整类片子无法作答）
+#   n ≥ MIN_CUTS_FOR_ORDER            → 正常结论
 MIN_CUTS_FOR_ORDER = 8
+MIN_CUTS_FOR_WEAK = 5
 
 
 def sh(args: list[str]) -> subprocess.CompletedProcess:
@@ -112,58 +118,142 @@ def classify_form(pr: dict, motion: dict) -> dict:
             "basis": why}
 
 
-# ---------- B 镜头节奏 + F 画面动态度 ----------
-def shots(path: Path, sample_step: int = 3, width: int = 160) -> dict:
+# ---------- B 镜头/卡片节奏 + F 画面动态度 ----------
+# 度量选择（2026-09-17 第二次更换）：原先用 HSV 直方图距离 + 自适应阈值，在"高静止 +
+# 少突变"的卡片片上失效（一条 7 卡视频只报 4 个切点，2 真 2 假、漏 5；另一条报 0）。
+# 先改成"逐帧灰度帧间差 + 单帧尖峰"，在两条卡片片上对了，但**过检**（元素进场被当事件）。
+# 最终方案基于三点实测校准（三条留档样本，见 reading-guide 的口径表）：
+#   ① 幅度单指标无法区分"换卡"与"元素进场"（幅度重叠）；
+#   ② 加"变化像素面积占比"后可以区分——换卡是整屏/整块换，元素只动一小块；
+#      但三种片型的面积尺度不同（全屏式卡片 / 只动中央文字的卡片 / 动态素材），
+#      单一阈值必然对某一种失效（实测：面积≥5% 时抖音 7 个正确、视频号只剩 4 个；
+#      面积≥2% 时视频号 9 个正确、抖音涨到 16 个）；
+#   ③ 动态素材片（B站样本）用面积判据会爆炸（180+），必须回到自适应阈值法。
+# 因此本函数**不输出单一"卡片数"**，而是输出区间 + 口径：
+#   严口径 = 幅度≥1.5 且 面积≥5%（全屏式换卡）→ 抖音 7（对上 7 张卡）
+#   宽口径 = 幅度≥1.5 且 面积≥2%（含只动中央文字的换卡）→ 视频号 9（对上 9–11 卡）
+#   D 组（声画耦合）用宽口径的事件，因为"跟着语音切"的换卡两种形态都算。
+CUT_MIN_DIFF = 1.5       # 事件最小幅度（灰阶，160px 宽降采样）
+AREA_TIGHT = 0.05        # 严口径：变化像素占比
+AREA_LOOSE = 0.02        # 宽口径：变化像素占比
+PIXEL_CHANGE_THR = 25    # 单像素判为"变了"的灰阶差
+DENSE_MEAN_DIFF = 1.0    # 帧间差均值 ≥ 该值 → 动态素材型，改用自适应阈值法
+CUT_SPIKE_RATIO = 2.5    # 单帧尖峰判定：峰值 > 相邻较高帧 × 该比例
+PREV_ADAPTIVE_THR = 0.35  # 动态素材型沿用原自适应阈值下限（B站样本 49 镜）
+
+
+def _events_by_criteria(m: list, r: list, fps: float,
+                        mthr: float, rthr: float) -> list:
+    """联合判据取事件：局部峰值 且 幅度≥mthr 且 变化面积≥rthr。
+
+    宽度（≥峰值一半的连续帧数）用来自动区分：1 帧=硬切，2–4 帧=淡变。
+    """
+    out: list = []
+    k = 1
+    while k < len(m) - 1:
+        v = float(m[k])
+        if (v >= mthr and float(r[k]) >= rthr
+                and v >= float(m[k - 1]) and v > float(m[k + 1])):
+            half = v / 2.0
+            lo = k
+            while lo - 1 >= 0 and float(m[lo - 1]) >= half:
+                lo -= 1
+            hi = k
+            while hi + 1 < len(m) and float(m[hi + 1]) >= half:
+                hi += 1
+            width = hi - lo + 1
+            out.append({
+                "t": round(k / fps, 2),
+                "peak": round(v, 2),
+                "area_ratio": round(float(r[k]), 3),
+                "width_frames": width,
+                "kind": "硬切" if width <= 1 else "淡变",
+            })
+            k = hi + 1
+        else:
+            k += 1
+    return out
+
+
+def _events_adaptive(m: list, fps: float) -> list:
+    """动态素材型：沿用原自适应阈值法（实拍/录屏/混剪，B站样本给出 49 镜）。"""
+    d = np.array(m)
+    thr = max(PREV_ADAPTIVE_THR, float(d.mean() + 1.6 * d.std()))
+    out: list = []
+    last = -10 ** 9
+    gap = int(0.5 * fps)
+    for i, v in enumerate(d):
+        if v <= thr or i - last < gap:
+            continue
+        out.append({"t": round(i / fps, 2), "peak": round(float(v), 2),
+                    "area_ratio": None, "width_frames": None, "kind": "变点"})
+        last = i
+    return out
+
+
+def shots(path: Path, width: int = 160) -> dict:
     try:
         import cv2
     except ImportError:
         return {"failed": True, "error": "no cv2"}
     cap = cv2.VideoCapture(str(path))
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    prev_hist = None
-    prev_small = None
-    diffs: list[tuple[float, float]] = []   # (t, hist_distance)
-    motion: list[tuple[float, float]] = []  # (t, intra-frame delta)
-    idx = 0
+    prev = None
+    m: list = []          # 帧间差均值（幅度）
+    r: list = []          # 变化像素占比（面积）
+    frames = 0
     while True:
         ok, fr = cap.read()
         if not ok:
             break
-        if idx % sample_step == 0:
-            h = max(2, int(width * fr.shape[0] / fr.shape[1]))
-            small = cv2.resize(fr, (width, h))
-            gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
-            hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
-            hist = cv2.calcHist([hsv], [0, 1], None, [50, 60], [0, 180, 0, 256])
-            cv2.normalize(hist, hist)
-            t = idx / fps
-            if prev_hist is not None:
-                diffs.append((t, float(cv2.compareHist(prev_hist, hist,
-                                                       cv2.HISTCMP_BHATTACHARYYA))))
-                motion.append((t, float(np.mean(cv2.absdiff(gray, prev_small)))))
-            prev_hist, prev_small = hist, gray
-        idx += 1
+        h = max(2, int(width * fr.shape[0] / fr.shape[1]))
+        gray = cv2.cvtColor(cv2.resize(fr, (width, h)), cv2.COLOR_BGR2GRAY)
+        if prev is not None:
+            df = cv2.absdiff(gray, prev)
+            m.append(float(df.mean()))
+            r.append(float((df > PIXEL_CHANGE_THR).mean()))
+        prev = gray
+        frames += 1
     cap.release()
-    if not diffs:
+    if not m:
         return {"failed": True, "error": "no frames decoded"}
 
-    d = np.array([x[1] for x in diffs])
-    thr = max(0.35, float(d.mean() + 1.6 * d.std()))
-    raw = [round(t, 2) for t, v in diffs if v > thr]
-    cuts = [t for i, t in enumerate(raw) if i == 0 or t - raw[i - 1] > 0.5]
+    arr = np.array(m)
+    mean_diff = float(arr.mean())
+    tight = loose = None
+    if mean_diff >= DENSE_MEAN_DIFF:
+        video_class = "动态素材型"
+        events = _events_adaptive(m, fps)
+        criteria = ("自适应阈值法（动态素材型：实拍/录屏/混剪；"
+                    f"阈值下限 {PREV_ADAPTIVE_THR}）")
+        counts = {"adaptive": len(events)}
+    else:
+        video_class = "静态卡片型"
+        tight = _events_by_criteria(m, r, fps, CUT_MIN_DIFF, AREA_TIGHT)
+        loose = _events_by_criteria(m, r, fps, CUT_MIN_DIFF, AREA_LOOSE)
+        events = loose            # D 组用宽口径：两种换卡形态都算"跟着语音切"
+        criteria = (f"联合判据 幅度≥{CUT_MIN_DIFF} 且 变化面积≥{AREA_LOOSE}"
+                    f"（宽口径=D组主口径）；严口径面积≥{AREA_TIGHT}")
+        counts = {"tight": len(tight), "loose": len(loose)}
 
-    total = (idx / fps) if fps else 0.0
+    cuts = [e["t"] for e in events]
+    total = (frames / fps) if fps else 0.0
     bounds = [0.0] + cuts + [round(total, 2)]
     durs = [round(bounds[i + 1] - bounds[i], 2) for i in range(len(bounds) - 1)]
     durs = [x for x in durs if x > 0.05]
     dur_arr = np.array(durs) if durs else np.array([0.0])
-
-    m = np.array([x[1] for x in motion]) if motion else np.array([0.0])
-    static_ratio = float((m < 2.0).mean()) if len(m) else None
-
+    rng = ([len(tight), len(loose)] if tight is not None else [len(events), len(events)])
     return {
+        "video_class": video_class,
+        "scene_metric": criteria,
+        "counts_by_criteria": counts,
+        "scene_count_range": rng,
         "cut_count": len(cuts),
         "cut_times": cuts,
+        "hard_cut_count": len([e for e in events if e["kind"] == "硬切"]),
+        "fade_count": len([e for e in events if e["kind"] == "淡变"]),
+        "event_detail": events,
+        "card_count": len(events) + 1,
         "shot_durations": durs,
         "shots": len(durs),
         "mean_shot_s": round(float(dur_arr.mean()), 2),
@@ -171,8 +261,9 @@ def shots(path: Path, sample_step: int = 3, width: int = 160) -> dict:
         "min_shot_s": round(float(dur_arr.min()), 2),
         "max_shot_s": round(float(dur_arr.max()), 2),
         "short_shots_lt2s": int((dur_arr < 2).sum()),
-        "static_shot_ratio": round(static_ratio, 3) if static_ratio is not None else None,
-        "threshold": round(thr, 3),
+        "static_shot_ratio": round(float((arr < 2.0).mean()), 3),
+        "mean_frame_diff": round(mean_diff, 3),
+        "threshold": round(CUT_MIN_DIFF, 2),
     }
 
 
@@ -234,20 +325,23 @@ def coupling(shot_info: dict, tr: dict) -> dict:
             matched += 1
     devs_arr = np.array(devs)
     coverage = matched / len(cuts)
-    if len(cuts) < MIN_CUTS_FOR_ORDER:
-        # 样本不足：不给结论，避免"3/4=0.75 看着达标"这类假阳性
-        order = (f"证据不足：切点仅 {len(cuts)} 个（需 ≥{MIN_CUTS_FOR_ORDER}），"
-                 "不作制作顺序判断")
-        confidence = "insufficient"
-    elif coverage >= 0.6 and float(np.median(devs_arr)) <= ALIGN_TOL_S:
+    n = len(cuts)
+    if coverage >= 0.6 and float(np.median(devs_arr)) <= ALIGN_TOL_S:
         order = "配音先行：画面切点按语音句首排布"
-        confidence = "high" if coverage >= 0.8 else "medium"
+        confidence = "high" if (coverage >= 0.8 and n >= MIN_CUTS_FOR_ORDER) else "low"
     elif coverage >= 0.4:
         order = "部分对齐：主要节点跟语音，细节自由"
-        confidence = "medium"
+        confidence = "medium" if n >= MIN_CUTS_FOR_ORDER else "low"
     else:
         order = "画面先行：切点与语音无显著对应"
-        confidence = "medium"
+        confidence = "medium" if n >= MIN_CUTS_FOR_ORDER else "low"
+    if n < MIN_CUTS_FOR_WEAK:
+        # 样本不足：不给结论，避免"3/4=0.75 看着达标"这类假阳性
+        order = (f"证据不足：切点仅 {n} 个（需 ≥{MIN_CUTS_FOR_WEAK}），"
+                 "不作制作顺序判断")
+        confidence = "insufficient"
+    elif n < MIN_CUTS_FOR_ORDER:
+        order += f"（低置信：切点仅 {n} 个，<{MIN_CUTS_FOR_ORDER}）"
 
     # 反向指标：一句话被拆成几镜（1 附近说明基本一句一镜）
     seg_with_cut = sum(
@@ -262,7 +356,9 @@ def coupling(shot_info: dict, tr: dict) -> dict:
         "segments_with_a_cut": seg_with_cut,
         "total_segments": len(tr["segments"]),
         "tolerance_s": ALIGN_TOL_S,
+        "cut_sample": n,
         "min_cuts_required": MIN_CUTS_FOR_ORDER,
+        "min_cuts_weak": MIN_CUTS_FOR_WEAK,
         "sample_confidence": confidence,
         "inferred_production_order": order,
     }
@@ -309,6 +405,35 @@ def voice_profile(video: Path, work: Path) -> dict:
     out["verdict"] = verdict
     out["caveat"] = "只能判停顿规律，不能判音色；需人工听一次确认"
     return out
+
+
+# ---------- H 响度/母带 ----------
+def loudness(video: Path, work: Path) -> dict:
+    """EBU R128 三值：整体响度 / 真峰值 / 动态范围。
+
+    为什么单列一组：母带是否合规、有没有削波，只有这一步能看出来。
+    2026-09-17 实测三条留档样本真峰值全部越线（−1.09 / +0.25 / +1.77 dBTP，
+    标准 ≤ −1.0），其中一条比 −14 LUFS 标准响约 5 dB —— 靠听是听不出来的。
+    注意：必须在**原视频**上测。实测先把音频降到 16k 单声道 wav 再测，抖音那条
+    从 −13.25 变成 −16.28 LUFS，差 3 dB —— 采样率与声道合并会改变测量结果。
+    """
+    r = sh(["ffmpeg", "-hide_banner", "-nostats", "-i", str(video),
+            "-map", "0:a:0", "-af", "loudnorm=print_format=json", "-f", "null", "-"])
+    m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", r.stderr or "")
+    if not m:
+        return {"failed": True, "error": "loudnorm 输出解析失败（可能无音轨）"}
+    j = json.loads(m.group(0))
+    i, tp, lra = float(j["input_i"]), float(j["input_tp"]), float(j["input_lra"])
+    return {
+        "integrated_lufs": i,
+        "true_peak_dbtp": tp,
+        "lra_lu": lra,
+        "true_peak_ok": tp <= -1.0,
+        "verdict": ("真峰值越界（标准 ≤ -1.0 dBTP），导出前需过限幅"
+                    if tp > -1.0 else "真峰值合规"),
+        "measured_on": "原视频音轨（非转码后的 wav）",
+        "note": "参考基准：整体响度约 -14 LUFS、真峰值 ≤ -1.0 dBTP",
+    }
 
 
 # ---------- F 视觉规范 ----------
@@ -395,6 +520,7 @@ def main() -> int:
     print("[C] 语音转写…"); report["C_transcript"] = transcribe(video, work, args.whisper_model)
     print("[D] 声画耦合…"); report["D_coupling"] = coupling(report["B_shots"], report["C_transcript"])
     print("[E] 配音类型…"); report["E_voice"] = voice_profile(video, work)
+    print("[H] 响度/母带…"); report["H_loudness"] = loudness(video, work)
     print("[F] 视觉规范…"); report["F_palette"] = palette(video)
     print("[G] 溯源…"); report["G_provenance"] = provenance(video)
 
@@ -409,13 +535,21 @@ def main() -> int:
         print(f"规格: {pr.get('width')}x{pr.get('height')} {pr.get('fps')}fps "
               f"{pr.get('video_codec')} v={pr.get('video_bitrate_kbps')}kbps "
               f"dur={pr.get('duration_s')}s")
-        print(f"节奏: {sh_.get('shots')} 镜头 / 均值 {sh_.get('mean_shot_s')}s / "
-              f"中位 {sh_.get('median_shot_s')}s / 静止占比 {sh_.get('static_shot_ratio')}")
+        rng = sh_.get("scene_count_range") or [0, 0]
+        print(f"节奏: {sh_.get('video_class')} / 场景数 {rng[0]}–{rng[1]}（严–宽口径）/ "
+              f"硬切 {sh_.get('hard_cut_count')} / 淡变 {sh_.get('fade_count')} / "
+              f"中位 {sh_.get('median_shot_s')}s / 静止 {sh_.get('static_shot_ratio')}")
         print(f"制作顺序: {cp.get('inferred_production_order')} "
               f"(切点命中句首 {cp.get('aligned_cuts')}/{cp.get('total_cuts')}"
-              f"={cp.get('cut_coverage')}, 中位偏差 {cp.get('median_deviation_s')}s)")
+              f"={cp.get('cut_coverage')}, 中位偏差 {cp.get('median_deviation_s')}s, "
+              f"置信 {cp.get('sample_confidence')})")
         print(f"配音: {vo.get('verdict')} (停顿 {vo.get('pause_count_ge_0.25s')} 次, "
               f"动态 {vo.get('dynamic_range_db')}dB)")
+        lo = report["H_loudness"]
+        if not lo.get("failed"):
+            print(f"响度: {lo.get('integrated_lufs')} LUFS / 真峰值 "
+                  f"{lo.get('true_peak_dbtp')} dBTP / LRA {lo.get('lra_lu')} LU — "
+                  f"{lo.get('verdict')}")
         pal = report["F_palette"]
         if not pal.get("failed"):
             print(f"配色: {pal.get('scheme')} " +
