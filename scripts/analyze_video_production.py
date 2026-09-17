@@ -472,6 +472,243 @@ def palette(video: Path, k: int = 5, max_frames: int = 24) -> dict:
             "scheme": "暗色系" if dark > 0.5 else "亮色系"}
 
 
+# ---------- F2 版式/字号/强调色（2026-09-17 新增） ----------
+# 为什么要 F2：F 组原来只有"5 色 k-means 占比"，而"能直接抄"的视觉信息是
+# 版式槽位、字号层级、强调色占比。做法参考 Work Buddy 的 layout 方法
+# （OCR 逐帧 → 词框 → 槽位聚类 + 字号分档），但抽帧与 OCR 自己实现而不是复制脚本：
+#   - OCR 用 Windows 自带能力（scripts/win_ocr.ps1，WinRT，零安装零依赖）
+#   - 本机实测 zh-CN OCR 包已 Installed；无引擎时本组按 failed 返回、不中断
+# 颜色"语义"（红=工具 / 绿=收益）是**判断**不是测量，脚本只给强调色清单与占比，
+# 语义标注留给报告作者 —— 与铁律 1「确定性 vs 推断分栏」一致。
+OCR_PS1 = Path(__file__).resolve().parent / "win_ocr.ps1"
+OCR_FILTER = re.compile(r"[\u4e00-\u9fff]")   # 含汉字才留
+
+
+def _ocr_image(img: Path, lang: str = "zh-CN") -> list:
+    """调 win_ocr.ps1 取词框。返回 [{text,x,y,w,h}]；失败返回 []。"""
+    if not OCR_PS1.exists():
+        return []
+    exe = shutil.which("powershell.exe") or shutil.which("powershell")
+    if not exe:
+        return []
+    r = subprocess.run(
+        [exe, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(OCR_PS1),
+         "-Path", str(img), "-Lang", lang],
+        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out = []
+    for line in (r.stdout or "").splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            out.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return out
+
+
+def _slots(values: list, bin_w: float, min_seed: int) -> list:
+    """一维分箱找"槽位"：分箱 → count ≥ min_seed 的箱作种子 → **仅紧邻**种子合并。
+
+    为什么不用链式聚类（相邻差 ≤ gap 就并）：实测 83 个块被一路并成 1 个槽位
+    （y 从 37.1% 到 63.7%），因为同页相邻文字的间隙都小于阈值。
+    分箱 + 紧邻合并不会跨空箱传播，槽位边界因此稳定可解释。
+    """
+    if not values:
+        return []
+    lo = min(values)
+    bins: dict = {}
+    for v in values:
+        b = int((v - lo) / bin_w)
+        bins.setdefault(b, []).append(v)
+    seeds = sorted(b for b, vs in bins.items() if len(vs) >= min_seed)
+    groups, cur = [], []
+    for b in seeds:
+        if cur and b - cur[-1] <= 1:
+            cur.append(b)
+        else:
+            if cur:
+                groups.append(cur)
+            cur = [b]
+    if cur:
+        groups.append(cur)
+    out = []
+    for g in groups:
+        vals = [v for b in g for v in bins[b]]
+        out.append((round(sum(vals) / len(vals), 1), len(vals),
+                    round(min(vals), 1), round(max(vals), 1)))
+    # 未落入任何槽位的块（散点）单独报数，不伪造槽位
+    covered = sum(len(bins[b]) for g in groups for b in g)
+    return out + ([] if covered == len(values) else [(None, len(values) - covered, None, None)])
+
+
+def _blocks_from_words(words: list, w: int, h: int) -> list:
+    """把词框并成行级文字块：同 y 带内的相邻词合并。丢掉纯单字符数字（emoji 误识）。"""
+    kept = []
+    for wo in words:
+        t = str(wo.get("text") or "").strip()
+        if not t:
+            continue
+        if not OCR_FILTER.search(t) and (len(t) < 2 or t.isdigit() and len(t) < 2):
+            continue          # 纯符号/单字符数字 = emoji 或装饰，忽略
+        kept.append(wo)
+    if not kept:
+        return []
+    kept.sort(key=lambda x: (x["y"], x["x"]))
+    lines: list = []
+    for wo in kept:
+        placed = False
+        for ln in lines:
+            if abs(ln[0]["y"] - wo["y"]) <= 0.6 * max(ln[0]["h"], wo["h"], 1):
+                ln.append(wo)
+                placed = True
+                break
+        if not placed:
+            lines.append([wo])
+    blocks = []
+    for ln in lines:
+        ln.sort(key=lambda x: x["x"])
+        merged = [ln[0]]
+        for wo in ln[1:]:
+            prev = merged[-1]
+            if wo["x"] - (prev["x"] + prev["w"]) <= 1.2 * max(prev["h"], 8):
+                merged[-1] = {**prev, "w": wo["x"] + wo["w"] - prev["x"],
+                              "text": prev["text"] + wo["text"],
+                              "h": max(prev["h"], wo["h"])}
+            else:
+                merged.append(wo)
+        for b in merged:
+            blocks.append({
+                "text": b["text"][:40],
+                "y_pct": round(100.0 * (b["y"] + b["h"] / 2) / h, 1),
+                "h_px": int(b["h"]),
+                "x_mid_pct": round(100.0 * (b["x"] + b["w"] / 2) / w, 1),
+            })
+    return blocks
+
+
+def layout_and_type(video: Path, work: Path, every_s: float = 2.5,
+                    max_frames: int = 30) -> dict:
+    """F2：OCR 逐帧 → 版式槽位 / 字号层级 / 居中判定 / 强调色占比。"""
+    try:
+        import cv2
+    except ImportError:
+        return {"failed": True, "error": "no cv2"}
+    cap = cv2.VideoCapture(str(video))
+    W = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
+    H = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+    dur = (total / fps) if fps else 0.0
+    fdir = work / "frames_ocr"
+    fdir.mkdir(parents=True, exist_ok=True)
+    times = []
+    t = 0.0
+    while t < dur and len(times) < max_frames:
+        times.append(round(t, 2))
+        t += every_s
+    frames, blocks_all, accent = [], [], []
+    for i, ts in enumerate(times):
+        img = fdir / f"o_{i:03d}.jpg"
+        cap.set(cv2.CAP_PROP_POS_MSEC, ts * 1000.0)
+        ok, fr = cap.read()
+        if not ok:
+            continue
+        cv2.imwrite(str(img), fr)
+        hsv = cv2.cvtColor(cv2.resize(fr, (200, int(200 * H / max(W, 1)))),
+                           cv2.COLOR_BGR2HSV)
+        sat = (hsv[:, :, 1] > 90) & (hsv[:, :, 2] > 90)
+        if sat.mean() > 0.0005:      # 有可辨识的强调色像素
+            px = cv2.cvtColor(cv2.resize(fr, (200, int(200 * H / max(W, 1)))),
+                              cv2.COLOR_BGR2RGB)[sat]
+            accent.append((ts, float(sat.mean()), np.median(px, axis=0)))
+        words = _ocr_image(img)
+        if words:
+            bl = _blocks_from_words(words, W, H)
+            frames.append({"t": ts, "blocks": bl})
+            blocks_all.extend(bl)
+    cap.release()
+    if not frames:
+        return {"failed": True,
+                "error": "OCR 无输出（检查 scripts/win_ocr.ps1 与 zh-CN 语言包）"}
+
+    # 纵向占用带：5% 分箱的直方图。**不做聚类**——实测各卡片版式不同（标签/大标题/
+    # 批注位置各异），y 分布是准连续的，全局"槽位"并不存在，硬聚会把 82 个块并成一簇。
+    # 密集带 = 计数 ≥ 2× 中位数的箱，等价于"文字主要落在这几段"。
+    bands: dict = {}
+    for b in blocks_all:
+        lo = int(b["y_pct"] // 5) * 5
+        bands[lo] = bands.get(lo, 0) + 1
+    med_band = float(np.median(list(bands.values()))) if bands else 0.0
+    y_bands = [{"band": f"{k}–{k + 5}%", "blocks": v} for k, v in sorted(bands.items())]
+    dense = [b for b in y_bands if med_band and b["blocks"] >= 2 * med_band]
+    tiers = _slots([b["h_px"] for b in blocks_all], 8, 2)
+    # 居中判定按"行"做：同一 y 带内的块合成一行（并排胶囊算一行），再看行中心。
+    # 按块判定会把左右并排的两个胶囊都算成"不居中"，实测把居中率压到 0.5。
+    lines_centered = lines_total = 0
+    for fr in frames:
+        rows: dict = {}
+        for b in fr["blocks"]:
+            if b["h_px"] < 20 or len(b["text"]) < 2:
+                continue
+            # 只算内容区（y 20–80%）：顶部装饰（左对齐系列名 + 右对齐页码）与
+            # 底部角标天然不居中，会把居中率拉低（实测抖音因它掉到 0.40）
+            if not (20 <= b["y_pct"] <= 80):
+                continue
+            key = int(b["y_pct"] // 2)
+            rows.setdefault(key, []).append(b)
+        for key, bs in rows.items():
+            left = min(b["x_mid_pct"] for b in bs)
+            right = max(b["x_mid_pct"] for b in bs)
+            lines_total += 1
+            if abs((left + right) / 2 - 50) <= 3:
+                lines_centered += 1
+    centered_ratio = round(lines_centered / max(lines_total, 1), 3)
+    out = {
+        "ocr_frames": len(frames),
+        "sampled_every_s": every_s,
+        "block_count": len(blocks_all),
+        "text_lines": lines_total,
+        "y_bands": y_bands,
+        "y_dense_bands": dense,
+        "y_bands_note": ("各卡版式不同时 y 分布准连续，全局槽位不存在；"
+                         "这里给占用直方图与密集带，不做聚类"),
+        "type_tiers_px": [{"h_px": c[0], "blocks": c[1],
+                           "range": [c[2], c[3]]}
+                          for c in sorted([t for t in tiers if t[0] is not None],
+                                          key=lambda x: -x[0])],
+        "type_tiers_ungrouped": sum(t[1] for t in tiers if t[0] is None),
+        "centered_ratio": centered_ratio,
+        "centered_scope": "内容区（y 20–80%）按行判定；并排块算一行",
+        # 分档依据（2026-09-17 两条样本）：视频号单栏居中 0.911；
+        # 抖音是"顶部标题 + 并排框 + 底部字幕"的多框版式，只剩 0.373 —— 这不是噪声，
+        # 是版式差异，所以三档描述而不是一刀切"是否居中"。
+        "layout_verdict": ("居中单栏纵向堆叠" if centered_ratio >= 0.85 else
+                           "以居中为主，存在并排/分栏行" if centered_ratio >= 0.6 else
+                           "多框/多栏版式（非单栏居中）"),
+        "note": ("槽位=文字块中心的 y 百分比聚类（间隔 2.5%）；字号档=块高像素聚类（间隔 12px）。"
+                 "颜色『语义』（工具/系统/收益）属判断，脚本只给强调色清单，标注留给报告作者。"),
+    }
+    if accent:
+        shares = np.array([a[1] for a in accent])
+        med = np.median(np.stack([a[2] for a in accent]), axis=0)
+        out["accent_color"] = {
+            "hex": "#{:02X}{:02X}{:02X}".format(int(med[0]), int(med[1]), int(med[2])),
+            "frames_with_accent": len(accent),
+            "accent_pixel_ratio_median": round(float(np.median(shares)), 4),
+            # 阈值口径：对标样本的强调色占比落在 1–3%（抖音那条荧光绿 1.2%），
+            # 所以 3% 以内属正常，超过才提示"是否铺面积"。
+            "verdict": ("极简（<0.5%）：几乎不用强调色"
+                        if float(np.median(shares)) < 0.005 else
+                        "正常（0.5–3%）：对标区间 1–3%"
+                        if float(np.median(shares)) <= 0.03 else
+                        "偏高（>3%）：颜色可能铺面积，注意是否失去强调作用"),
+        }
+    else:
+        out["accent_color"] = {"hex": None, "note": "未检出高饱和像素（可能纯灰阶/低饱和设计）"}
+    return out
+
+
 # ---------- G 溯源 ----------
 MARKERS = [b"c2pa", b"C2PA", b"uuid", b"xmp", b"Lavf", b"isom", b"hvc1", b"avc1"]
 
@@ -522,6 +759,8 @@ def main() -> int:
     print("[E] 配音类型…"); report["E_voice"] = voice_profile(video, work)
     print("[H] 响度/母带…"); report["H_loudness"] = loudness(video, work)
     print("[F] 视觉规范…"); report["F_palette"] = palette(video)
+    print("[F2] 版式/字号/强调色（OCR 逐帧）…")
+    report["F2_layout"] = layout_and_type(video, work)
     print("[G] 溯源…"); report["G_provenance"] = provenance(video)
 
     jf = work / "production_analysis.json"
@@ -554,6 +793,18 @@ def main() -> int:
         if not pal.get("failed"):
             print(f"配色: {pal.get('scheme')} " +
                   " ".join(f"{c['hex']}({c['share']:.0%})" for c in pal["dominant_colors"][:4]))
+        lt = report.get("F2_layout") or {}
+        if lt.get("failed"):
+            print(f"版式: 未产出（{lt.get('error')}）")
+        else:
+            tiers = " / ".join(f"{t['h_px']}px×{t['blocks']}" for t in lt["type_tiers_px"][:5])
+            ac = lt.get("accent_color") or {}
+            dense = ", ".join(f"{b['band']}({b['blocks']})" for b in lt.get("y_dense_bands", [])[:5])
+            print(f"版式: 文字行 {lt.get('text_lines')} / 纵向密集带 {dense or '无'} / "
+                  f"字号档 {tiers}")
+            print(f"     居中行占比 {lt['centered_ratio']} → {lt['layout_verdict']}")
+            print(f"强调色: {ac.get('hex')}（占比中位 {ac.get('accent_pixel_ratio_median')}）"
+                  f" {ac.get('verdict', '')}")
         print(f"溯源: C2PA={report['G_provenance'].get('has_c2pa')} "
               f"boxes={report['G_provenance'].get('boxes_found')}")
     return 0

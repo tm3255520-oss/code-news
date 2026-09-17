@@ -83,12 +83,18 @@ python C:/Users/Administrator/Documents/code-news/scripts/analyze_video_producti
 | D 声画耦合 | 切点 vs 句首的对齐率（样本分三级：<5 证据不足 / 5–7 低置信 / ≥8 正常） | **制作顺序** |
 | E 配音类型 | 停顿分布 + 动态范围 | TTS 还是真人 |
 | F 视觉规范 | 主色聚类 + 暗色占比 | 配色规范 |
+| F2 版式/字号 | OCR 逐帧 → 字号档 / 纵向占用带 / 居中率 / 强调色占比 | 版面与字号规范 |
 | G 溯源 | mp4 盒子 + encoder tag | 元数据是否可信 |
 | H 响度/母带 | 整体响度 / 真峰值 / LRA | 母带是否合规、有没有削波 |
 
 > C 组默认用 `large-v3-turbo`（2026-09-16 起）：D 组的结论完全建立在分句时间戳上，
 > 小模型的分句误差会直接传播成制作顺序误判。本机已缓存该模型，加载约 5 秒；
 > 需要快跑时再显式传 `--whisper-model small`。
+
+> F2 组用 **Windows 自带 OCR**（`scripts/win_ocr.ps1`，WinRT，零安装零依赖；本机
+> `Language.OCR~~~zh-CN` 实测已安装）。⚠️ 该 helper 是纯 ASCII 且必须用
+> **Windows PowerShell 5.1** 跑（PS7 不支持 `ContentType=WindowsRuntime` 投影；
+> PS5.1 按 GBK 解码 .ps1，中文注释会直接导致语法错误）。缺引擎时 F2 标 `failed` 不中断。
 
 ### 第 2 步 🔴 读判读规则
 

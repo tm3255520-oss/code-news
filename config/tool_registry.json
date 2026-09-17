@@ -34,6 +34,13 @@
       "fallbacks": [],
       "purpose": "需登录态平台的视频获取（抖音等）。从浏览器进程读明文 cookie，绕开 Chrome/Edge v20 App-Bound 加密导致的 yt-dlp DPAPI 失败"
     },
+    "ocr_win": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/win_ocr.ps1",
+      "fallbacks": [],
+      "purpose": "Windows 自带 OCR（Windows.Media.Ocr / WinRT）取词与像素坐标，零安装零依赖；需 Language.OCR~~~zh-CN 语言包，必须用 Windows PowerShell 5.1 执行（PS7 不支持 WinRT 投影），脚本为纯 ASCII（PS5.1 按 GBK 解码）。被 video-production-analysis 的 F2 组调用"
+    },
     "tool_inventory": {
       "mode": "local_script",
       "status": "active",
