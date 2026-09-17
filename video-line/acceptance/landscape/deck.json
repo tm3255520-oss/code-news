@@ -4,6 +4,7 @@
  "breadcrumb": "自动流水线",
  "style": "grid-dark",
  "audio": "assets/voice_segmented.mp3",
+ "format": "landscape",
  "cards": [
   {
    "title": "还在比\n哪个 AI 答得准",
@@ -300,7 +301,7 @@
    "step": "04 / 04",
    "motion": "DRAWS 标题 → FLOATS 卡片",
    "transition_in": "硬切",
-   "transition_out": "FADES 到黑",
+   "transition_out": "硬切",
    "kicker": "08 · 结论",
    "blocks": [
     {
@@ -324,7 +325,7 @@
     }
    ],
    "start": 22.31,
-   "duration": 5.46,
+   "duration": 5.62,
    "captions": [
     {
      "text": "所以值钱的不是提示词，",
@@ -344,7 +345,46 @@
     {
      "text": "就是你该搭的那条线。",
      "start": 26.571,
-     "duration": 1.821
+     "duration": 1.319
+    }
+   ]
+  },
+  {
+   "title": "你早晚用得上",
+   "from": 9,
+   "to": 9,
+   "step": "04 / 04",
+   "motion": "FLOATS 标题 → FLOATS 卡片",
+   "transition_in": "硬切",
+   "transition_out": "FADES 到黑",
+   "kicker": "09 · 行动",
+   "blocks": [
+    {
+     "label": "一句话",
+     "text": "收藏是给以后的自己省时间"
+    }
+   ],
+   "units": [
+    {
+     "type": "list",
+     "items": [
+      "先收藏，要用时不用翻记录",
+      "想看拆解过程，点关注"
+     ]
+    }
+   ],
+   "start": 27.93,
+   "duration": 4.54,
+   "captions": [
+    {
+     "text": "先收藏，要用的时候省得再找。",
+     "start": 27.93,
+     "duration": 2.585
+    },
+    {
+     "text": "想看每一步怎么拆，关注我。",
+     "start": 30.555,
+     "duration": 2.531
     }
    ]
   }

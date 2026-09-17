@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-16T20:20:46.526303",
+  "generated_at": "2026-09-17T12:58:10.440350",
   "engine": "edge",
   "gap": 0.16,
-  "total_duration": 27.77,
+  "total_duration": 32.47,
   "segments": [
     {
       "index": 1,
@@ -67,6 +67,14 @@
       "end": 27.77,
       "duration": 5.46,
       "sentences": 4
+    },
+    {
+      "index": 9,
+      "text": "先收藏，要用的时候省得再找。想看每一步怎么拆，关注我。",
+      "start": 27.93,
+      "end": 32.47,
+      "duration": 4.54,
+      "sentences": 2
     }
   ],
   "head_trim": [
@@ -77,6 +85,7 @@
     0.12,
     0.12,
     0.1,
-    0.11
+    0.11,
+    0.1
   ]
 }
