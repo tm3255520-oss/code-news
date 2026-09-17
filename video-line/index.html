@@ -70,6 +70,16 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
 .card-inner { position:absolute; left:72px; right:72px; top:150px; bottom:262px; }
 /* 纵向画幅下 .card-inner 是 flex 列：kicker 是 inline-block，不限定就会横向拉伸成整条 */
 .card-inner > .kicker { align-self:flex-start; }
+/* ── 背景素材层（2026-09-17 加）──
+   每卡一张深色底图（数据侧 card.bg），压暗铺底，内容浮在其上。
+   对标依据：抖音《只用了 Claude Code 30%能力》每卡换一张深色科技素材，
+   我们原来 9 张卡背景完全一样（同一网格底）→ 逐卡差异感为零。
+   压暗用 filter + 径向遮罩两层：既压住素材亮度保住文字对比度，又给中心留亮区。 */
+.bgimg { position:absolute; inset:0; background-size:cover; background-position:center;
+  filter:brightness(.55) saturate(.85); }
+.bgimg::after { content:""; position:absolute; inset:0;
+  background:radial-gradient(125% 95% at 50% 42%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.74) 100%); }
+.card-inner.has-bg > *:not(.bgimg) { position:relative; z-index:1; }
 .kicker { display:inline-block; border:1px solid #B3E553; border-radius:14px;
   padding:6px 16px; font-size:13px; letter-spacing:.16em; font-weight:800; color:#B3E553;
   font-family:ui-monospace, Consolas, "Courier New", monospace; }
@@ -104,13 +114,26 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
   white-space:nowrap; }
 .unit-list .li .lin { font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:15px; color:#8FB845; font-weight:700; margin-right:2px; }
+/* ── 信息单元：checklist（图标 + 短句，2026-09-17 加；版式与 list 同族，只换前缀） ── */
+.unit-checklist { display:flex; flex-direction:column; gap:9px; width:640px; margin-top:40px; }
+.unit-checklist .li { display:flex; align-items:center; gap:14px;
+  padding:15px 20px; background:rgba(179,229,83,.045);
+  border:2px solid #B3E553; border-radius:18px; }
+/* 不显式声明 emoji 字体族：写了会触发质量门"字体必须有 @font-face / local()"的检查
+   （2026-09-17 实测被拦），而系统会自己回退到 emoji 字体，去掉声明反而干净 */
+.unit-checklist .li .lici { flex:0 0 auto; font-size:20px; line-height:1; color:#B3E553;
+  font-weight:900; }
+.unit-checklist .li .lit { font-size:24px; font-weight:700; color:#EDEDE6;
+  white-space:nowrap; }
 .unit-note { margin-top:18px; font-size:19px; color:#9AA79B; font-weight:600; }
 /* blocks 与 units 同现时收紧间距：两者各自的 margin-top 叠加会把内容压进 HUD 区
    （实测过一次真实重叠：末卡「标题两行 + 卡片 + 对照 + 说明」超出内容区） */
 .blocks + .unit-list, .blocks + .unit-stat,
-.blocks + .unit-compare, .blocks + .unit-steps { margin-top:24px; }
+.blocks + .unit-compare, .blocks + .unit-steps,
+.blocks + .unit-checklist { margin-top:24px; }
 .unit-list + .unit-note, .unit-stat + .unit-note,
-.unit-compare + .unit-note, .unit-steps + .unit-note { margin-top:12px; }
+.unit-compare + .unit-note, .unit-steps + .unit-note,
+.unit-checklist + .unit-note { margin-top:12px; }
 
 /* ── 信息单元：stat（大数字 + 刻度带，借 gauge-readout-moves 式 B） ── */
 .unit-stat { display:flex; gap:52px; margin-top:46px; }
@@ -165,7 +188,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
 .progress i.on { background:#B3E553; }
 
 /* ── 面板下部：HUD 读数 / 步骤标号 / 分段进度条 ── */
-.hud { position:absolute; left:52px; bottom:168px;
+/* z-index:3 是必需的：HUD 与 .card-inner 在纵向有约 30px 重叠，卡片内容透明时能透出，
+   但加了背景素材层（.bgimg 不透明）后会被盖住 —— 2026-09-17 实测被质量门 text_occluded 拦下 */
+.hud { position:absolute; left:52px; bottom:168px; z-index:3;
   display:flex; flex-direction:column;
   font-family:ui-monospace, Consolas, "Courier New", monospace;
   font-size:12px; line-height:1.75; letter-spacing:.06em; color:#9AA79B; }
@@ -222,9 +247,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
         </div>
       </div>
 
-  <div class="clip card" data-start="0.000" data-duration="2.580" data-track-index="1" id="card0">
-    <div class="card-inner" data-motion="SLAMS 标题">
-      <div class="kicker-wrap"><div class="kicker">01 · 现状</div></div>
+    <div class="clip card" data-start="0.000" data-duration="2.580" data-track-index="1" id="card0">
+      <div class="card-inner" data-motion="SLAMS 标题">
+        <div class="kicker-wrap"><div class="kicker">01 · 现状</div></div>
       <div class="title">还在比
 哪个 AI 答得准</div>
       
@@ -243,9 +268,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>01 / 04</b></div>
     <div class="pbar"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="2.580" data-duration="5.160" data-track-index="1" id="card1">
-    <div class="card-inner" data-motion="FLOATS 标题 → FLOATS 卡片">
-      <div class="kicker-wrap"><div class="kicker">02 · 转折</div></div>
+    <div class="clip card" data-start="2.580" data-duration="5.160" data-track-index="1" id="card1">
+      <div class="card-inner" data-motion="FLOATS 标题 → FLOATS 卡片">
+        <div class="kicker-wrap"><div class="kicker">02 · 转折</div></div>
       <div class="title">差距不在前台</div>
       
       <div class="blocks n1"><div class="block"><div class="bl">关键</div><div class="bt">真正拉开差距的是后台</div></div></div>
@@ -263,9 +288,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>02 / 04</b></div>
     <div class="pbar"><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="7.740" data-duration="2.850" data-track-index="1" id="card2">
-    <div class="card-inner" data-motion="TYPES 标题">
-      <div class="kicker-wrap"><div class="kicker">03 · 方法</div></div>
+    <div class="clip card" data-start="7.740" data-duration="2.850" data-track-index="1" id="card2">
+      <div class="card-inner" data-motion="TYPES 标题">
+        <div class="kicker-wrap"><div class="kicker">03 · 方法</div></div>
       <div class="title"><span class="ln"><span class="ch">三</span><span class="ch">个</span><span class="ch"> </span><span class="ch">A</span><span class="ch">I</span><span class="ch"> </span><span class="ch">分</span><span class="ch">工</span></span></div>
       
       
@@ -283,9 +308,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>03 / 04</b></div>
     <div class="pbar"><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="10.590" data-duration="2.990" data-track-index="1" id="card3">
-    <div class="card-inner" data-motion="FLOATS 标题">
-      <div class="kicker-wrap"><div class="kicker">04 · 深夜干活</div></div>
+    <div class="clip card" data-start="10.590" data-duration="2.990" data-track-index="1" id="card3">
+      <div class="card-inner" data-motion="FLOATS 标题">
+        <div class="kicker-wrap"><div class="kicker">04 · 深夜干活</div></div>
       <div class="title">采集员</div>
       
       
@@ -303,9 +328,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>03 / 04</b></div>
     <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="13.580" data-duration="3.020" data-track-index="1" id="card4">
-    <div class="card-inner" data-motion="SLIDES 标题">
-      <div class="kicker-wrap"><div class="kicker">05 · 分清平台</div></div>
+    <div class="clip card" data-start="13.580" data-duration="3.020" data-track-index="1" id="card4">
+      <div class="card-inner" data-motion="SLIDES 标题">
+        <div class="kicker-wrap"><div class="kicker">05 · 分清平台</div></div>
       <div class="title">改写员</div>
       
       
@@ -323,9 +348,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>03 / 04</b></div>
     <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="16.600" data-duration="2.920" data-track-index="1" id="card5">
-    <div class="card-inner" data-motion="FLOATS 标题">
-      <div class="kicker-wrap"><div class="kicker">06 · 早上开工</div></div>
+    <div class="clip card" data-start="16.600" data-duration="2.920" data-track-index="1" id="card5">
+      <div class="card-inner" data-motion="FLOATS 标题">
+        <div class="kicker-wrap"><div class="kicker">06 · 早上开工</div></div>
       <div class="title">发布员</div>
       
       
@@ -343,9 +368,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>03 / 04</b></div>
     <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="19.520" data-duration="2.790" data-track-index="1" id="card6">
-    <div class="card-inner" data-motion="RISES 标题">
-      <div class="kicker-wrap"><div class="kicker">07 · 串起来</div></div>
+    <div class="clip card" data-start="19.520" data-duration="2.790" data-track-index="1" id="card6">
+      <div class="card-inner" data-motion="RISES 标题">
+        <div class="kicker-wrap"><div class="kicker">07 · 串起来</div></div>
       <div class="title">人退到早上</div>
       
       
@@ -363,9 +388,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>03 / 04</b></div>
     <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="22.310" data-duration="5.620" data-track-index="1" id="card7">
-    <div class="card-inner" data-motion="DRAWS 标题 → FLOATS 卡片">
-      <div class="kicker-wrap"><div class="kicker">08 · 结论</div></div>
+    <div class="clip card" data-start="22.310" data-duration="5.620" data-track-index="1" id="card7">
+      <div class="card-inner" data-motion="DRAWS 标题 → FLOATS 卡片">
+        <div class="kicker-wrap"><div class="kicker">08 · 结论</div></div>
       <div class="title">值钱的不是提示词
 是流程</div>
       <div class="rule"></div>
@@ -386,9 +411,9 @@ html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0
     <div class="steplabel">STEP <b>04 / 04</b></div>
     <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i></div>
   </div>
-  <div class="clip card" data-start="27.930" data-duration="4.540" data-track-index="1" id="card8">
-    <div class="card-inner" data-motion="FLOATS 标题 → FLOATS 卡片">
-      <div class="kicker-wrap"><div class="kicker">09 · 行动</div></div>
+    <div class="clip card" data-start="27.930" data-duration="4.540" data-track-index="1" id="card8">
+      <div class="card-inner" data-motion="FLOATS 标题 → FLOATS 卡片">
+        <div class="kicker-wrap"><div class="kicker">09 · 行动</div></div>
       <div class="title">你早晚用得上</div>
       
       <div class="blocks n1"><div class="block"><div class="bl">一句话</div><div class="bt">收藏是给以后的自己省时间</div></div></div>
