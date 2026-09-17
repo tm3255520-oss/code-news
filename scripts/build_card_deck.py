@@ -527,8 +527,9 @@ def render_card(card: dict, idx: int, total: int) -> str:
 
     # 背景素材层（可选）：数据侧给 card.bg 就铺一张深色底图，不给则维持原样（向后兼容）
     bg = card.get("bg")
-    bg_html = (f'<div class="bgimg" style="background-image:url(\'{esc(bg)}\')"></div>'
-               if bg else "")
+    # 内联拼接（不是单独一行插值）：无 bg 时输出与旧模板逐字节一致，便于回归比对
+    bg_inline = (f'\n        <div class="bgimg" style="background-image:url(\'{esc(bg)}\')"></div>'
+                 if bg else "")
     inner_cls = "card-inner has-bg" if bg else "card-inner"
 
     blocks = ""
@@ -612,8 +613,7 @@ def render_card(card: dict, idx: int, total: int) -> str:
     rule = '<div class="rule"></div>' if need_rule else ""
     return f"""
     <div class="clip card" data-start="{card['start']:.3f}" data-duration="{card['duration']:.3f}" data-track-index="1" id="card{idx}">
-      <div class="{inner_cls}" data-motion="{esc(card.get('motion', ''))}">
-        {bg_html}
+      <div class="{inner_cls}" data-motion="{esc(card.get('motion', ''))}">{bg_inline}
         <div class="kicker-wrap">{kicker}</div>
       <div class="title">{title_html}</div>
       {rule}
