@@ -448,7 +448,7 @@
       "fallbacks": [
         "scripts/redfox_search.py"
       ],
-      "purpose": "会话内 RedFox 只读检索入口（9 种查询：xhs/douyin/douyin-account/gzh/gzh-account/gzh-rank/bilibili/shipinhao/trending）。定位：让智能体在对话里直接按关键词取结构化新媒体数据，不用等 cron、不用翻落盘文件。**只读**——不写 vault、不转录、不做闸门；要入库走各平台 *_redfox_collect.py。复用 .hermes/scripts/redfox_client.py 鉴权（REDFOX_API_KEY 在 .hermes/.env）。端点与字段映射均取自已验证的采集脚本，未验证的营销页端点不接线。单次返回封顶 30 条（超出标 truncated）"
+      "purpose": "会话内 RedFox 关键词检索入口（9 种查询：xhs/douyin/douyin-account/gzh/gzh-account/gzh-rank/bilibili/shipinhao/trending）。定位：让智能体在对话里直接按关键词取结构化新媒体数据，不用等 cron、不用翻落盘文件。**只读**——不写 vault、不转录、不做闸门；要入库走各平台 *_redfox_collect.py。复用 .hermes/scripts/redfox_client.py 鉴权（REDFOX_API_KEY 在 .hermes/.env）。端点与字段映射均取自已验证的采集脚本，未验证的营销页端点不接线。单次返回封顶 30 条（超出标 truncated）。**边界（2026-09-27）**：抖音/小红书 的榜单、账号榜、涨粉榜、对标、账号诊断不在本条——走 redfox_skill（官方 skill），刻意不重复实现"
     },
     "redfox_skill": {
       "mode": "toolkit_tool",

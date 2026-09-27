@@ -27,6 +27,13 @@
     python redfox_search.py bilibili "AI 工具" --limit 10
     python redfox_search.py shipinhao "AI 副业" --limit 10
     python redfox_search.py trending            # 全网热点（多平台榜单聚合）
+
+边界（2026-09-27 Phase 2 明确，避免重复实现）：
+    本脚本只管「关键词检索」+ 公众号榜单/全网热点。
+    抖音与小红书的**榜单/账号榜/涨粉榜/对标/账号诊断**不在本脚本，走 redfox_skill：
+        python redfox_skill.py douyin-daily-hot --limit 3
+        python redfox_skill.py xiaohongshu-weeklytop --top_n 20
+    那些能力由官方 skill 实现（已逐枚验证），此处**刻意不再复制一份**。
 """
 from __future__ import annotations
 
