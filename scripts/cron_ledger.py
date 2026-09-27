@@ -24,7 +24,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -89,15 +89,54 @@ def first_error_line(job: dict, limit: int = 110) -> str:
     return raw[:limit] if raw else "—"
 
 
+# 失败标记：提示词型 job 的标题带 "(FAILED)"，脚本型 job 正文带 "**Status:** script failed"。
+# 只扫文件头部即可判定（头部含标题与状态）。
+FAIL_MARKERS = ("(FAILED)", "script failed")
+
+
+def scan_history(job: dict, days: int) -> list[str]:
+    """回看 cron/output 里近 N 天的输出，返回出现过失败的日期。
+
+    为什么要它：jobs.json 的 last_status / failure_streak 只反映**最近一次**，
+    任务一旦恢复就归零，于是几天前的事故会被抹掉。
+    2026-09-27 实测教训：每日情报-1/2 在 09-25、09-26 因 Connection error 失败，
+    看门狗当天就报了警；09-27 恢复后 streak 归零，只看 last_status 完全看不到，
+    直到顺着内容线断链才挖出来（已写入 06-复用守则 第十节 第 5 条）。
+    """
+    d = CRON_OUT / str(job.get("id") or "")
+    if not d.is_dir():
+        return []
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    hits: list[str] = []
+    for f in sorted(d.iterdir()):
+        if not f.is_file():
+            continue
+        date = f.name[:10]
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", date) or date < cutoff:
+            continue
+        try:
+            head = f.read_text(encoding="utf-8", errors="replace")[:2000]
+        except OSError:
+            continue
+        if any(m in head for m in FAIL_MARKERS):
+            hits.append(date)
+    return sorted(set(hits))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(prog="cron_ledger.py", description="定时任务台账")
     ap.add_argument("--dry-run", action="store_true", help="只打印摘要，不写 vault")
     ap.add_argument("--date", default=None, help="文件名日期 YYYY-MM-DD（默认今天）")
+    ap.add_argument("--days", type=int, default=7, help="回看窗口天数（默认 7）")
     ns = ap.parse_args()
 
     jobs = load_jobs()
     blob = load_registry_blob()
     date = ns.date or datetime.now().strftime("%Y-%m-%d")
+
+    history = {str(j.get("id")): scan_history(j, ns.days) for j in jobs}
+    hist_bad = [(j, history[str(j.get("id"))]) for j in jobs if history[str(j.get("id"))]]
+    hist_bad.sort(key=lambda t: (-len(t[1]), str(t[0].get("name"))))
 
     def sched(j: dict) -> str:
         s = j.get("schedule")
@@ -127,7 +166,19 @@ def main() -> int:
     ap_("| 最近一次非 ok | **%d** |" % len(bad))
     ap_("| 已停用（enabled=false） | %d |" % len(disabled))
     ap_("| 有脚本但未在 tool_registry 登记 | %d |" % len(unreg))
+    ap_("| **近 %d 天内出现过失败**（含已恢复的） | **%d** |" % (ns.days, len(hist_bad)))
     ap_("")
+    if hist_bad:
+        ap_("### 近 %d 天窗口内出现过失败的任务" % ns.days)
+        ap_("")
+        ap_("> 这一节**不受 last_status 影响**——任务恢复后 streak 会归零，但历史输出不会。排序按窗口内失败条数。")
+        ap_("> 2026-09-25/26 的每日情报-1/2 就是只有在这里才看得见的例子。")
+        ap_("")
+        ap_("| 失败条数 | 任务 | 调度 | 失败日期 |")
+        ap_("| ---: | --- | --- | --- |")
+        for j, dates in hist_bad:
+            ap_("| %d | %s | `%s` | %s |" % (len(dates), j.get("name"), sched(j), ", ".join(dates)))
+        ap_("")
     if bad:
         ap_("## 二、需要关注（最近一次非 ok，按连续失败次数降序）")
         ap_("")
@@ -176,6 +227,9 @@ def main() -> int:
     doc = "\n".join(L)
     print("概览：总数 %d ｜ ok %d ｜ 非 ok %d ｜ 停用 %d ｜ 未登记 %d"
           % (len(jobs), len(ok), len(bad), len(disabled), len(unreg)))
+    print("近 %d 天出现过失败：%d 个任务" % (ns.days, len(hist_bad)))
+    for j, dates in hist_bad:
+        print("  ↺ %-24s %d 次 %s" % (j.get("name"), len(dates), ",".join(d[-5:] for d in dates)))
     for j in bad:
         print("  ⚠️ streak=%-3s %-24s %s" % (j.get("failure_streak") or 0, j.get("name"),
                                               first_error_line(j, 70)))
