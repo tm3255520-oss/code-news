@@ -1,5 +1,10 @@
 {
   "schemaVersion": 1,
+  "scope": {
+    "included": "可被 Agent / 内容脚本按名路由的能力：采集、分析、创作、发布适配、视频、会话检索、工具。登记粒度是「能力」，不是「定时任务」",
+    "excluded": "基础设施 / 运维任务（日志轮转、健康巡检、vault 同步、git 留痕、模型配置汇总、handoff 分发、代理保活等）——不是可路由能力，故不登记；其调度真相以 .hermes/cron/jobs.json 为准，健康由 cron_watchdog / hermes-doctor 覆盖",
+    "note": "2026-09-27 Phase 0 决策：对表 jobs.json 后，内容链路已全部登记；剩余仅基础设施类，维持不入本表（详见 docs/RedFox能力台账-2026-09-27.md）"
+  },
   "interfaces": {
     "monitor_skill": {
       "mode": "manual_skill",
@@ -61,6 +66,22 @@
       "primary": "scripts/proxy_health_check.py",
       "fallbacks": [],
       "purpose": "出网体检：对每个目标分别测直连与走环境代理，区分「目标挂了」与「代理挂了」。2026-09-17 实战教训：本机代理上游故障时 redfox 在 TLS 层被 RST，表面像 redfox 挂了；取视频链路排障第一步"
+    },
+    "nvidia_model_audit": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/provider_model_audit.py",
+      "fallbacks": [
+        "scripts/nvidia_model_audit.py"
+      ],
+      "purpose": "英伟达等供应商模型目录周检（cron 5f2e55cfcffc，每周一 09:30，经 ~/.hermes/scripts/nvidia_model_audit_weekly.py 转发）：拉 /v1/models 全量目录 → 按母本 nvidia_adopt_rules 分类 → 与 nvidia_curated 比对（OK/REPLACED/DELISTED/NEW）→ 下架即清理、上架即采用、同族改名（如 deepseek-v4-flash-0731 → deepseek-v4.1-flash）自动接续 → 把死 pin 换成在架模型（Hermes config.yaml、cron jobs.json、脚本 LLM_MODEL）→ 写快照与周报。解决英伟达模型不定时上架/下架。"
+    },
+    "nvidia_key_watch": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/watch_nvidia_keys.py",
+      "fallbacks": [],
+      "purpose": "NVIDIA Key 每日探活（cron fc2791f1f875，每日 10:00，经 ~/.hermes/scripts/watch_nvidia_keys.py 转发）：把 403（账号级回收，等 1-7 天自愈，勿动配置）/ 429（免费额度限流，换模型即可）/ 404·410（模型已下架）/ 探活失败（超时·连不上，与限流无关）分开报；状态写 ~/.hermes/cache/nvidia_key_watch.json 供周报 Key 健康表读取，仅在状态变化或出现需处置状态时出声。"
     },
     "tool_inventory": {
       "mode": "local_script",
@@ -195,12 +216,248 @@
       "fallbacks": [],
       "purpose": "视频号素材【发现层】：关键词搜索作品（带赞/藏/转发/评论）-> 闸门排序 -> 候选区清单。注意：视频号搜索结果不带可用分享链接，无法自动提文案（实测构造链接后端下载失败），要文案需人工拿分享链接走 video_transcript。cron 每日 04:45（b5f4d5b9e926）"
     },
+    "material_collect_xiaohongshu": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/xiaohongshu_redfox_collect.py",
+      "fallbacks": [],
+      "purpose": "素材主动采集（小红书，已打通）：关键词搜索笔记（带赞/藏/评/转）-> 规则闸门 -> 图文笔记直接入库、视频笔记尝试提文案 -> raw/articles/xiaohongshu/，候选写候选区。cron 每日 04:25（经 register_xiaohongshu_keyword_cron.py 注册）。已知边界：xhs 提文案接口不稳定且受 10 分钟上限约束，失败时跳过、不阻塞其他笔记。2026-09-27 补录（此前 registry 漏登记）"
+    },
+    "material_collect_zhihu": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/zhihu_keyword_collect.py",
+      "fallbacks": [],
+      "purpose": "素材主动采集（知乎）——**不走 RedFox**：RedFox 的 zhihu/searchWork 只返回 opusId/title/uid，无 URL、无正文、无互动数据；本脚本在浏览器上下文调知乎 search_v3（bsk 带 Profile 2 登录态，公开 requests 会 403），一次请求即得 id/url/title/content/voteup/comment/created/author -> raw/articles/zhihu/ + 候选报告。cron 每日 04:30。2026-09-27 补录"
+    },
+    "material_collect_bilibili": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/bilibili_redfox_collect.py",
+      "fallbacks": [],
+      "purpose": "素材主动采集（B站，RedFox 中转）：关键词搜索作品（带播放/赞/藏/评/转/投币）-> 规则闸门 -> 对过线者提字幕文案 -> raw/videos/bilibili/。硬约束：提文案接口 10 分钟上限，超 600s 的视频不进候选。cron 每日 04:55（经 register_bilibili_keyword_cron.py 注册）。2026-09-27 补录"
+    },
+    "collection_sync_xiaohongshu": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/xhs_collect.py",
+      "fallbacks": [],
+      "purpose": "小红书【收藏】增量采集：凌晨 04:20 自动跑，只处理新增笔记，复用 wiki_tracker 去重。与素材主动采集互补——这条只同步人工收藏，不做关键词搜索。2026-09-27 补录"
+    },
+    "collection_sync_zhihu": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/zhihu_collect.py",
+      "fallbacks": [],
+      "purpose": "知乎【收藏】增量采集：凌晨 04:10 自动跑，只处理新增文章，复用 wiki_tracker 去重。2026-09-27 补录"
+    },
+    "collection_sync_toutiao": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/toutiao_collect.py",
+      "fallbacks": [],
+      "purpose": "今日头条【收藏】增量采集：凌晨 04:00 自动跑，只提取正文，复用 wiki_tracker 去重。2026-09-27 补录"
+    },
+    "channels_metrics_collector": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/channels_metrics_collector.py",
+      "fallbacks": [],
+      "purpose": "视频号作品数据采集（平台后台，只读）：走 mmfinderassistant-bin 的 post_list / statistic/fans_trend / statistic/new_post_total_data，拿到第三方拿不到的三个留存指标 fullPlayRate(完播率)/avgPlayTimeSec(平均播放时长)/fastFlipRate(快划率)。为什么不用 RedFox：广域库有收录门槛（越没流量越查不到，恰好排除最需诊断的情况）且 20 个返回字段里没有播放量。cron 每日 23:40，写 ~/.hermes/state/channels_metrics.jsonl。2026-09-27 补录"
+    },
+    "mp_account_check": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/mp_account_check.py",
+      "fallbacks": [],
+      "purpose": "公众号账号体检采集（违规面 + 推荐资格面）：公众号后台鉴权 cookie（slave_sid/bizuin/data_ticket）是 HttpOnly，复制 cookie 调 API 不通，故统一用 bsk 驱动浏览器读渲染结果；采 cgi-bin/illegalrecord 的违规记录与 cgi-bin/mpaccountdetection 的优化项（报告需先点一次「去检测」再轮询）。cron 每日 23:50，写 ~/.hermes/state/mp_account_check.jsonl。2026-09-27 补录"
+    },
+    "mp_data_collector": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/mp_data_collector.py",
+      "fallbacks": [],
+      "purpose": "公众号数据面采集（文章阅读/分享 + 账号趋势）：页面内同步 XHR 调 /misc/appmsganalysis（带 f=json&ajax=1）取 article_list 与趋势来源拆分（直接 GET 会 404）。cron 每日 23:55，写 ~/.hermes/state/mp_data.jsonl。待补：涨粉走 /misc/useranalysis，其 JSON action 尚未定位（不猜 action，猜错会静默拿空）。2026-09-27 补录"
+    },
+    "account_dashboard": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/account_dashboard.py",
+      "fallbacks": [],
+      "purpose": "账号体检总览：只做「读三份时间序列 -> 汇成一页」，不依赖任一采集器内部结构，任一采集器坏了其余仍出数。来源 channels_metrics.jsonl（视频号）/ mp_account_check.jsonl / mp_data.jsonl（公众号）。产出 <vault>/内容生产/发布/账号体检总览.md。cron 每日 23:58。2026-09-27 补录"
+    },
+    "hot_trend_cron": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/hot_trend_cron.py",
+      "fallbacks": [],
+      "purpose": "热点监控 v3 cron 执行器（cron「AI内容工厂-热点监控」每日 09:00）：以 UTF-8 模式（-X utf8）调用 D 盘活动库的 hot_scanner.py（公开 API：B站/GitHub/HackerNews/MCP 生态），扫描后校验今日各平台文件是否存在、条数是否达标；超时 400s。与「全网社交热点-每日落盘」(05:20) 互补：本条扫技术向，那条扫社交向。2026-09-27 补录"
+    },
+    "wiki_ingest_daily": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/wiki_ingest_cron.py",
+      "fallbacks": [],
+      "purpose": "知识库加工整理每日增量（cron 每日 05:00）：包装脚本转调 wiki_ingest.py --silent-empty（超时 1800s）。2026-09-27 补录"
+    },
+    "topic_planner": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/topic_planner_cron.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/topic_planner.py"
+      ],
+      "purpose": "知识库选题池每日生成（cron 每日 05:30）：包装脚本转调 topic_planner.py --silent-skip（超时 1800s）。2026-09-27 补录"
+    },
+    "topic_to_article": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/topic_to_article_cron.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/topic_to_article.py"
+      ],
+      "purpose": "选题池自动写稿 + 审查（cron 每日 06:00）：包装脚本转调 topic_to_article.py --auto --review --silent-skip（超时 1500s）。2026-09-27 补录"
+    },
+    "content_production_pipeline": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/content_production_pipeline.py",
+      "fallbacks": [],
+      "purpose": "公众号内容生产主流水线 v3.8（cron 每日 08:15）：daily_content_refiner 提 GitHub 项目 → source_researcher 调研 TOP5 → article_generator 生成 → auto_review_latest 三轮交叉审查 → cover_pipeline 封面 → content_image_generator 内文配图（R009）→ 素材包 → wechat_image_uploader 图片上传 + CDN 替换。只到成品/草稿，正式发布另走 publisher_skill（默认关闭）。2026-09-27 补录"
+    },
+    "dsh_content_production_pipeline": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/dsh_content_production_pipeline.py",
+      "fallbacks": [],
+      "purpose": "公众号 DSH 专线主控 v1.0（cron 每日 09:15，独立于原生线）：dsh_source_collector → dsh_candidate_selector → dsh_source_researcher 调研 TOP3 → dsh_article_generator --mode deep → auto_review_latest 三模型审查 → cover_pipeline（共享封面目录）。成品写共享的「公众号文章/」，下游可复用。2026-09-27 补录"
+    },
+    "toutiao_pipeline": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/toutiao_pipeline.py",
+      "fallbacks": [],
+      "purpose": "今日头条独立生产流水线（cron 每日 08:30）：完全独立于公众号线，只读复用调研产物，不改动现有文件。2026-09-27 补录"
+    },
+    "zhihu_pipeline": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/zhihu_pipeline.py",
+      "fallbacks": [],
+      "purpose": "知乎内容生产流水线 v1.0（cron 每日 08:45）：依托公众号深度文终稿只读复用，范围 Step2→7 —— 读终稿 → zhihu_format_adapter 适配（标题公式/AI声明/结构）→ zhihu_rule_checker 合规 → 存「知乎文章/」与素材包（独立目录）→ 发知乎草稿（bsk 主 + wenyan-mcp 兜底）→ 更新 tracker 防重复发布。2026-09-27 补录"
+    },
+    "xhs_pipeline": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/xhs_pipeline.py",
+      "fallbacks": [],
+      "purpose": "小红书内容生产流水线 v1.0（cron 每日 09:00）：依托公众号深度文终稿，Step2→7 —— 读终稿 → xhs_format_adapter 适配（标题公式/正文精简/标签/AI声明）→ xhs_checker 合规（退出码 0/1/2）→ 封面 3:4 裁剪 1080×1440 压主标题 → 发草稿（x-mcp，visibility=仅自己可见）→ tracker 记 status=draft 并提示人工确认后发布。**到草稿箱为止**。2026-09-27 补录"
+    },
+    "after_article_moments": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/video_enhance/after_article_moments.py",
+      "fallbacks": [],
+      "purpose": "公众号文章朋友圈文案后置任务 v1.0（cron 每日 09:30）：公众号主 cron 产文后独立错峰运行 —— 读最新公众号深度文 → moments_copywriter --article → 推飞书。2026-09-27 补录"
+    },
+    "tie_tu_daily": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/tie_tu_daily.py",
+      "fallbacks": [],
+      "purpose": "贴图每日自动编排器 v1.0（cron 每日 09:45）：复用 gzh-production-pipeline 主控产出（审查通过终稿 + 数据快照）→ 找当日终稿 → 蒸馏 → 合规守门 → 推贴图草稿。只发草稿，人工确认后发布；cron 错峰（公众号 08:15 → 贴图 ≥09:30）。2026-09-27 补录"
+    },
+    "tie_tu_moments_daily": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/tie_tu_moments_daily.py",
+      "fallbacks": [],
+      "purpose": "贴图朋友圈打包后置任务 v1.0（cron 每日 10:15）：贴图 cron 完成后独立错峰运行 —— 找最新未处理贴图 manifest → 打包 → 推飞书。2026-09-27 补录"
+    },
+    "video_production_daily": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/daily_video_production_skip_broll.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/daily_video_production.py"
+      ],
+      "purpose": "视频号每日生产流水线（cron 每日 10:30）：包装脚本承载 --skip-broll（Hermes scheduler 的 script 字段不接受参数），转调 daily_video_production.py。2026-09-27 补录"
+    },
+    "task1_report_writer": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/task1_report_writer.py",
+      "fallbacks": [],
+      "purpose": "每日情报-1（Skills与MCP核心榜）写入看门狗 v1.0（cron 每日 03:15）：Task 1 是模型型 job，历史上常在输出里声称已写入、磁盘却没有（假阳性），导致公众号主流水线的内容提炼器拿不到项目榜单、候选池为空断推；本脚本把「写文件 + 更新索引 + 验证」从模型手里收回。2026-09-27 补录"
+    },
+    "task2_report_writer": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/task2_report_writer.py",
+      "fallbacks": [],
+      "purpose": "每日情报-2（全球开发者趋势）写入看门狗 v1.0（cron 每日 03:45）：同 Task 1 的假阳性问题（01/02 曾缺失导致断推），把「写文件 + 更新索引 + 验证」从模型手里收回。2026-09-27 补录"
+    },
+    "task3_report_writer": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/task3_report_writer.py",
+      "fallbacks": [],
+      "purpose": "每日情报-3（国内热点与商业机会）写入看门狗 v1.0（cron 每日 04:30）：早期只有 Task 3 有看门狗；读该 job 最新 cron 输出 → 写文件 + 更新索引 + 验证，防假阳性与错误路径（历史教训：写到缺一层的库路径、{{date}} 未替换）。2026-09-27 补录"
+    },
+    "publish_reconcile_cron": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/publish_reconcile_cron.py",
+      "fallbacks": [],
+      "purpose": "发布台账闭环巡检（cron 每 3 天 04:00，no_agent）：核对「成品/」是否都有发布记录（台账或平台交付）；正常静默 exit 0，出现「成品未登记且无平台交付」或「台账孤儿」则打印报告 exit 1（触发 Hermes cron 失败推飞书）。2026-09-27 补录"
+    },
+    "skills_mcp_inventory": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/skills_mcp_inventory.py",
+      "fallbacks": [],
+      "purpose": "技能与 MCP 资产盘点（cron 每日 08:00）：扫 skills 目录 + config.yaml，输出盘点报告到 Obsidian。2026-09-27 补录"
+    },
+    "skills_mcp_inventory_refresh": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/generate_skills_mcp_inventory.py",
+      "fallbacks": [],
+      "purpose": "Skills & MCP 已安装清单自动生成 v2.0（cron 每日 06:00）：扫 ~/.hermes/skills + config.yaml，按来源分类（内置/社区/自研）+ 版本号 + 安装/更新日期，生成 Obsidian 文档。2026-09-27 补录"
+    },
+    "hotspot_daily": {
+      "mode": "cron_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/Documents/code-news/scripts/hotspot_daily.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/hotspot_redfox_daily.py"
+      ],
+      "purpose": "全网社交热点每日落盘（确定性零 LLM）：取抖音/微博/B站/快手/知乎/头条/百度近 24h 热搜，按标题归一去重合并同事件、热度降序取 Top20，写 内容生产/情报与选题/热点与情报/热点监控/<日期>-全网社交热点.md。cron 每日 05:20（c2afba8745c1，经 .hermes/scripts/hotspot_redfox_daily.py 转发——cron 调度器要求 job 脚本落在 HERMES_HOME/scripts 内）。与 09:00「AI内容工厂-热点监控」互补：那个扫 B站/GitHub/HackerNews/MCP生态（技术向），本条扫社交向。数据源 /story/api/hotKeyword/list（经 redfox_client），与技能 trending-hub-top10 同源"
+    },
     "redfox_account_finder": {
       "mode": "local_script",
       "status": "active",
       "primary": "C:/Users/Administrator/Documents/agent-work/素材入口-信号源筛选-20260916/benchmark_account_finder.py",
       "fallbacks": [],
       "purpose": "对标账号发现：用 RedFox 各平台账号搜索找 AI 领域高粉博主（抖音/小红书/公众号/B站/视频号）。关键：不能用平台「最热排序」——实测会破坏关键词相关性；要按相关性拉大样本再本地 AI 过滤 + 按粉丝数排序。带当日缓存，重跑不重复花积分。产出 内容生产/情报与选题/素材候选/_对标账号发现-<日期>.md"
+    },
+    "redfox_search": {
+      "mode": "toolkit_tool",
+      "status": "active",
+      "primary": "toolkit:redfox_search",
+      "fallbacks": [
+        "scripts/redfox_search.py"
+      ],
+      "purpose": "会话内 RedFox 只读检索入口（9 种查询：xhs/douyin/douyin-account/gzh/gzh-account/gzh-rank/bilibili/shipinhao/trending）。定位：让智能体在对话里直接按关键词取结构化新媒体数据，不用等 cron、不用翻落盘文件。**只读**——不写 vault、不转录、不做闸门；要入库走各平台 *_redfox_collect.py。复用 .hermes/scripts/redfox_client.py 鉴权（REDFOX_API_KEY 在 .hermes/.env）。端点与字段映射均取自已验证的采集脚本，未验证的营销页端点不接线。单次返回封顶 30 条（超出标 truncated）"
+    },
+    "publish_wordcheck": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/publish_wordcheck.py",
+      "fallbacks": [
+        "toolkit:publish_wordcheck"
+      ],
+      "purpose": "发布前违禁词门禁（官方词库，公众号/小红书/抖音一套标准）。**补充**既有平台 checker，不替换——头条 toutiao_rule_checker / 知乎 zhihu_rule_checker / 小红书 xhs_checker / 公众号 gzh_checker 仍保留（它们还查 AI 声明、原创度、标题规范、封面比例）。2026-09-27 实测动因：xhs_checker.py 用 `\\b{词}\\b` 匹配，中文里 `\\b` 边界不成立，对「最顶级/包治百病/百分百」全部漏检并报「未检测到违禁词」；本脚本用官方库同一段文案命中 6 个。退出码 0 通过 / 2 阻断 / 1 无法判定（1 不等于通过，禁静默放行）"
     },
     "videos_ingest": {
       "mode": "cron_script",
@@ -327,6 +584,13 @@
       "fallbacks": [],
       "formalPublishEnabled": false,
       "purpose": "8平台视频矩阵分发（MatrixMedia 矩媒 HTTP API，30088 已通，抖音定时发布实测 success；正式发布默认关闭）"
+    },
+    "browser_extension_inventory": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/chrome_ext_inventory.py",
+      "fallbacks": [],
+      "purpose": "浏览器扩展台账：扫描 Chrome/Edge 各配置文件的已装扩展，累积到 config/<browser>_extensions.{json,md}；--check 列出本次未扫到的丢失候选（2026-09-20 Chrome 升级清空扩展后新增）"
     },
     "mcp__qwen__qwen3_8_max": {
       "model": "qwen-max-3.8",
