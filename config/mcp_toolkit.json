@@ -52,6 +52,33 @@
       "timeoutSec": 120,
       "notes": "request 为 JSON 文件路径；action: search_content/fetch_article/fetch_author_feed/extract_metrics/normalize_record。"
     },
+    "redfox_search": {
+      "enabled": true,
+      "group": "research",
+      "label": "RedFox 搜索（小红书/抖音/公众号/B站/视频号，会话内只读）",
+      "script": "C:/Users/Administrator/Documents/code-news/scripts/redfox_search.py",
+      "python": null,
+      "timeoutSec": 180,
+      "notes": "platform: xhs|douyin|douyin-account|gzh|gzh-account|gzh-rank|bilibili|shipinhao|trending。只读不写库、不转录。走 redfox_client 复用鉴权；REDFOX_API_KEY 在 .hermes/.env。"
+    },
+    "publish_wordcheck": {
+      "enabled": true,
+      "group": "research",
+      "label": "发布前违禁词门禁（官方词库，公众号/小红书/抖音）",
+      "script": "C:/Users/Administrator/Documents/code-news/scripts/publish_wordcheck.py",
+      "python": null,
+      "timeoutSec": 120,
+      "notes": "退出码 0 通过 / 2 阻断 / 1 无法判定。补充门禁，不替换各平台既有 checker（那些还查 AI 声明/原创度/标题规范）。"
+    },
+    "redfox_skill": {
+      "enabled": true,
+      "group": "research",
+      "label": "RedFox 官方 skill 统一执行入口（榜单/诊断/对标，强制 UTF-8）",
+      "script": "C:/Users/Administrator/Documents/code-news/scripts/redfox_skill.py",
+      "python": null,
+      "timeoutSec": 300,
+      "notes": "skill: douyin-daily-hot|douyin-content-surge|douyin-rise-ranking|douyin-top-account|douyin-account-diagnosis|douyin-similar-account|xiaohongshu-dailytop|xiaohongshu-weeklytop|xiaohongshu-top-account|xiaohongshu-similar-account|xiaohongshu-search|xiaohongshu-lowtop|xiaohongshu-account-analyzer|multi-wordcheck|trending-hub-top10；args 透传。先 --list 看已登记入口。"
+    },
     "collect_xhs": {
       "enabled": true,
       "group": "collect",
@@ -79,6 +106,16 @@
       "data_dir": "C:/Users/Administrator/.hermes/scripts",
       "timeoutSec": 30,
       "notes": "聚合 douyin_user_data_*.json，返回各博主视频总数与最近视频描述。"
+    },
+    "matrixmedia_publish": {
+      "enabled": true,
+      "group": "publish_video",
+      "label": "8平台视频矩阵分发（MatrixMedia 矩媒 HTTP API）",
+      "script": "",
+      "python": null,
+      "http_url": "http://127.0.0.1:30088/publish",
+      "timeoutSec": 600,
+      "notes": "矩媒 GUI 打开后自动监听 30088；toolkit 经 POST /publish 调用。各平台需先在 GUI 登录。启用前确认 GUI 已打开且 http://127.0.0.1:30088 可访问。正式发布默认关闭，保留人工确认。"
     }
   }
 }

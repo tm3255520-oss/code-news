@@ -450,6 +450,15 @@
       ],
       "purpose": "会话内 RedFox 只读检索入口（9 种查询：xhs/douyin/douyin-account/gzh/gzh-account/gzh-rank/bilibili/shipinhao/trending）。定位：让智能体在对话里直接按关键词取结构化新媒体数据，不用等 cron、不用翻落盘文件。**只读**——不写 vault、不转录、不做闸门；要入库走各平台 *_redfox_collect.py。复用 .hermes/scripts/redfox_client.py 鉴权（REDFOX_API_KEY 在 .hermes/.env）。端点与字段映射均取自已验证的采集脚本，未验证的营销页端点不接线。单次返回封顶 30 条（超出标 truncated）"
     },
+    "redfox_skill": {
+      "mode": "toolkit_tool",
+      "status": "active",
+      "primary": "toolkit:redfox_skill",
+      "fallbacks": [
+        "scripts/redfox_skill.py"
+      ],
+      "purpose": "RedFox 官方 skill 统一执行入口（15 枚：抖音/小红书榜单、抖音账号诊断、抖音与小红书对标、违禁词、热点 TOP10）。解决官方脚本三个坑——GBK 控制台下 print emoji 崩溃（且发生在 API 调用之后，等于扣了积分拿不到数据）、只认环境变量不读 .hermes/.env、积分不足报错混在正文难识别（统一映射退出码 3）。已登记入口见 scripts/redfox_skill.py 的 ENTRY，用 --list 查看；榜单类数据 T+1/T+2 更新。2026-09-27 Phase 1 新增"
+    },
     "publish_wordcheck": {
       "mode": "local_script",
       "status": "active",
