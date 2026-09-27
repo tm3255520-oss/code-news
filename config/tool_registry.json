@@ -443,6 +443,13 @@
       ],
       "purpose": "平台榜单每日落盘（cron 每日 20:00，id f8f6d6138a68，经 .hermes/scripts/rank_redfox_daily.py 转发——调度器要求 job 脚本落在 HERMES_HOME/scripts 内）：取抖音每日点赞榜/点赞飙升榜/涨粉榜/影响力账号榜 + 小红书每日爆款/七日爆款/账号榜，写 内容生产/情报与选题/热点与情报/{抖音,小红书}/<日期>-榜单.md。数据源是 RedFox 官方 skill，统一经 scripts/redfox_skill.py 执行（强制 UTF-8 + 注入 Key + 积分不足识别）。**排 20:00 而非跟 04:xx 采集线**：各榜单 17:00-19:00 才更新，凌晨抓只有 T-2 旧数据。与「全网社交热点-每日落盘」(05:20 热搜事件)、「素材主动采集-公众号」(04:40 含公众号榜单) 互补不重复。2026-09-27 Phase 2 新增"
     },
+    "cron_ledger": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/cron_ledger.py",
+      "fallbacks": [],
+      "purpose": "定时任务台账（确定性零 LLM，可重复生成）：合并 .hermes/cron/jobs.json（调度真相）+ tool_registry.json（能力登记）+ cron/output（最近一次输出），产出 系统中枢/运行手册/Cron定时任务台账-<日期>.md。含四段：概览 / 需要关注（按 failure_streak 降序，附 last_error 摘要）/ 全量清单（按调度时刻排序）/ 在跑但未登记。与《Cron定时任务路径审计表-2026-09-06》互补——那是人工审计的时点快照，本条是自动跟随的当前台账；`--dry-run` 只打印不写盘。2026-09-27 Phase 3-3 新增"
+    },
     "redfox_account_finder": {
       "mode": "local_script",
       "status": "active",
