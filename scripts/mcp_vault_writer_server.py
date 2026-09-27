@@ -1,25 +1,31 @@
-"""MCP stdio server: 让沙箱 Claude 通过宿主机写 Obsidian vault。
+"""MCP stdio server: 让沙箱 Agent 通过宿主机写 Obsidian vault。
 
-背景：Claude 跑在 Linux 沙箱，vault 挂载只读；Hermes 跑在宿主机可直接写。
-本 MCP server 跑在宿主机（Windows Python），暴露 write_to_vault 等工具，
-Claude 通过它把文件写进 D:\\Obsidian Vault 的白名单目录 —— 获得与 Hermes 相同的写入能力。
+背景：Agent 跑在 Linux 沙箱、vault 挂载只读时，用本 server 借宿主机（Windows Python）
+把文件写进 D:\\Obsidian Vault 的白名单目录。注：2026-09-26 起 Claude 已获 vault 直写权限
+（沙箱可直接写），本 server 现为「只读沙箱 / 其它 Agent」的备用通道；Hermes 本体一向能
+直接写，不需要它。
 
 安全：只允许写白名单目录；禁止路径穿越（..）；禁止写 vault 根/非白名单。
 启动：python scripts/mcp_vault_writer_server.py（stdio 传输）
 """
 from __future__ import annotations
 
-import json
+import sys
 from pathlib import Path
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts._mcp_compat import FastMCP  # noqa: E402  # 兼容 mcp 1.x / 2.x
 
 VAULT_ROOT = Path(r"D:\Obsidian Vault\obsidian Vault")
 
 # 白名单：允许写入的顶层目录（来自 vault AGENTS.md 各 Agent 写白名单，按需增补）
 ALLOWED_PREFIXES = [
     "内容生产", "AI工具", "wiki/decisions", "raw",
+    "系统中枢",  # 2026-09-27 增补：工具档案专区（系统skills以及MCP / 系统脚本工具链）在此
 ]
 
 mcp = FastMCP("vault-writer")

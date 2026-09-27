@@ -99,5 +99,68 @@ class TestWebScraperMcpServer(unittest.TestCase):
         self.assertEqual(response["status"], "error")
 
 
+class TestVaultWriterMcpServer(unittest.TestCase):
+    """vault-writer 的白名单 + 防穿越（2026-09-27：改用 _mcp_compat 取 FastMCP）。"""
+
+    def setUp(self) -> None:
+        from scripts import mcp_vault_writer_server as vw
+
+        self.vw = vw
+
+    def test_resolve_accepts_whitelisted_prefix(self) -> None:
+        p = self.vw._resolve("内容生产/成品/x.md")
+        self.assertEqual(p.name, "x.md")
+
+    def test_resolve_accepts_zhongshu_central(self) -> None:
+        # 2026-09-27 增补「系统中枢」：工具档案专区落在该目录下
+        p = self.vw._resolve("系统中枢/系统skills以及MCP/内容生产/a.md")
+        self.assertIn("系统skills以及MCP", str(p))
+
+    def test_resolve_rejects_non_whitelisted(self) -> None:
+        with self.assertRaises(ValueError):
+            self.vw._resolve("不存在的目录/x.md")
+
+    def test_resolve_rejects_traversal(self) -> None:
+        with self.assertRaises(ValueError):
+            self.vw._resolve("../escape.md")
+
+    def test_resolve_rejects_empty(self) -> None:
+        with self.assertRaises(ValueError):
+            self.vw._resolve("")
+
+    def test_write_and_append_roundtrip(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            old = self.vw.VAULT_ROOT
+            self.vw.VAULT_ROOT = Path(tmp)
+            try:
+                r1 = self.vw.write_to_vault("内容生产/a.md", "hello")
+                self.assertTrue(r1["ok"], r1)
+                r2 = self.vw.append_to_vault("内容生产/a.md", " world")
+                self.assertTrue(r2["ok"], r2)
+                self.assertTrue(r2["existed"])
+                self.assertEqual(
+                    (Path(tmp) / "内容生产" / "a.md").read_text(encoding="utf-8"),
+                    "hello world",
+                )
+                r3 = self.vw.write_to_vault("系统中枢/x.md", "y")
+                self.assertTrue(r3["ok"], r3)
+                self.assertFalse(self.vw.write_to_vault("越界/x.md", "z")["ok"])
+            finally:
+                self.vw.VAULT_ROOT = old
+
+    def test_list_vault_reports_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            old = self.vw.VAULT_ROOT
+            self.vw.VAULT_ROOT = Path(tmp)
+            try:
+                (Path(tmp) / "内容生产").mkdir(parents=True, exist_ok=True)
+                (Path(tmp) / "内容生产" / "b.md").write_text("x", encoding="utf-8")
+                out = self.vw.list_vault("内容生产")
+                self.assertTrue(out["ok"])
+                self.assertIn("b.md", out["files"])
+            finally:
+                self.vw.VAULT_ROOT = old
+
+
 if __name__ == "__main__":
     unittest.main()
