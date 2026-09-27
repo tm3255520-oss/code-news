@@ -93,6 +93,42 @@ def first_error_line(job: dict, limit: int = 110) -> str:
 # 只扫文件头部即可判定（头部含标题与状态）。
 FAIL_MARKERS = ("(FAILED)", "script failed")
 
+# 设计性非零退出：这些任务**故意**用非零码报「发现了问题」，不算故障，不要每天报。
+# 2026-09-27 逐条核对输出确认过语义（见 RedFox 台账 9.3 的 C 类）。
+BY_DESIGN_NONZERO = {
+    "cron健康巡检看门狗",     # 巡检到不健康任务即 exit 1
+    "发布台账闭环巡检",       # 有台账孤儿即 exit 1
+    "账号体检总览-每日",       # 有告警即 exit 2
+    "视频号每日生产流水线",     # 缺 _data.json 快照时 exit 2（数据铁律保护性跳过）
+}
+
+
+def recent_failures(hours: int) -> list[tuple[dict, list[str]]]:
+    """近 N 小时内**真实**失败的任务（按输出文件 mtime 判定），已排除设计性非零退出。"""
+    cutoff_ts = (datetime.now() - timedelta(hours=hours)).timestamp()
+    found: list[tuple[dict, list[str]]] = []
+    for job in load_jobs():
+        if str(job.get("name")) in BY_DESIGN_NONZERO:
+            continue
+        d = CRON_OUT / str(job.get("id") or "")
+        if not d.is_dir():
+            continue
+        hits: list[str] = []
+        for f in sorted(d.iterdir()):
+            if not f.is_file():
+                continue
+            try:
+                if f.stat().st_mtime < cutoff_ts:
+                    continue
+                head = f.read_text(encoding="utf-8", errors="replace")[:2000]
+            except OSError:
+                continue
+            if any(m in head for m in FAIL_MARKERS):
+                hits.append(f.name[:16].replace("_", " "))
+        if hits:
+            found.append((job, hits))
+    return found
+
 
 def scan_history(job: dict, days: int) -> list[str]:
     """回看 cron/output 里近 N 天的输出，返回出现过失败的日期。
@@ -128,7 +164,31 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="只打印摘要，不写 vault")
     ap.add_argument("--date", default=None, help="文件名日期 YYYY-MM-DD（默认今天）")
     ap.add_argument("--days", type=int, default=7, help="回看窗口天数（默认 7）")
+    ap.add_argument("--notify", action="store_true",
+                    help="异常日报模式：近 N 小时有真实失败则打印摘要并 exit 1（供 cron 推飞书）；无异常静默 exit 0")
+    ap.add_argument("--hours", type=int, default=24, help="--notify 的窗口小时数（默认 24）")
     ns = ap.parse_args()
+
+    # —— 异常日报模式：只输出给「人」看的一小段，供 Hermes cron 在失败时推飞书 ——
+    # 「谁接到、做什么」的落地：报警集中到一条，且只在有**真实**失败时出声
+    # （设计性非零退出已排除），避免像 09-25/26 那样报警发出但无人接手。
+    if ns.notify:
+        hits = recent_failures(ns.hours)
+        if not hits:
+            return 0                      # 静默：无异常不出声
+        print("⏰ 定时任务异常日报（近 %d 小时）" % ns.hours)
+        print("共 %d 个任务出现失败（已排除 %d 个设计性非零退出任务）："
+              % (len(hits), len(BY_DESIGN_NONZERO)))
+        print("")
+        for job, times in hits:
+            print("- %s ×%d（%s）"
+                  % (job.get("name"), len(times), "、".join(t.split(" ")[0] for t in times)))
+            err = first_error_line(job, 120)
+            if err and err != "—":
+                print("    最后一次：%s" % err)
+        print("")
+        print("处置建议：先看上面的「最后一次」报错；内容线断链优先查上游（每日情报→候选池）。")
+        return 1
 
     jobs = load_jobs()
     blob = load_registry_blob()
