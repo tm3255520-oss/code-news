@@ -41,6 +41,16 @@ if HERMES_SCRIPTS.exists():
 # 官方违禁词接口（经 redfox_client 调用，path 不含域名）
 WORDCHECK_PATH = "/story/api/cozeSkill/sensitiveWordSearch"
 
+# 语境豁免（2026-09-28）：官方库按**子串**匹配，下列词在技术文里是正常用词。
+# 实测小红书那篇「Hindsight」命中的 4 个词里 3 个属于此类：
+#   智能 → 「会学习的智能体记忆系统」
+#   一次 → 「如一次性翻译、摘要生成」
+#   完全 → 「完全离线/私有化部署」
+#   极低 → 「迁移成本极低」  ← 只有这个是真极限词
+# 若这些都算阻断，AI 技术文永远发不出去，门禁就会被人为绕过——那比误放更危险。
+# 故列入 SOFT：**报出来但不阻断**（写进 warn 字段，便于回溯）。--strict 可关闭豁免。
+SOFT_WORDS = {"智能", "一次", "一次性", "完全", "智能化"}
+
 # 平台口径：接口只认这三个中文名，其余别名先归一
 PLATFORM_ALIASES = {
     "公众号": "公众号", "gzh": "公众号", "wechat": "公众号", "微信": "公众号",
@@ -76,7 +86,7 @@ def extract_hits(marked_html: str) -> list[str]:
     return list(dict.fromkeys(_HIT_PAT.findall(marked_html or "")))
 
 
-def check(content: str, platform: str) -> dict:
+def check(content: str, platform: str, strict: bool = False) -> dict:
     """调官方词库接口。返回统一结构，不抛异常。
 
     复用 .hermes/scripts/redfox_client：它已经把 {code:2000,data:...} 信封拆好，
@@ -103,10 +113,18 @@ def check(content: str, platform: str) -> dict:
         return {"ok": False, "reason": "接口未返回 data（key 无效或配额不足）"}
     marked = data.get("content") or ""
     hits = extract_hits(marked)
+    # 语境豁免：SOFT_WORDS 只报不拦（--strict 时全部按阻断处理）
+    if strict:
+        hard, soft = list(hits), []
+    else:
+        hard = [w for w in hits if w not in SOFT_WORDS]
+        soft = [w for w in hits if w in SOFT_WORDS]
     return {
         "ok": True,
         "platform": platform,
         "hits": hits,
+        "hard_hits": hard,
+        "soft_hits": soft,
         "types": data.get("prohibitedWordsType") or [],
         "count": len(hits),
     }
@@ -122,25 +140,33 @@ def _emit(result: dict, as_json: bool) -> int:
             print(f"⚠️ 违禁词门禁无法判定：{result.get('reason')}")
         return EXIT_UNDETERMINED
     hits = result["hits"]
+    soft = result.get("soft_hits") or []
+    hard = result.get("hard_hits") if result.get("hard_hits") is not None else hits
     payload = {
-        "status": "block" if hits else "pass",
+        "status": "block" if hard else ("warn" if soft else "pass"),
         "platform": result["platform"],
         "count": result["count"],
         "sensitive_words": hits,
+        "blocking_words": hard,
+        "soft_words": soft,
         "prohibited_words_type": result["types"],
     }
     if as_json:
         print(json.dumps(payload, ensure_ascii=False))
     else:
-        if hits:
-            print(f"🛑 [{result['platform']}] 命中 {result['count']} 个违禁词：")
-            for w in hits:
+        if hard:
+            print(f"🛑 [{result['platform']}] 命中 {len(hard)} 个**阻断级**违禁词：")
+            for w in hard:
                 print(f"   - {w}")
             if result["types"]:
                 print(f"   类型：{'、'.join(result['types'])}")
+            if soft:
+                print(f"   （另有语境豁免词 {len(soft)} 个：{'、'.join(soft)}，不阻断）")
+        elif soft:
+            print(f"⚠️ [{result['platform']}] 仅命中语境豁免词：{'、'.join(soft)}（不阻断）")
         else:
             print(f"✅ [{result['platform']}] 未命中违禁词")
-    return EXIT_BLOCK if hits else EXIT_PASS
+    return EXIT_BLOCK if hard else EXIT_PASS
 
 
 def selftest() -> int:
@@ -172,6 +198,8 @@ def main() -> int:
     ap.add_argument("--platform", "-p", default="公众号",
                     help="公众号/小红书/抖音（也接受 gzh/xhs/douyin）")
     ap.add_argument("--json", action="store_true", help="输出 JSON（给流水线用）")
+    ap.add_argument("--strict", action="store_true",
+                    help="严格口径：关闭语境豁免（SOFT_WORDS 也按阻断处理）")
     ap.add_argument("--selftest", action="store_true", help="离线自检，不联网")
     args = ap.parse_args()
 
@@ -198,7 +226,7 @@ def main() -> int:
                           "reason": "需要 --file 或 --content"}, ensure_ascii=False))
         return EXIT_UNDETERMINED
 
-    return _emit(check(content, platform), args.json)
+    return _emit(check(content, platform, strict=args.strict), args.json)
 
 
 if __name__ == "__main__":
