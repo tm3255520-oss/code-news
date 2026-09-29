@@ -32,6 +32,12 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# 复用仓库 scripts/ 的公共模块（yt-dlp 抗抖动下载）
+_CODE_NEWS_SCRIPTS = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"))
+if _CODE_NEWS_SCRIPTS not in sys.path:
+    sys.path.insert(0, _CODE_NEWS_SCRIPTS)
+
 UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 "
       "(KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1")
 
@@ -490,13 +496,23 @@ def main():
                 steps["download"] = {"ok": ok,
                                      "error": "" if ok else "B站下载失败"}
             else:
-                # yt-dlp 下载
+                # yt-dlp 下载（抗抖动：长传输冻结时看门狗杀掉并断点续传，见 scripts/ytdlp_download.py）
                 vp = os.path.join(out_dir, "video.mp4")
-                r = run([sys.executable, "-m", "yt_dlp", "-f", "best", "-o", vp, "--", inp],
-                        timeout=300)
-                ok = r.returncode == 0 and os.path.exists(vp) and os.path.getsize(vp) > 0
-                video_path = vp if ok else ""
-                steps["download"] = {"ok": ok, "error": "" if ok else (r.stderr or "")[:200]}
+                ok, err = False, ""
+                try:
+                    import ytdlp_download
+                    rr = ytdlp_download.robust_download(inp, vp, log=log)
+                    ok = bool(rr["ok"])
+                    if ok:
+                        video_path = rr["path"]          # 实际产物（可能为 .webm/.mkv）
+                        log(f"yt-dlp 下载完成：{rr['size_MB']}MB，{rr['attempts']} 段")
+                    else:
+                        err = rr.get("error") or "yt-dlp 下载失败"
+                except Exception as e:
+                    err = f"yt-dlp 下载异常：{str(e)[:180]}"
+                if not ok:
+                    video_path = ""
+                steps["download"] = {"ok": ok, "error": err}
         except Exception as e:
             steps["download"] = {"ok": False, "error": str(e)[:200]}
     else:
