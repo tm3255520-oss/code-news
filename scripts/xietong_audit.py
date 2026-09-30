@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from xietong_lib import (  # noqa: E402
     ACTIVE_STATUSES, HANDOFF_DIR, PLACEHOLDER, STATUSES, parse_ledger, read_all_index,
-    read_handoff, resolve_root, tokens,
+    read_handoff, resolve_root, split_paths, tokens,
 )
 
 
@@ -61,9 +61,10 @@ def audit(root: Path, stale_days: int, now: datetime | None = None) -> list[dict
             age = (now - ts).days
             if age > stale_days:
                 add("停滞", f"{t.task_id} 状态={t.status} 已 {age} 天未更新（阈值 {stale_days} 天）")
-        if t.artifact and t.artifact != PLACEHOLDER and "/" in t.artifact:
-            if not (vault / t.artifact.strip("`")).exists():
-                add("断链", f"{t.task_id} 产出路径不存在：{t.artifact}")
+        if t.artifact and t.artifact != PLACEHOLDER:
+            for rel in split_paths(t.artifact):
+                if not (vault / rel).exists() and not Path(rel).exists():
+                    add("断链", f"{t.task_id} 产出路径不存在：{rel}")
 
     # 重复：同平台 + 共同词元
     active = [t for t in led.tasks if t.status in ACTIVE_STATUSES]
@@ -95,6 +96,10 @@ def audit(root: Path, stale_days: int, now: datetime | None = None) -> list[dict
     rows, index_problems = read_all_index(root)
     for p in index_problems:
         add("格式", f"会话索引：{p}")
+    indexed_tasks = {str(r.get("task")) for _, r in rows}
+    for t in led.tasks:
+        if t.status in ACTIVE_STATUSES and t.task_id not in indexed_tasks:
+            add("格式", f"{t.task_id} 是活跃任务但会话索引没有对应行（收工三写第 3 步漏了）")
     for agent, row in rows:
         if row.get("outcome") not in STATUSES:
             add("格式", f"会话索引 {agent}.jsonl：outcome 非法 {row.get('outcome')!r}")

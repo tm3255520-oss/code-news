@@ -46,7 +46,14 @@ TASK_ID_RE = re.compile(r"^WK-\d{8}-\d{2}$")
 BLOCK_HEAD_RE = re.compile(r"^##\s+(\S+)\s*\|\s*([A-Za-z0-9_\-]+)\s*\|\s*(WK-\d{8}-\d{2})\s*$")
 BLOCK_FIELDS = ("本轮做了什么", "动了哪些文件", "证据", "未决问题", "下一步",
                 "建议接手方 + 该调的 skill", "状态")
-FIELD_RE = re.compile(r"^-\s*(" + "|".join(re.escape(f) for f in BLOCK_FIELDS) + r")\s*[:：]\s*(.*)$")
+# 字段行允许三种常见写法（2026-09-30 实测 codex 真实交接文件后放宽，属校验器修正而非改文件）：
+#   - 本轮做了什么：xxx        /  **本轮做了什么**：xxx  /  - **证据（可复核）**：xxx
+FIELD_RE = re.compile(
+    r"^[-*]?\s*\**\s*(" + "|".join(re.escape(f) for f in BLOCK_FIELDS) +
+    r")(?:\s*（[^）]*）)?\s*\**\s*[:：]\s*(.*)$"
+)
+# 产出路径单元格可能是多路径拼接（`a.md` ／ `b.md`、c.md）
+PATH_SEP_RE = re.compile(r"[／、；;]|\s/\s|[,，]")
 
 _WIN_ROOT = Path(r"D:\Obsidian Vault\obsidian Vault\系统中枢\协同")
 _WSL_ROOT = Path("/mnt/d/Obsidian Vault/obsidian Vault/系统中枢/协同")
@@ -159,6 +166,21 @@ def tokens(text: str) -> set[str]:
 
 def contains_secret(text: str) -> bool:
     return bool(SECRET_RE.search(text or ""))
+
+
+def split_paths(cell: str) -> list[str]:
+    """把一个单元格里的多个产出路径拆开（`a.md` ／ `b.md`、c.md → [a.md, b.md, c.md]）。"""
+    text = (cell or "").replace("`", " ").replace("\n", " ")
+    out: list[str] = []
+    for part in PATH_SEP_RE.split(text):
+        cand = part.strip().strip("｜|").strip()
+        if not cand or cand == PLACEHOLDER:
+            continue
+        if "/" not in cand and "\\" not in cand:
+            continue
+        if cand not in out:
+            out.append(cand)
+    return out
 
 
 # ---------------------------------------------------------------- 台账
@@ -319,6 +341,7 @@ def read_handoff(path: Path) -> tuple[list[Block], list[str]]:
     if not path.is_file():
         return blocks, []
     current: Block | None = None
+    current_field: str | None = None
     for no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         m = BLOCK_HEAD_RE.match(line.strip())
         if m:
@@ -326,11 +349,19 @@ def read_handoff(path: Path) -> tuple[list[Block], list[str]]:
                 blocks.append(current)
             current = Block(ts=m.group(1), agent=m.group(2), task_id=m.group(3),
                             fields={}, line_no=no)
+            current_field = None
             continue
-        if current is not None:
-            fm = FIELD_RE.match(line.strip())
-            if fm:
-                current.fields[fm.group(1)] = fm.group(2).strip()
+        if current is None:
+            continue
+        fm = FIELD_RE.match(line.strip())
+        if fm:
+            current_field = fm.group(1)
+            current.fields[current_field] = fm.group(2).strip()
+            continue
+        stripped = line.strip()
+        # 续行：字段值可以有多行（含无缩进的续行），直到下一个字段/块标题/引用行
+        if current_field and stripped and not stripped.startswith(("#", ">", "---")):
+            current.fields[current_field] = (current.fields[current_field] + " " + stripped).strip()
     if current:
         blocks.append(current)
     problems: list[str] = []

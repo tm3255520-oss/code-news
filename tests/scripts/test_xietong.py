@@ -223,6 +223,10 @@ class AuditTests(unittest.TestCase):
             (root / "交接" / "WK-20260930-01.md").write_text(
                 "# 交接\n\n## 2026-09-30T10:00 | codex | WK-20260930-01\n"
                 + "".join(f"- {f}：x\n" for f in lib.BLOCK_FIELDS), encoding="utf-8")
+            (root / "会话索引" / "codex.jsonl").write_text(
+                json.dumps({"agent": "codex", "ts": "2026-09-30T10:00",
+                            "task": "WK-20260930-01", "outcome": "进行中"},
+                           ensure_ascii=False) + "\n", encoding="utf-8")
             findings = xietong_audit.audit(root, 7, datetime(2026, 9, 30, 12, 0))
         self.assertEqual(findings, [], findings)
 
@@ -252,6 +256,53 @@ class AuditTests(unittest.TestCase):
                                            "2026-09-30 10:00"))
             findings = xietong_audit.audit(root, 7, datetime(2026, 9, 30, 12, 0))
         self.assertTrue(any("没有交接文件" in f["detail"] for f in findings))
+
+    def test_missing_index_row_for_active_task(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td), row("WK-20260930-05", "T", "抖音", "dsh", "进行中",
+                                           "2026-09-30 10:00"))
+            (root / "交接" / "WK-20260930-05.md").write_text(
+                "# 交接\n\n## 2026-09-30T10:00 | dsh | WK-20260930-05\n"
+                + "".join(f"- {f}：x\n" for f in lib.BLOCK_FIELDS), encoding="utf-8")
+            findings = xietong_audit.audit(root, 7, datetime(2026, 9, 30, 12, 0))
+        self.assertTrue(any("会话索引没有对应行" in f["detail"] for f in findings))
+
+    def test_multi_path_artifact_is_checked_per_path(self) -> None:
+        """实测 codex 真实台账：产出路径列写成 `a.md` ／ `b.md`，不应整体误报断链。"""
+        with tempfile.TemporaryDirectory() as td:
+            cell = "`内容生产/a.md` ／ `内容生产/b.md`"
+            root = make_root(Path(td), row("WK-20260930-06", "T", "抖音", "codex", "已完成",
+                                           "2026-09-30 10:00", artifact=cell),
+                             artifacts=("内容生产/a.md", "内容生产/b.md"))
+            findings = xietong_audit.audit(root, 7, datetime(2026, 9, 30, 12, 0))
+            self.assertEqual(lib.split_paths(cell), ["内容生产/a.md", "内容生产/b.md"])
+        self.assertFalse([f for f in findings if f["check"] == "断链"], findings)
+
+    def test_real_world_bold_fields_and_continuation_lines(self) -> None:
+        """实测 codex 写法：`- **本轮做了什么**：` + 续行 + `- **证据（可复核）**：`。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            path = root / "交接" / "WK-20260930-07.md"
+            path.write_text(
+                "# 交接\n\n## 2026-09-30T15:10 | codex | WK-20260930-07\n\n"
+                "- **本轮做了什么**：整改收官 ——（a）音源取错定位并修；\n"
+                "- **动了哪些文件**：\n"
+                "  vault：`系统中枢/x.md`、`raw/videos/**`；\n"
+                "  代码：`raw_lint.py`。\n"
+                "- **证据（可复核）**：\n"
+                "  ① `python raw_lint.py` → 不合规 38；\n"
+                "  ② 负向测试 exit 1。\n"
+                "- **未决问题**：20 篇作者补不了。\n"
+                "- **下一步**：等用户表态。\n"
+                "- **建议接手方 + 该调的 skill**：无。\n"
+                "- **状态**：待审\n", encoding="utf-8")
+            blocks, problems = lib.read_handoff(path)
+        self.assertEqual(problems, [])
+        self.assertEqual(len(blocks), 1)
+        self.assertIn("音源取错", blocks[0].field("本轮做了什么"))
+        self.assertIn("raw_lint.py", blocks[0].field("动了哪些文件"))
+        self.assertIn("负向测试 exit 1", blocks[0].field("证据"))
+        self.assertEqual(blocks[0].field("状态"), "待审")
 
     def test_orphan_handoff_file(self) -> None:
         with tempfile.TemporaryDirectory() as td:
