@@ -202,6 +202,15 @@
       "fallbacks": [],
       "purpose": "素材主动采集（公众号，已打通，解决公众号只能人工收藏的问题）：RedFox 三路取料 —— 榜单(10W+/原创爆款，自带正文) + 对标账号最新文章 + 关键词搜索；AI 相关性过滤 + 两段闸门（先按互动筛、只对过线者取正文再二次打分）；Top5 含正文写入 raw/articles/wechat/。cron 每日 04:40（60612f3342b7），单次约 40 次调用"
     },
+    "creator_collect_wechat": {
+      "mode": "manual_script",
+      "status": "active",
+      "primary": "C:/Users/Administrator/.hermes/scripts/gzh_creator_collect.py",
+      "fallbacks": [
+        "C:/Users/Administrator/.hermes/scripts/wechat_redfox_collect.py"
+      ],
+      "purpose": "公众号「关注博主整号」文章采集（公众号线第④步，2026-10-01 建成）：入口＝关注清单或第③步号分级（--from-rank 只采 A/B 级），博主闸复用 raw_creator_filter 词表，作品级闸门判标题+摘要（--strong-only 只认强词），过闸即调 RedFox gzhData/queryWork 取正文 → 渲染「核心要点＋原文」→ 落盘＋记台账。两线共用：--line ops（或 --out-dir 含「运营中心/」）落 运营中心/_收件箱/articles/wechat、记 ops 台账；否则 raw/articles/wechat。花积分（清单 0.04/号、正文 0.04/篇）。已知边界：部分文章 content 恒为空串 → 记 status=skipped_no_content、不重复花积分（补缺口需换 gzh_download/UIA 通道）。上游三步：gzh_following_collect / gzh_creator_stats / gzh_creator_rank"
+    },
     "material_collect_douyin": {
       "mode": "cron_script",
       "status": "active",
