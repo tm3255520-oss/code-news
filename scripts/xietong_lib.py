@@ -42,6 +42,23 @@ TEMPLATE_NAME = "_模板.md"
 COLUMNS = ("任务ID", "标题", "平台/形态", "负责人", "状态", "最后更新", "产出路径", "关联会话/交接")
 PLACEHOLDER = "—"
 
+# 协同文件的行尾约定：**固定 CRLF**，与运行平台无关。
+# 背景：本模块原先的写入点都不传 newline，行尾随平台走 —— Windows 产出 CRLF、Linux/WSL 产出 LF；
+# 同一份协同文件被不同平台的 Agent 写过就会变 MIXED（2026-10-01 实测：codex.jsonl 的 P0 手工追加
+# 行是 LF、P1 脚本行是 CRLF，整份文件呈 MIXED）。口径见 vault `系统中枢/协同/会话索引/_README.md`。
+FILE_NEWLINE = "\r\n"
+
+
+def write_text_file(path: Path, text: str) -> None:
+    """按协同约定写文本：行尾固定 CRLF（与运行平台无关）。
+
+    用 `open(newline=...)` 而非 `Path.write_text(newline=...)` —— 后者需 Python ≥3.10，
+    而本脚本会被 Windows 与 WSL 两侧调用，解释器版本不保证。
+    """
+    with path.open("w", encoding="utf-8", newline=FILE_NEWLINE) as fh:
+        fh.write(text)
+
+
 TASK_ID_RE = re.compile(r"^WK-\d{8}-\d{2}$")
 BLOCK_HEAD_RE = re.compile(r"^##\s+(\S+)\s*\|\s*([A-Za-z0-9_\-]+)\s*\|\s*(WK-\d{8}-\d{2})\s*$")
 BLOCK_FIELDS = ("本轮做了什么", "动了哪些文件", "证据", "未决问题", "下一步",
@@ -296,7 +313,7 @@ def update_ledger_row(led: Ledger, task: Task, *, force: bool = False,
                               "| 时间 | 谁 | 改了哪行 | 原因 |", "|---|---|---|---|"])
             insert_at = len(led.lines)
         led.lines.insert(insert_at, entry)
-    led.path.write_text("\n".join(led.lines) + "\n", encoding="utf-8")
+    write_text_file(led.path, "\n".join(led.lines) + "\n")
 
 
 def append_ledger_row(led: Ledger, task: Task) -> None:
@@ -313,7 +330,7 @@ def append_ledger_row(led: Ledger, task: Task) -> None:
         led.lines.insert(anchor, task.render())
     else:
         led.lines.insert(last, task.render())
-    led.path.write_text("\n".join(led.lines) + "\n", encoding="utf-8")
+    write_text_file(led.path, "\n".join(led.lines) + "\n")
 
 
 # ---------------------------------------------------------------- 交接文件
@@ -394,7 +411,7 @@ def append_handoff_block(root: Path, block: Block, task_title: str = "") -> tupl
     path = handoff_path(root, block.task_id)
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.is_file():
-        path.write_text(handoff_header(block.task_id, block.ts[:10]) + "\n", encoding="utf-8")
+        write_text_file(path, handoff_header(block.task_id, block.ts[:10]) + "\n")
     blocks, _ = read_handoff(path)
     if any(b.ts == block.ts and b.agent == block.agent and b.task_id == block.task_id
            for b in blocks):
@@ -402,7 +419,7 @@ def append_handoff_block(root: Path, block: Block, task_title: str = "") -> tupl
     text = path.read_text(encoding="utf-8")
     if not text.endswith("\n"):
         text += "\n"
-    path.write_text(text + block.render() + "\n", encoding="utf-8")
+    write_text_file(path, text + block.render() + "\n")
     return path, True
 
 
@@ -454,6 +471,6 @@ def append_index(root: Path, record: dict) -> tuple[Path, bool]:
     for r in rows:
         if (r.get("ts"), r.get("task"), r.get("agent")) == key:
             return path, False
-    with path.open("a", encoding="utf-8") as fh:
+    with path.open("a", encoding="utf-8", newline=FILE_NEWLINE) as fh:
         fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     return path, True

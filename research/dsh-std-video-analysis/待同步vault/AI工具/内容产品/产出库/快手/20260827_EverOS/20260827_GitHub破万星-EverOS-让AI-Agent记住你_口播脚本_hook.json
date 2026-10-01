@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "generated_at": "20260827_004950",
+    "pipeline_version": "3.0-article",
+    "style_tag": "#AI",
+    "source_article": "D:\\Obsidian Vault\\obsidian Vault\\AI工具\\内容产品\\公众号文章\\审查报告\\素材包\\2026-08-26-DSH-EverMind-AI-EverOS-深度文_终稿_20260826_093830_with_config_with_images.md",
+    "generator": "article_to_script.py v1.0",
+    "data_declaration": "以上数据截至 2026-08-26 09:25，来源于 GitHub API 实时查询。"
+  },
+  "topic": {
+    "tool_name": "EverOS",
+    "category": "AI编程",
+    "video_title": "GitHub破万星 EverOS 让AI Agent记住你",
+    "hook_sentence": "GitHub破万星 专为AI Agent造的记忆层"
+  },
+  "script": {
+    "script": [
+      {
+        "time": "0:00-0:08",
+        "content": "这个项目已经5 个了，但九成的人根本不会用——今天一条视频讲透。"
+      },
+      {
+        "time": "0:08-0:18",
+        "content": "用过 AI 助手的人都有体会：换个工具、换个会话，上下文全没了，反复解释自己是谁、想要什么，效率直接腰斩。"
+      },
+      {
+        "time": "0:18-0:32",
+        "content": "EverOS 的定位是「一个可移植的记忆层」，主打本地优先、Markdown 原生、用户自有，数据归你管，不被任何平台锁死。"
+      },
+      {
+        "time": "0:32-0:50",
+        "content": "技术栈用的是 Python，安装支持 pip 和 uv 两种方式，README 给了 5 个可直接跑的 demo 命令，对新手很友好，上手门槛不高。"
+      },
+      {
+        "time": "0:50-0:70",
+        "content": "目前仓库已经积了 20 个 Issue、74 个 Open Issue，说明项目还在快速迭代，作者观点是：想押注可以先跑 demo 验证，别盲跟。"
+      },
+      {
+        "time": "0:70-0:85",
+        "content": "你觉得 AI Agent 该不该有自己的记忆层？评论区聊聊，觉得有用点个关注。"
+      }
+    ]
+  },
+  "multimodal": {},
+  "data_refs": [
+    "stars 12,421",
+    "forks 903",
+    "open_issues 74",
+    "issues_count 20",
+    "code_examples_count 5",
+    "language Python"
+  ]
+}
