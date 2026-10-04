@@ -57,6 +57,9 @@ PLATFORMS = {
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 MEDIA_EXT = (".mp4", ".webm", ".mkv", ".mov", ".m4a")
+# 卡片里竖屏视频的显示宽度（px）。竖屏铺满宽面板会又高又大、要滚半天；
+# 定成手机屏宽度，观感接近刷抖音。横屏视频不加宽度提示，用 Obsidian 默认。
+NOTE_PORTRAIT_WIDTH = 360
 
 
 def extract_url(text: str) -> str:
@@ -234,6 +237,27 @@ MEANING = {
 }
 
 
+def media_size(path: Path) -> tuple[int, int] | None:
+    """ffprobe 取视频宽高（失败返回 None）。"""
+    try:
+        r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                            "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", str(path)],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=30)
+        w, h = (r.stdout or "").strip().split("x")[:2]
+        return int(w), int(h)
+    except Exception:
+        return None
+
+
+def find_media(target_dir: Path, file_name: str) -> Path | None:
+    """定位视频本体：现布局在 <平台>/_媒体/，兼容旧的 <平台>/ 平铺。"""
+    for cand in (target_dir / MEDIA_DIRNAME / file_name, target_dir / file_name):
+        if cand.is_file():
+            return cand
+    return None
+
+
 def write_note(meta: dict, target_dir: Path) -> Path | None:
     """写同名 .md 卡片：内嵌视频 + 4 项互动数（带含义）。打开笔记即等于「打开这个视频」。"""
     file_name = meta.get("file") or ""
@@ -252,7 +276,11 @@ def write_note(meta: dict, target_dir: Path) -> Path | None:
           f"时长秒: {meta.get('duration') or ''}"]
     fm += [f"{k}: {m.get(k, '')}" for k in MEANING]
     fm += [f'互动采集: "{at}"', "---", ""]
-    body = [f"# {title}", "", f"![[{file_name}]]", "", f"## 互动数（截至 {at}）", "",
+    media = find_media(target_dir, file_name)
+    dims = media_size(media) if media else None
+    embed = (f"![[{file_name}|{NOTE_PORTRAIT_WIDTH}]]" if dims and dims[1] > dims[0]
+             else f"![[{file_name}]]")
+    body = [f"# {title}", "", embed, "", f"## 互动数（截至 {at}）", "",
             "| 参数 | 数值 | 含义 |", "|---|---:|---|"]
     body += [f"| {MEANING[k][0]} | {m.get(k, '—')} | {MEANING[k][1]} |" for k in MEANING]
     body += ["", "> 数据取自抖音官方接口（本机登录态），是**时间点快照**，会随时间增长；"
