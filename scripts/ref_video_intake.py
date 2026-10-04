@@ -154,13 +154,130 @@ def ytdlp_title(url: str) -> str:
     return ""
 
 
+# ---------- 互动数（BSK 浏览器会话通道） ----------
+# 为什么走 BSK 而不是 redfox：redfox 的 parseWork 只回视频地址与封面，没有互动数；
+# 它的关键词搜索虽带 赞/藏/评/转，但按标题搜到的是"同名话题"的别人的视频，无法定位到指定作品。
+# 已知作品号时，唯一能精确取数的是本机浏览器的抖音登录态 + 官方 detail 接口。
+
+def bsk_session() -> str:
+    """取一个活跃的 bsk 会话 id（没有则返回空串）。"""
+    try:
+        r = subprocess.run(["bsk", "session", "list", "--json"], capture_output=True,
+                           text=True, encoding="utf-8", errors="replace", timeout=30)
+        if r.returncode == 0:
+            arr = json.loads(r.stdout or "[]")
+            if isinstance(arr, list) and arr:
+                return str(arr[0].get("session_id") or "")
+    except Exception:
+        pass
+    return ""
+
+
+def douyin_metrics(aweme_id: str, session: str) -> dict | None:
+    """经 BSK 会话取抖音单条作品的互动数（点赞/收藏/评论/转发）。取不到返回 None。"""
+    if not (session and aweme_id):
+        return None
+    try:
+        subprocess.run(["bsk", "navigate", "--session", session,
+                        f"https://www.douyin.com/video/{aweme_id}",
+                        "--wait-until", "domcontentloaded", "--timeout", "60s"],
+                       capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=90)
+        js = ("(async()=>{const r=await fetch('/aweme/v1/web/aweme/detail/?aweme_id="
+              + aweme_id + "&aid=6383',{credentials:'include'});const t=await r.text();"
+              "let j=null;try{j=JSON.parse(t)}catch(e){};const d=(j&&j.aweme_detail)||{};"
+              "const s=d.statistics||{};return JSON.stringify({http:r.status,"
+              "digg:s.digg_count,comment:s.comment_count,collect:s.collect_count,"
+              "share:s.share_count,play:s.play_count});})()")
+        r = subprocess.run(["bsk", "evaluate", "--session", session, "--json", js],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=90)
+        if r.returncode != 0:
+            return None
+        val = json.loads(json.loads(r.stdout or "{}").get("value") or "{}")
+        if val.get("http") != 200:
+            return None
+        return {"like": val.get("digg"), "collect": val.get("collect"),
+                "comment": val.get("comment"), "share": val.get("share"),
+                "play": val.get("play")}
+    except Exception:
+        return None
+
+
+def attach_metrics(meta: dict) -> dict:
+    """把互动数写进 meta（同时留一份带时间戳的历史，便于看增长）。"""
+    wid = meta.get("work_id")
+    sid = bsk_session() if wid else ""
+    m = douyin_metrics(wid, sid) if sid else None
+    if not m:
+        meta["metrics_status"] = ("无活跃 bsk 会话（浏览器自动化通道不可用）" if not sid
+                                  else "取数失败（接口非 200 或解析失败）")
+        return meta
+    at = datetime.now().strftime("%Y-%m-%d %H:%M")
+    meta["metrics"] = m
+    meta["metrics_at"] = at
+    meta.pop("metrics_status", None)
+    hist = [h for h in (meta.get("metrics_history") or []) if h.get("at") != at]
+    hist.append({"at": at, **m})
+    meta["metrics_history"] = hist[-20:]
+    return meta
+
+
+def refresh_metrics(platform_filter: str) -> int:
+    """回填 / 刷新库里已有条目的互动数（只处理有作品号的抖音条目）。"""
+    if not bsk_session():
+        print("[fail] 没有活跃的 bsk 会话，取不到互动数（需要本机浏览器在连）")
+        return 4
+    metas = sorted(LIB_ROOT.rglob("*.meta.json"))
+    if platform_filter:
+        metas = [p for p in metas if p.parent.name == platform_filter]
+    if not metas:
+        print("[info] 库里没有 .meta.json 条目")
+        return 0
+    ok = skip = 0
+    for mp in metas:
+        try:
+            meta = json.loads(mp.read_text(encoding="utf-8"))
+        except Exception:
+            print(f"[skip] {mp.name}（meta 读不出）")
+            skip += 1
+            continue
+        if meta.get("platform") != "douyin" or not meta.get("work_id"):
+            print(f"[skip] {mp.parent.name}/{mp.name}（非抖音或无作品号）")
+            skip += 1
+            continue
+        before = meta.get("metrics") or {}
+        meta = attach_metrics(meta)
+        if not meta.get("metrics"):
+            print(f"[fail] {mp.name} —— {meta.get('metrics_status')}")
+            skip += 1
+            continue
+        mp.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        m = meta["metrics"]
+        delta = "".join(f" {k}{m[k] - before[k]:+d}" if isinstance(before.get(k), int) else ""
+                        for k in ("like", "collect", "comment", "share"))
+        print(f"[ok] {meta.get('file') or mp.name}\n     赞{m['like']} 藏{m['collect']} "
+              f"评{m['comment']} 转{m['share']}{('  变化:' + delta) if delta else ''}")
+        ok += 1
+    print(f"[done] 更新 {ok} 条，跳过 {skip} 条")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="对标视频库：丢链接 → 自动入库命名")
-    ap.add_argument("input", help="视频链接，或整段分享文案")
+    ap.add_argument("input", nargs="?", default="", help="视频链接，或整段分享文案")
     ap.add_argument("--title", default="", help="手动标题（优先级最高）")
     ap.add_argument("--dry-run", action="store_true", help="只解析，不下载不落库")
     ap.add_argument("--force", action="store_true", help="同作品号已存在时仍覆盖")
+    ap.add_argument("--refresh-metrics", action="store_true",
+                    help="不下载，只刷新库里已有条目的互动数（赞/藏/评/转）")
+    ap.add_argument("--platform", default="", help="配合 --refresh-metrics：只刷某个平台目录")
     a = ap.parse_args()
+
+    if a.refresh_metrics:
+        return refresh_metrics(a.platform)
+    if not a.input:
+        ap.error("需要给一个视频链接 / 分享文案，或用 --refresh-metrics 刷新互动数")
 
     url0 = extract_url(a.input) or a.input.strip()
     url = resolve_url(url0)
@@ -232,7 +349,16 @@ def main() -> int:
             "collected": date,
             "file": dst.name,
         })
-        (target_dir / f"{stem}.meta.json").write_text(
+        meta_path = target_dir / f"{stem}.meta.json"
+        if plat == "douyin" and wid:
+            meta = attach_metrics(meta)
+            meta.pop("metrics_history", None)  # 入库首抓只记当前值，历史留给 --refresh-metrics
+            if meta.get("metrics"):
+                m = meta["metrics"]
+                print(f"      互动：赞{m['like']} 藏{m['collect']} 评{m['comment']} 转{m['share']}")
+            else:
+                print(f"      互动：未取到 —— {meta.get('metrics_status')}")
+        meta_path.write_text(
             json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
         print(f"[3/4] 入库：{dst}")
