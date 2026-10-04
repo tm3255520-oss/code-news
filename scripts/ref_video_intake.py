@@ -223,6 +223,44 @@ def attach_metrics(meta: dict) -> dict:
     return meta
 
 
+# 4 项参数的中文名与含义（卡片里逐条列出，打开就知道每个数字是什么）
+MEANING = {
+    "like": ("👍 点赞", "点「赞」的次数 —— 内容认可度，最直观的量级指标"),
+    "collect": ("⭐ 收藏", "被收藏的次数 —— 觉得值得留存 / 复用"),
+    "comment": ("💬 评论", "评论条数 —— 引发讨论的强度"),
+    "share": ("🔁 转发", "被分享 / 转发的次数 —— 传播意愿"),
+}
+
+
+def write_note(meta: dict, target_dir: Path) -> Path | None:
+    """写同名 .md 卡片：内嵌视频 + 4 项互动数（带含义）。打开笔记即等于「打开这个视频」。"""
+    file_name = meta.get("file") or ""
+    if not file_name:
+        return None
+    note = target_dir / (Path(file_name).stem + ".md")
+    title = meta.get("title") or Path(file_name).stem
+    m = meta.get("metrics") or {}
+    at = meta.get("metrics_at") or "（未采集）"
+    fm = ["---", "类型: 对标视频",
+          f"平台: {meta.get('in_library') or meta.get('platform') or ''}",
+          f'标题: "{title}"',
+          f'作品号: "{meta.get("work_id") or ""}"',
+          f'来源: "{meta.get("source_url") or ""}"',
+          f"入库日: {meta.get('collected') or ''}",
+          f"时长秒: {meta.get('duration') or ''}"]
+    fm += [f"{k}: {m.get(k, '')}" for k in MEANING]
+    fm += [f'互动采集: "{at}"', "---", ""]
+    body = [f"# {title}", "", f"![[{file_name}]]", "", f"## 互动数（截至 {at}）", "",
+            "| 参数 | 数值 | 含义 |", "|---|---:|---|"]
+    body += [f"| {MEANING[k][0]} | {m.get(k, '—')} | {MEANING[k][1]} |" for k in MEANING]
+    body += ["", "> 数据取自抖音官方接口（本机登录态），是**时间点快照**，会随时间增长；"
+             "重跑 `ref_video_intake.py --refresh-metrics` 可刷新。", "",
+             "## 来源", "", f"- 原链接：{meta.get('source_url') or ''}",
+             f"- 作品号：`{meta.get('work_id') or ''}`", ""]
+    note.write_text("\n".join(fm + body), encoding="utf-8")
+    return note
+
+
 def refresh_metrics(platform_filter: str) -> int:
     """回填 / 刷新库里已有条目的互动数（只处理有作品号的抖音条目）。"""
     if not bsk_session():
@@ -253,6 +291,7 @@ def refresh_metrics(platform_filter: str) -> int:
             skip += 1
             continue
         mp.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_note(meta, mp.parent)
         m = meta["metrics"]
         delta = "".join(f" {k}{m[k] - before[k]:+d}" if isinstance(before.get(k), int) else ""
                         for k in ("like", "collect", "comment", "share"))
@@ -360,8 +399,11 @@ def main() -> int:
                 print(f"      互动：未取到 —— {meta.get('metrics_status')}")
         meta_path.write_text(
             json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        note = write_note(meta, target_dir)
 
         print(f"[3/4] 入库：{dst}")
+        if note:
+            print(f"      卡片：{note.name}（内嵌视频 + 4 项互动数）")
         print(f"[4/4] 标题={'（未解析，仅作品号，可手改文件名）' if not title else title}")
         return 0
     finally:
