@@ -251,11 +251,44 @@ def media_size(path: Path) -> tuple[int, int] | None:
 
 
 def find_media(target_dir: Path, file_name: str) -> Path | None:
-    """定位视频本体：现布局在 <平台>/_媒体/，兼容旧的 <平台>/ 平铺。"""
+    """定位视频本体（与卡片同目录）；兼容早前挪进 _媒体/ 的旧布局。"""
     for cand in (target_dir / MEDIA_DIRNAME / file_name, target_dir / file_name):
         if cand.is_file():
             return cand
     return None
+
+
+def normalize_audio(path: Path) -> str:
+    """把 Chromium 不支持的音轨转成 AAC-LC（视频轨原样复制、零画质损失）。
+
+    为什么必须做：Obsidian 的播放内核是 Chromium，只解 **AAC-LC**；
+    而抖音下回来的片子音轨常是 **HE-AACv2** —— 表现就是「第一帧能看到、
+    一按播放就卡住/没反应」（2026-10-04 实测两条都中招）。
+    """
+    if path.suffix.lower() not in (".mp4", ".mov", ".m4a"):
+        return "skip(非 mp4 容器)"
+    try:
+        r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0",
+                            "-show_entries", "stream=profile",
+                            "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=60)
+        prof = (r.stdout or "").strip()
+    except Exception:
+        return "probe 失败"
+    if not prof or prof == "LC":
+        return "ok"
+    tmp = path.with_name(path.name + ".aaclc.tmp.mp4")
+    r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(path),
+                        "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
+                        "-movflags", "+faststart", str(tmp)],
+                       capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=900)
+    if r.returncode != 0 or not tmp.exists():
+        tmp.unlink(missing_ok=True)
+        return f"转码失败 {(r.stderr or '')[:100]}"
+    os.replace(tmp, path)
+    return f"已归一 {prof} -> AAC-LC"
 
 
 def write_note(meta: dict, target_dir: Path) -> Path | None:
@@ -400,11 +433,11 @@ def main() -> int:
     target_dir = LIB_ROOT / folder_cn
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    if wid and not a.force:
-        dup = [p for p in target_dir.glob(f"*{wid}*") if p.suffix.lower() in MEDIA_EXT]
-        if dup:
-            print(f"[skip] 已在库：{dup[0].name}（要覆盖加 --force）")
-            return 0
+    dup = ([p for p in target_dir.glob(f"*{wid}*") if p.suffix.lower() in MEDIA_EXT]
+           if wid else [])
+    if dup and not a.force:
+        print(f"[skip] 已在库：{dup[0].name}（要覆盖加 --force）")
+        return 0
 
     print("[2/4] 下载（复用 fetch_video_with_browser.py）…")
     tmp = Path(tempfile.mkdtemp(prefix="refvid-"))
@@ -419,6 +452,9 @@ def main() -> int:
             print("[fail] 下载失败")
             print(out[-800:])
             return 3
+        norm = normalize_audio(mf)
+        if norm != "ok":
+            print(f"      音频归一：{norm}")
 
         meta: dict = {}
         mp = tmp / "meta.json"
@@ -427,11 +463,23 @@ def main() -> int:
                 meta = json.loads(mp.read_text(encoding="utf-8"))
             except Exception:
                 meta = {}
+        if dup:
+            # 覆盖已有条目时，把旧 meta 垫在下面 —— 否则重下会把已采到的互动数与历史冲掉
+            old = target_dir / f"{dup[0].stem}.meta.json"
+            if old.is_file():
+                try:
+                    meta = {**json.loads(old.read_text(encoding="utf-8")), **meta}
+                except Exception:
+                    pass
 
         title = a.title or cap or ytdlp_title(url) or (meta.get("title") or "").strip()
         date = datetime.now().strftime("%Y-%m-%d")
-        parts = [date] + ([sanitize(title)] if title else []) + ([wid] if wid else [])
-        stem = "-".join(parts)
+        if dup:
+            # 覆盖已有条目时沿用原文件名 —— 否则"这次没解析出标题"会另起一个名字，产出重复副本
+            stem = dup[0].stem
+        else:
+            parts = [date] + ([sanitize(title)] if title else []) + ([wid] if wid else [])
+            stem = "-".join(parts)
 
         # 视频与 meta 放在卡片**同目录**：Obsidian 同目录解析最稳（挪进子目录曾导致嵌入失效）
         dst = target_dir / f"{stem}{mf.suffix.lower()}"
