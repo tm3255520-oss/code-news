@@ -41,6 +41,8 @@ if hasattr(sys.stdout, "reconfigure"):
 SCRIPTS = Path(__file__).resolve().parent
 FETCH = SCRIPTS / "fetch_video_with_browser.py"
 LIB_ROOT = Path(r"D:\Obsidian Vault\obsidian Vault\内容生产\2-调研与素材\素材与资源\对标视频库")
+# 平台目录下只留卡片（.md）；视频本体与 meta 收进这个子目录，避免刷屏
+MEDIA_DIRNAME = "_媒体"
 
 # 平台 slug → (库内中文目录, slug)
 PLATFORMS = {
@@ -263,12 +265,18 @@ def write_note(meta: dict, target_dir: Path) -> Path | None:
 
 def refresh_metrics(platform_filter: str) -> int:
     """回填 / 刷新库里已有条目的互动数（只处理有作品号的抖音条目）。"""
+
+    def platform_of(meta_path: Path) -> str:
+        # meta 收在 <平台>/_媒体/ 下；兼容旧的 <平台>/ 平铺写法
+        return (meta_path.parent.parent if meta_path.parent.name == MEDIA_DIRNAME
+                else meta_path.parent).name
+
     if not bsk_session():
         print("[fail] 没有活跃的 bsk 会话，取不到互动数（需要本机浏览器在连）")
         return 4
     metas = sorted(LIB_ROOT.rglob("*.meta.json"))
     if platform_filter:
-        metas = [p for p in metas if p.parent.name == platform_filter]
+        metas = [p for p in metas if platform_of(p) == platform_filter]
     if not metas:
         print("[info] 库里没有 .meta.json 条目")
         return 0
@@ -281,7 +289,7 @@ def refresh_metrics(platform_filter: str) -> int:
             skip += 1
             continue
         if meta.get("platform") != "douyin" or not meta.get("work_id"):
-            print(f"[skip] {mp.parent.name}/{mp.name}（非抖音或无作品号）")
+            print(f"[skip] {platform_of(mp)}/{mp.name}（非抖音或无作品号）")
             skip += 1
             continue
         before = meta.get("metrics") or {}
@@ -291,7 +299,7 @@ def refresh_metrics(platform_filter: str) -> int:
             skip += 1
             continue
         mp.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
-        write_note(meta, mp.parent)
+        write_note(meta, LIB_ROOT / platform_of(mp))
         m = meta["metrics"]
         delta = "".join(f" {k}{m[k] - before[k]:+d}" if isinstance(before.get(k), int) else ""
                         for k in ("like", "collect", "comment", "share"))
@@ -299,6 +307,26 @@ def refresh_metrics(platform_filter: str) -> int:
               f"评{m['comment']} 转{m['share']}{('  变化:' + delta) if delta else ''}")
         ok += 1
     print(f"[done] 更新 {ok} 条，跳过 {skip} 条")
+    return 0
+
+
+def rebuild_notes(platform_filter: str) -> int:
+    """只用现有 meta.json 重生成卡片（不联网、不重新取数）——换模板或迁移后跑。"""
+    metas = sorted((LIB_ROOT / platform_filter if platform_filter else LIB_ROOT)
+                   .rglob("*.meta.json"))
+    n = 0
+    for mp in metas:
+        try:
+            meta = json.loads(mp.read_text(encoding="utf-8"))
+        except Exception:
+            print(f"[skip] {mp.name}（meta 读不出）")
+            continue
+        pdir = mp.parent.parent if mp.parent.name == MEDIA_DIRNAME else mp.parent
+        note = write_note(meta, pdir)
+        if note:
+            print(f"[ok] {note.relative_to(LIB_ROOT)}")
+            n += 1
+    print(f"[done] 重生成 {n} 张卡片")
     return 0
 
 
@@ -310,9 +338,13 @@ def main() -> int:
     ap.add_argument("--force", action="store_true", help="同作品号已存在时仍覆盖")
     ap.add_argument("--refresh-metrics", action="store_true",
                     help="不下载，只刷新库里已有条目的互动数（赞/藏/评/转）")
+    ap.add_argument("--rebuild-notes", action="store_true",
+                    help="只用现有 meta.json 重生成卡片（不联网）")
     ap.add_argument("--platform", default="", help="配合 --refresh-metrics：只刷某个平台目录")
     a = ap.parse_args()
 
+    if a.rebuild_notes:
+        return rebuild_notes(a.platform)
     if a.refresh_metrics:
         return refresh_metrics(a.platform)
     if not a.input:
@@ -337,10 +369,12 @@ def main() -> int:
         return 0
 
     target_dir = LIB_ROOT / folder_cn
+    media_dir = target_dir / MEDIA_DIRNAME
     target_dir.mkdir(parents=True, exist_ok=True)
+    media_dir.mkdir(parents=True, exist_ok=True)
 
     if wid and not a.force:
-        dup = [p for p in target_dir.glob(f"*{wid}*") if p.suffix.lower() in MEDIA_EXT]
+        dup = [p for p in media_dir.glob(f"*{wid}*") if p.suffix.lower() in MEDIA_EXT]
         if dup:
             print(f"[skip] 已在库：{dup[0].name}（要覆盖加 --force）")
             return 0
@@ -372,7 +406,7 @@ def main() -> int:
         parts = [date] + ([sanitize(title)] if title else []) + ([wid] if wid else [])
         stem = "-".join(parts)
 
-        dst = target_dir / f"{stem}{mf.suffix.lower()}"
+        dst = media_dir / f"{stem}{mf.suffix.lower()}"
         if dst.exists() and not a.force:
             print(f"[skip] 目标已存在：{dst.name}")
             return 0
@@ -388,7 +422,7 @@ def main() -> int:
             "collected": date,
             "file": dst.name,
         })
-        meta_path = target_dir / f"{stem}.meta.json"
+        meta_path = media_dir / f"{stem}.meta.json"
         if plat == "douyin" and wid:
             meta = attach_metrics(meta)
             meta.pop("metrics_history", None)  # 入库首抓只记当前值，历史留给 --refresh-metrics
