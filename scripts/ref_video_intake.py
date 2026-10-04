@@ -57,9 +57,11 @@ PLATFORMS = {
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 MEDIA_EXT = (".mp4", ".webm", ".mkv", ".mov", ".m4a")
-# 注意：Obsidian **不支持** `![[video.mp4|宽度]]` 这种尺寸语法（那只对图片有效）——
-# 实测其渲染代码只创建 <video controls preload=metadata>，从不设宽度。
-# 所以卡片缩放走 CSS 片段：.obsidian/snippets/refvid.css + frontmatter `cssclasses`。
+# 卡片里视频的宽度（px），写进嵌入的别名：`![[xxx.mp4|<数字>]]`。
+# 原生 Obsidian 不认这个语法（只对图片有效），但装了 **Media Extended** 后它会解析别名里的
+# 最后一个 `|<数字>`（或 `<宽>x<高>`）当尺寸。前提是把它的 min-width 默认值 400px 放开
+# —— 见 .obsidian/snippets/mx-embed-size.css。改完随时可 --rebuild-notes 全量重写。
+NOTE_EMBED_WIDTH = 320
 
 
 def extract_url(text: str) -> str:
@@ -237,27 +239,6 @@ MEANING = {
 }
 
 
-def media_size(path: Path) -> tuple[int, int] | None:
-    """ffprobe 取视频宽高（失败返回 None）。"""
-    try:
-        r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
-                            "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", str(path)],
-                           capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=30)
-        w, h = (r.stdout or "").strip().split("x")[:2]
-        return int(w), int(h)
-    except Exception:
-        return None
-
-
-def find_media(target_dir: Path, file_name: str) -> Path | None:
-    """定位视频本体（与卡片同目录）；兼容早前挪进 _媒体/ 的旧布局。"""
-    for cand in (target_dir / MEDIA_DIRNAME / file_name, target_dir / file_name):
-        if cand.is_file():
-            return cand
-    return None
-
-
 def normalize_audio(path: Path) -> str:
     """把 Chromium 不支持的音轨转成 AAC-LC（视频轨原样复制、零画质损失）。
 
@@ -300,12 +281,7 @@ def write_note(meta: dict, target_dir: Path) -> Path | None:
     title = meta.get("title") or Path(file_name).stem
     m = meta.get("metrics") or {}
     at = meta.get("metrics_at") or "（未采集）"
-    # 竖屏视频用 CSS 片段缩窄（见 NOTE_PORTRAIT_WIDTH 处的说明）；
-    # 横屏不给 refvid-portrait 类，保持默认宽度。
-    media = find_media(target_dir, file_name)
-    dims = media_size(media) if media else None
-    css = ("[refvid, refvid-portrait]" if dims and dims[1] > dims[0] else "[refvid]")
-    fm = ["---", "类型: 对标视频", f"cssclasses: {css}",
+    fm = ["---", "类型: 对标视频",
           f"平台: {meta.get('in_library') or meta.get('platform') or ''}",
           f'标题: "{title}"',
           f'作品号: "{meta.get("work_id") or ""}"',
@@ -314,7 +290,8 @@ def write_note(meta: dict, target_dir: Path) -> Path | None:
           f"时长秒: {meta.get('duration') or ''}"]
     fm += [f"{k}: {m.get(k, '')}" for k in MEANING]
     fm += [f'互动采集: "{at}"', "---", ""]
-    body = [f"# {title}", "", f"![[{file_name}]]", "", f"## 互动数（截至 {at}）", "",
+    body = [f"# {title}", "", f"![[{file_name}|{NOTE_EMBED_WIDTH}]]", "",
+            f"## 互动数（截至 {at}）", "",
             "| 参数 | 数值 | 含义 |", "|---|---:|---|"]
     body += [f"| {MEANING[k][0]} | {m.get(k, '—')} | {MEANING[k][1]} |" for k in MEANING]
     body += ["", "> 数据取自抖音官方接口（本机登录态），是**时间点快照**，会随时间增长；"
