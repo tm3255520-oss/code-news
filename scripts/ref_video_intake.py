@@ -57,9 +57,9 @@ PLATFORMS = {
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 MEDIA_EXT = (".mp4", ".webm", ".mkv", ".mov", ".m4a")
-# 卡片里竖屏视频的显示宽度（px）。竖屏铺满宽面板会又高又大、要滚半天；
-# 定成手机屏宽度，观感接近刷抖音。横屏视频不加宽度提示，用 Obsidian 默认。
-NOTE_PORTRAIT_WIDTH = 360
+# 注意：Obsidian **不支持** `![[video.mp4|宽度]]` 这种尺寸语法（那只对图片有效）——
+# 实测其渲染代码只创建 <video controls preload=metadata>，从不设宽度。
+# 所以卡片缩放走 CSS 片段：.obsidian/snippets/refvid.css + frontmatter `cssclasses`。
 
 
 def extract_url(text: str) -> str:
@@ -267,7 +267,12 @@ def write_note(meta: dict, target_dir: Path) -> Path | None:
     title = meta.get("title") or Path(file_name).stem
     m = meta.get("metrics") or {}
     at = meta.get("metrics_at") or "（未采集）"
-    fm = ["---", "类型: 对标视频",
+    # 竖屏视频用 CSS 片段缩窄（见 NOTE_PORTRAIT_WIDTH 处的说明）；
+    # 横屏不给 refvid-portrait 类，保持默认宽度。
+    media = find_media(target_dir, file_name)
+    dims = media_size(media) if media else None
+    css = ("[refvid, refvid-portrait]" if dims and dims[1] > dims[0] else "[refvid]")
+    fm = ["---", "类型: 对标视频", f"cssclasses: {css}",
           f"平台: {meta.get('in_library') or meta.get('platform') or ''}",
           f'标题: "{title}"',
           f'作品号: "{meta.get("work_id") or ""}"',
@@ -276,11 +281,7 @@ def write_note(meta: dict, target_dir: Path) -> Path | None:
           f"时长秒: {meta.get('duration') or ''}"]
     fm += [f"{k}: {m.get(k, '')}" for k in MEANING]
     fm += [f'互动采集: "{at}"', "---", ""]
-    media = find_media(target_dir, file_name)
-    dims = media_size(media) if media else None
-    embed = (f"![[{file_name}|{NOTE_PORTRAIT_WIDTH}]]" if dims and dims[1] > dims[0]
-             else f"![[{file_name}]]")
-    body = [f"# {title}", "", embed, "", f"## 互动数（截至 {at}）", "",
+    body = [f"# {title}", "", f"![[{file_name}]]", "", f"## 互动数（截至 {at}）", "",
             "| 参数 | 数值 | 含义 |", "|---|---:|---|"]
     body += [f"| {MEANING[k][0]} | {m.get(k, '—')} | {MEANING[k][1]} |" for k in MEANING]
     body += ["", "> 数据取自抖音官方接口（本机登录态），是**时间点快照**，会随时间增长；"
