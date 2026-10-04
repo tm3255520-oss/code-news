@@ -398,12 +398,10 @@ def main() -> int:
         return 0
 
     target_dir = LIB_ROOT / folder_cn
-    media_dir = target_dir / MEDIA_DIRNAME
     target_dir.mkdir(parents=True, exist_ok=True)
-    media_dir.mkdir(parents=True, exist_ok=True)
 
     if wid and not a.force:
-        dup = [p for p in media_dir.glob(f"*{wid}*") if p.suffix.lower() in MEDIA_EXT]
+        dup = [p for p in target_dir.glob(f"*{wid}*") if p.suffix.lower() in MEDIA_EXT]
         if dup:
             print(f"[skip] 已在库：{dup[0].name}（要覆盖加 --force）")
             return 0
@@ -435,7 +433,8 @@ def main() -> int:
         parts = [date] + ([sanitize(title)] if title else []) + ([wid] if wid else [])
         stem = "-".join(parts)
 
-        dst = media_dir / f"{stem}{mf.suffix.lower()}"
+        # 视频与 meta 放在卡片**同目录**：Obsidian 同目录解析最稳（挪进子目录曾导致嵌入失效）
+        dst = target_dir / f"{stem}{mf.suffix.lower()}"
         if dst.exists() and not a.force:
             print(f"[skip] 目标已存在：{dst.name}")
             return 0
@@ -451,7 +450,7 @@ def main() -> int:
             "collected": date,
             "file": dst.name,
         })
-        meta_path = media_dir / f"{stem}.meta.json"
+        meta_path = target_dir / f"{stem}.meta.json"
         if plat == "douyin" and wid:
             meta = attach_metrics(meta)
             meta.pop("metrics_history", None)  # 入库首抓只记当前值，历史留给 --refresh-metrics
