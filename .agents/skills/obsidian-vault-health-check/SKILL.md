@@ -2,7 +2,7 @@
 name: obsidian-vault-health-check
 description: 对 Obsidian 自媒体中枢（vault + Hermes cron + MCP）做只读健康巡检。当用户说「体检一次系统」「巡检 Obsidian」「检查中枢运行状态」「看看哪条链路断了」时使用。判据是「每条链路最近有没有新产出」，不是「目录里有没有文件」。**边界**：对象是 **Obsidian 中枢链路**（vault 产出 + Hermes cron + MCP）；**WorkBuddy 本机能力**（skill / 插件 / MCP / 连接器是否真的可用）走 workbuddy-capability-audit；**某条内容产线的问题**走 content-pipeline-audit。
 agent_created: true
-version: 1.0.2
+version: 1.1.0
 tags: [obsidian, 巡检, 健康检查, 只读, 多智能体]
 ---
 
@@ -10,6 +10,15 @@ tags: [obsidian, 巡检, 健康检查, 只读, 多智能体]
 
 > 对象：`D:\Obsidian Vault\obsidian Vault` + Hermes（`C:\Users\Administrator\.hermes`）+ code-news。
 > 铁律：**全程只读**。不改 vault、不改脚本、不重跑生产任务。发现故障只定位根因并报告，等用户决策后再动。
+>
+> **📌 路径基准（2026-10-14 全量重订）**：vault 已改为**序号前缀目录**（`内容生产/1-情报与选题`…`6-归档`、
+> `知识库/0-收件箱`…`9-归档`）。本技能所有路径以 **`~/.hermes/scripts/vault_paths.py` 为唯一事实源**
+> （各产线脚本都 import 它）。**改本技能路径前先读那个文件**，别凭记忆。
+> 旧路径 → 新路径速查：`内容生产/情报与选题`→`1-情报与选题`｜`创作与调研/深度调研`→`2-调研与素材/深度调研`｜
+> `创作与调研/素材与资源`→`2-调研与素材/素材与资源`｜`创作与调研/文章`→`3-草稿与创作/文章`｜
+> `成品`/`成品与素材`→`4-成品与审查`｜`发布`→`5-发布`｜`归档`→`6-归档`｜`DSH专线`→`9-DSH专线`｜
+> `知识库/摘要`→`1-素材摘要`｜`知识库/{2-概念,3-实体,4-主题}`→**层已移除**（`5-方法`/`6-案例`/`7-判断` 代之）｜
+> `参考库/平台内容规则`→**顶层模块 `运营中心/<平台>/`**（`_规则原文` + `规则与合规` 双层）。
 
 ## 核心判据
 
@@ -30,10 +39,11 @@ Profile 2（显示名 M / tm3255520@gmail.com）不开 → 采集脚本静默 ex
 ```bash
 cd "D:/Obsidian Vault/obsidian Vault"
 echo "TOTAL=$(find . -name '*.md' -type f | wc -l) EMPTY=$(find . -name '*.md' -type f -empty | wc -l)"
-for d in "内容生产/情报与选题/AI日报" "内容生产/创作与调研/深度调研" \
-  "内容生产/发布/已发布/公众号" "内容生产/发布/已发布/头条" "内容生产/发布/已发布/知乎" \
-  "内容生产/成品" "内容生产/情报与选题/热点与情报" "内容生产/情报与选题/选题与题材" \
-  "知识库/摘要" "知识库/概念" "知识库/实体" \
+for d in "内容生产/1-情报与选题/AI日报" "内容生产/2-调研与素材/深度调研" \
+  "内容生产/5-发布/已发布/公众号" "内容生产/5-发布/已发布/头条" "内容生产/5-发布/已发布/知乎" \
+  "内容生产/5-发布/已发布/视频号" "内容生产/4-成品与审查" \
+  "内容生产/1-情报与选题/热点与情报" "内容生产/1-情报与选题/选题与题材" \
+  "知识库/1-素材摘要" "知识库/5-方法" "知识库/6-案例" "知识库/7-判断" \
   "系统中枢/经验沉淀/工作流" "系统中枢/经验沉淀/复盘" "系统中枢/经验沉淀/决策" \
   "raw/articles/toutiao" "raw/articles/wechat" "raw/articles/xiaohongshu" \
   "raw/articles/zhihu" "raw/videos"; do
@@ -112,7 +122,7 @@ cat "C:/Users/Administrator/Documents/code-news/scripts/codex-api-mcp.cmd"   # �
 ### 4. 数据完整性
 ```bash
 grep -rl --include='*.md' -e '{{' . | wc -l                       # 占位符
-grep -rl --include='*.md' '暂无数据' 内容生产/情报与选题/热点与情报/ | wc -l
+grep -rl --include='*.md' '暂无数据' 内容生产/1-情报与选题/热点与情报/ | wc -l
 find . -name '*.md' -type f -empty
 cat .obsidian/community-plugins.json                              # 必须含 dataview，否则索引页全是灰色代码块
 ```
@@ -120,11 +130,41 @@ cat .obsidian/community-plugins.json                              # 必须含 da
 ### 5. dataview 索引健康（D6）
 对每个含 ` ```dataview ` 的文件，取 `from "..."`，确认目录存在且非空、且活索引排除了 `_模板`。
 
+**⚠️ 别只靠 `check_doc_references.py`**：它只扫「活文档」（指令文件 / 共享认知 / 运行手册 / 工具登记专区 /
+`知识库/INDEX.md`·`SCHEMA.md` / MOC index），**不扫各目录自己的 `index.md`/`_索引.md`**，
+也不扫带 `<>` 占位符的引用（会判 SKIP）。所以 dataview 源失效可能 MISSING=0 却真实存在。
+补一行确定性扫描（本机实测口径：全库 dataview 源 23 个）：
+```bash
+cd "C:/Users/Administrator/Documents/code-news" && python - <<'PY'
+import os,re
+V=r"D:\Obsidian Vault\obsidian Vault"; os.chdir(V)
+bad=[]
+for r,d,f in os.walk("."):
+    d[:]=[x for x in d if x not in (".git",".obsidian",".trash")]
+    for n in f:
+        if not n.endswith(".md"): continue
+        p=os.path.join(r,n)
+        s=open(p,encoding="utf-8",errors="replace").read()
+        for blk in re.findall(r"```dataview\s*\n(.*?)```",s,re.S):
+            for src in re.findall(r'^\s*from\s+"([^"]+)"',blk,re.M):
+                if not (os.path.isdir(src) or os.path.exists(src+".md")):
+                    bad.append((p,src))
+print(f"dataview 源失效 {len(bad)} 处")
+[print("  MISS",s,"<-",p) for p,s in bad]
+PY
+```
+
+### 6. 路径引用漂移自检（每轮必跑，零成本）
+```bash
+cd "C:/Users/Administrator/Documents/code-news" && python scripts/check_doc_references.py --quiet
+```
+判据：`扫描活文档 > 0`（为 0 = 根路径没解析对，**本次运行无效，不得当通过**）+ `MISSING == 0`。
+
 ## 必查的关键目录（对应五项业务链路）
-- 公众号产线 → `内容生产/发布/已发布/公众号`（**最常断，且会连锁拖垮知乎/头条**）
-- 头条产线 → `内容生产/发布/已发布/头条`
-- 采集 → `raw/articles/*`
-- 知识加工 → `知识库/摘要`
+- 公众号产线 → `内容生产/5-发布/已发布/公众号`（**最常断，且会连锁拖垮知乎/头条**）；真正判据是 `内容生产/5-发布/发布台账.md` 的登记行
+- 头条产线 → `内容生产/5-发布/已发布/头条`
+- 采集 → `raw/articles/*`、`raw/videos/*`
+- 知识加工 → `知识库/1-素材摘要/<年月>/`（L1）；`知识库/{5-方法,6-案例,7-判断}/`（L2/L3，由 kb-distill 产出）
 - 沉淀 → `系统中枢/经验沉淀/{工作流,复盘,决策}`（决策目录常年 0 条实际内容）
 
 ## 常见坑
@@ -147,6 +187,9 @@ cat .obsidian/community-plugins.json                              # 必须含 da
 
 ## 已知故障模式速查（2026-09-10 Phase 5 后更新）
 
+> ⚠️ **下表「根因」列里的路径是「事发当时」的路径，不是现行路径**——保留原样以免篡改故障史。
+> 现行落点一律看上方「各线真实落点速查」+ `~/.hermes/scripts/vault_paths.py`。
+
 | 任务 | 症状 | 根因 |
 |---|---|---|
 | **（头号模式）任意任务** | 每天报 `completed`/`ok`，连续多日，**但产出物从不更新** | **路径漂移**：写方落点 ≠ 读方路径。**排查新故障时先核对这两者字面是否一致**，别假设一致 |
@@ -163,9 +206,11 @@ cat .obsidian/community-plugins.json                              # 必须含 da
 
 ### 判据与巡检清单的坑（Phase 5 已修，务必记住）
 
-1. **`已发布/公众号` 是人工发布归档，不是自动线产物** —— 按用户边界「推草稿箱=完成」，
+1. **`内容生产/5-发布/已发布/公众号` 是人工发布归档，不是自动线产物** —— 按用户边界「推草稿箱=完成」，
    它停更**不算故障**。别拿它当健康判据（曾造成恒红误报）。
-2. **`内容生产/成品`（`PRODUCT_UNIT`）已废弃**，实际产物在 `内容生产/成品与素材`（`CONTENT_PRODUCT`）。
+2. **`内容生产/成品` 与 `内容生产/成品与素材` 两个旧名均已废弃** —— 2026-09-28 合并为
+   **`内容生产/4-成品与审查`**（常量 `PRODUCT_UNIT` 与 `CONTENT_PRODUCT` 现指向同一目录）。
+   写盘单元是 `<日期>-<项目>/`（见 `vault_paths.article_unit()`）。**别再按「成品/」去找产物**。
 3. **巡检清单必须覆盖所有 enabled 的产线任务**。血泪教训：`小红书内容生产流水线`
    没列进清单 → 停产 **26 天**无人发现。
 4. **产出稀疏的任务要用 `sparse=True` 豁免「静默失败」判据**（收藏采集无新增就不落文件）。
@@ -176,13 +221,15 @@ cat .obsidian/community-plugins.json                              # 必须含 da
 
 | 链路 | 落点 | 匹配 |
 |------|------|------|
-| 公众号①终稿生成 | `内容生产/创作与调研/深度调研` | `*.md` |
-| 公众号②推草稿箱 | `内容生产/发布/发布台账.md` | 台账 |
-| 头条 / 知乎 / 小红书 | `内容生产/发布/已发布/{平台}` | `*.md` |
-| DSH | `内容生产/成品与素材` | `*-DSH-*.md` |
+| 公众号①终稿生成 | `内容生产/2-调研与素材/深度调研/<日期>/` | `*.md` |
+| 公众号②推草稿箱 | `内容生产/5-发布/发布台账.md` | 台账 |
+| 头条 / 知乎 / 小红书 / 抖音 / 快手 / 视频号 / B站 | `内容生产/5-发布/已发布/{平台}` | `*.md` |
+| 成品单元（一篇文章一套） | `内容生产/4-成品与审查/<日期>-<项目>/` | `*.md` |
+| DSH | `内容生产/9-DSH专线/` | `*-DSH-*.md` |
 | 贴图 | `C:\Users\Administrator\.hermes\tie_tu_output`（**vault 之外**） | `*.md` |
-| 视频号 | `内容生产/成品与素材` | `*口播脚本*.json` |
-| 源码数据快照 | `内容生产/创作与调研/素材与资源/源码调研` | `*_data.json` |
+| 视频号口播稿 | `内容生产/4-成品与审查/` | `*口播脚本*.json` |
+| 源码数据快照 | `内容生产/2-调研与素材/素材与资源/源码调研` | `*_data.json` |
+| 平台规则（运营知识） | `运营中心/<平台>/` → `_规则原文/` + `规则与合规/` | `*.md` |
 
 ### 路径漂移排查法（3 步）
 
