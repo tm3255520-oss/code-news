@@ -14,7 +14,10 @@ questions 直接使用官方 schema 原样透传，本脚本不自立 DSL。
 
 接口：POST https://api.typesafe.ai/v1/systemone   Authorization: Bearer <TYPESAFE_API_KEY>
 文档索引：https://docs.typesafe.ai/llms.txt
-Key 位置：~/.hermes/.env（取 key 复用唯一入口 ~/.hermes/scripts/hermes_env.py）
+Key 位置：宿主集中存放处 ~/.hermes/.env（取 key 复用唯一入口 ~/.hermes/scripts/hermes_env.py）。
+进程环境优先 —— 每个信任域可以自注入（Claude Code 的 settings.json env 块 / DSH 的
+~/.dsh/.credentials.yaml / OpenClaw compose 的 environment）；跨文件系统边界（WSL、容器）
+时再回退到该文件在 /mnt/c 的等价挂载，所以同一份脚本在宿主机与 WSL 里都能直接跑。
 
 用法：
     python scripts/typesafe_decision.py --selftest
@@ -45,7 +48,15 @@ SYSTEMONE_URL = API_BASE + "/systemone"
 MODELS_URL = API_BASE + "/models"
 KEY_NAME = "TYPESAFE_API_KEY"
 DEFAULT_MODEL = "jev-latest"
-KEY_STORE = Path(os.environ.get("HERMES_HOME") or (Path.home() / ".hermes")) / ".env"
+HERMES_HOME_DIR = Path(os.environ.get("HERMES_HOME") or (Path.home() / ".hermes"))
+KEY_STORE = HERMES_HOME_DIR / ".env"
+# 跨文件系统边界的兜底：宿主集中存放处（.hermes/.env）在别的信任域里的**等价挂载视图**。
+#   · WSL（DSH）：/mnt/c/... 可读，但 WSL 的 $HOME 是 /home/ubuntu、HERMES_HOME 默认指向那里，
+#     于是 hermes_env 找不到宿主那份 .env —— 2026-10-15 实测 DSH 侧报「缺 key」exit 2。
+#   · 容器（OpenClaw）：正常靠 compose 注入 TYPESAFE_API_KEY；注入没生效时才走到这里。
+# 这两个只是**同一份文件**的不同挂载视图，不构成第二份副本 —— 集中存放处仍然只有一份。
+FALLBACK_HOMES = (Path(r"C:\Users\Administrator\.hermes"),
+                  Path("/mnt/c/Users/Administrator/.hermes"))
 
 
 def _die(code: int, message: str) -> None:
@@ -54,18 +65,63 @@ def _die(code: int, message: str) -> None:
 
 
 def lookup_key() -> str:
-    """取 key：进程环境 → ~/.hermes/.env，复用 hermes_env（不另抄第 N 份 load_env）。"""
-    scripts = KEY_STORE.parent / "scripts"
-    if str(scripts) not in sys.path:
-        sys.path.insert(0, str(scripts))
-    try:
-        from hermes_env import env as hermes_env  # type: ignore
-    except ImportError:
-        _die(2, f"[缺 key] 找不到取 key 的唯一入口：{scripts / 'hermes_env.py'}")
-    key = hermes_env(KEY_NAME)
-    if not key:
-        _die(2, f"[缺 key] 环境里没有 {KEY_NAME}，也没有在 {KEY_STORE} 里找到该行")
-    return key
+    """取 key：进程环境 → $HERMES_HOME/.env → 跨域等价挂载，全程只走 hermes_env 这一个读口。
+
+    进程环境优先，是为了让每个信任域用自己的机制注入 key：Claude Code 走 settings.json 的
+    env 块、DSH 走 ~/.dsh/.credentials.yaml、OpenClaw 走 compose 的 environment。
+    宿主侧的集中存放处（~/.hermes/.env）由 hermes_env 直接读；跨了文件系统边界时
+    （WSL / 容器），把 HERMES_HOME 临时指向等价挂载再问同一个读口 —— 这样既不另抄一份
+    .env 解析（`hermes_env.py` 自述「不要再抄第 N 份 load_env()」），也不用改那个被
+    20+ 个脚本共用的入口。
+    """
+    homes = (HERMES_HOME_DIR,) + FALLBACK_HOMES
+
+    if os.environ.get(KEY_NAME):          # ⓪ 各信任域自注入的 key 最优先
+        return os.environ[KEY_NAME]
+
+    reader = _find_reader(homes)          # ① 先把「唯一读口」找到（只做一次）
+    if reader is None:
+        _die(2, "[缺 key] 找不到取 key 的唯一入口 hermes_env.py，找过："
+                + "、".join(str(h / "scripts" / "hermes_env.py") for h in homes))
+
+    # ② 逐个候选 home 问同一个读口（临时把 HERMES_HOME 指过去）
+    tried: list[str] = []
+    for home in homes:
+        store = home / ".env"
+        tried.append(str(store))
+        if not store.is_file():
+            continue
+
+        saved = os.environ.get("HERMES_HOME")
+        os.environ["HERMES_HOME"] = str(home)
+        try:
+            key = reader(KEY_NAME)
+        finally:
+            if saved is None:
+                os.environ.pop("HERMES_HOME", None)
+            else:
+                os.environ["HERMES_HOME"] = saved
+        if key:
+            return key
+
+    _die(2, f"[缺 key] 进程环境里没有 {KEY_NAME}，也没在这些集中存放处找到该行："
+            + "、".join(tried))
+
+
+def _find_reader(homes: tuple[Path, ...]):
+    """从各候选 home 的 scripts/ 下拿到 hermes_env.env（取 key 的唯一读口）；找不到返回 None。"""
+    for home in homes:
+        scripts = home / "scripts"
+        if not (scripts / "hermes_env.py").is_file():
+            continue
+        if str(scripts) not in sys.path:
+            sys.path.insert(0, str(scripts))
+        try:
+            from hermes_env import env as hermes_env  # type: ignore
+        except ImportError:
+            continue
+        return hermes_env
+    return None
 
 
 def _request(url: str, key: str, payload: dict | None, timeout: float) -> dict:
