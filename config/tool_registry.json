@@ -39,6 +39,15 @@
       "fallbacks": [],
       "purpose": "需登录态平台的视频获取（抖音等）。从浏览器进程读明文 cookie，绕开 Chrome/Edge v20 App-Bound 加密导致的 yt-dlp DPAPI 失败"
     },
+    "ref_video_intake": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/ref_video_intake.py",
+      "fallbacks": [
+        "scripts/fetch_video_with_browser.py"
+      ],
+      "purpose": "对标视频库入库：贴一条视频链接 / 整段分享文案 → redfox 解析下载 → 视频本体 / .meta.json / 同名卡片 .md 三者**同目录**落 `内容生产/2-调研与素材/素材与资源/对标视频库/<平台>/`（实测教训：mp4 挪进子目录会让 Obsidian 嵌入失效）；卡片内嵌视频 + 赞/藏/评/转 及含义；同作品号自动去重（--force 覆盖）。标题分级：--title > 分享文案 > yt-dlp > redfox > 仅作品号（抖音标题三处皆取不到，贴分享文案最可靠）。入库顺带抓互动数（抖音经本机浏览器 BSK 会话读官方接口）。另有 `--refresh-metrics`（刷新互动数，留 metrics_history）与 `--rebuild-notes`（不联网重生成卡片）"
+    },
     "video_analysis_orchestrator": {
       "mode": "local_script",
       "status": "active",
@@ -135,6 +144,13 @@
       "primary": "scripts/untrusted.py",
       "fallbacks": [],
       "purpose": "外部内容守门：把「数据」与「指令」分开。扫描平台元数据（标题/简介是用户生成内容）、ASR 转写稿、抓取素材里的提示注入特征（中英双语 15 类模式），命中即标注且一律不执行。已接进取视频与制作分析两个入口"
+    },
+    "typesafe_decision": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/typesafe_decision.py",
+      "fallbacks": [],
+      "purpose": "TypeSafe AI 的 Jev 决策模型入口（2026-10-15 接入；返回**概率**，不是文本生成）。一次调用 = 一个 state（文本或 JSON）+ 一组 typed questions → choice（选定项 + 每项概率 + confidence）/ score（rubric 位置 + 概率 + confidence + legend）/ noul（0–1 概率）；questions 用官方 schema 原样透传，本脚本不自立 DSL。`--selftest` 自检，或 `--state` / `--state-file` + `--questions-file` 真调。适用：路由、分类、打分、守门、置信度分流这类「给代码消费的判断」。**注意：不能当 chat 模型用**（只有 /v1/systemone，无 openai-completions / responses 端点）。Key 走 ~/.hermes/.env 的 TYPESAFE_API_KEY"
     },
     "motion_check": {
       "mode": "local_script",
@@ -457,7 +473,7 @@
       "status": "active",
       "primary": "scripts/cron_ledger.py",
       "fallbacks": [],
-      "purpose": "定时任务台账（确定性零 LLM，可重复生成）：合并 .hermes/cron/jobs.json（调度真相）+ tool_registry.json（能力登记）+ cron/output（最近一次输出），产出 系统中枢/运行手册/Cron定时任务台账-<日期>.md。含四段：概览 / 需要关注（按 failure_streak 降序，附 last_error 摘要）/ 全量清单（按调度时刻排序）/ 在跑但未登记。与《Cron定时任务路径审计表-2026-09-06》互补——那是人工审计的时点快照，本条是自动跟随的当前台账；`--dry-run` 只打印不写盘。2026-09-27 Phase 3-3 新增"
+      "purpose": "定时任务台账（确定性零 LLM，可重复生成）：合并 .hermes/cron/jobs.json（调度真相）+ tool_registry.json（能力登记）+ cron/output（最近一次输出），产出 系统中枢/运行小结/系统与配置/Cron定时任务台账-<日期>.md。含四段：概览 / 需要关注（按 failure_streak 降序，附 last_error 摘要）/ 全量清单（按调度时刻排序）/ 在跑但未登记。与《Cron定时任务路径审计表-2026-09-06》互补——那是人工审计的时点快照，本条是自动跟随的当前台账；`--dry-run` 只打印不写盘。2026-09-27 Phase 3-3 新增"
     },
     "redfox_account_finder": {
       "mode": "local_script",
@@ -617,7 +633,31 @@
       "primary": "matrixmedia",
       "fallbacks": [],
       "formalPublishEnabled": false,
-      "purpose": "8平台视频矩阵分发（MatrixMedia 矩媒 HTTP API，30088 已通，抖音定时发布实测 success；正式发布默认关闭）"
+      "purpose": "8平台视频矩阵分发（MatrixMedia 矩媒 HTTP API，30088 已通）。2026-10-03 复测快手成功：partition=persist:数智极客快手，日志「✅ 快手视频已触发发布」。**账号定位坑**：矩媒账号树里 phone 字段存的是「空间名」（如 数智极客）而非手机号，partition 规则为 persist:<空间名><平台名>；传真实手机号会指向未登录空分区并表现为选择器超时。账号树见 文档/MatrixMedia/data/account/<日期>.json。正式发布默认关闭"
+    },
+    "video_publisher_yxer": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/publish_via_yxer.py",
+      "fallbacks": ["C:/Users/Administrator/.hermes/scripts/publish_douyin.py"],
+      "formalPublishEnabled": true,
+      "purpose": "蚁小二官方通道视频发布（yxer CLI v3.2.26）。默认平台草稿箱优先：视频号 contentPublishForm.pubType=0 进草稿箱；抖音无草稿字段，按官方次选 visibleType=1（私密）；两者皆无才直发。本机通道需蚁小二客户端在线且账号已登录。脚本内置 validate + dry-run 门禁。2026-10-02 视频号/抖音实测 success。盘点结论：tool_inventory 蚁小二=0 命中；抖音命中 publish_douyin.py（social-auto-upload + Chrome CDP 老通道，单平台无草稿语义，保留为 fallback）"
+    },
+    "video_publisher_matrixmedia": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/publish_via_matrixmedia.py",
+      "fallbacks": ["matrixmedia"],
+      "formalPublishEnabled": true,
+      "purpose": "矩媒 MatrixMedia 通道视频发布，负责蚁小二覆盖不到的平台。默认草稿箱优先：快手·B站·小红书 draft=true；头条无草稿箱 → 定时次日 09:30。partition 默认从账号树 文档/MatrixMedia/data/account/<最新>.json 自动解析为 persist:<空间名><平台名>，规避「传手机号→未登录空分区→选择器超时」的坑。需矩媒 GUI 打开。2026-10-03 真机实测：快手（公开+草稿）·B站（草稿）·头条（定时）success；**小红书＝只到草稿箱**（用户从草稿箱编辑后成功发布）——矩媒在「正文/标签」阶段报 exitCode=3，但作品已落地草稿箱；脚本按报错文案区分：通用「执行失败」判草稿已投递（台账记待发布），带 ERR_/loading/未登录 则照实报错。副作用：每次调用都会在草稿箱留一件，勿短时重复重试。另注意：矩媒内 B站/小红书 登录态会过期，过期时 B站 流程会让矩媒崩溃（0xc0000005）。盘点结论：tool_inventory 蚁小二=0 命中；矩媒仅有 toolkit MCP 工具（agent 会话内可调，产线/cron 不可调）与已归档的手动 bat，故新建命令行脚本"
+    },
+    "video_publisher_xhs_xmcp": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/publish_via_xmcp.py",
+      "fallbacks": ["C:/Users/Administrator/.hermes/scripts/xhs_publisher.py"],
+      "formalPublishEnabled": true,
+      "purpose": "小红书专用发布通道（x-mcp / a-red-ink-mcp，26 个工具）。**为什么不用矩媒发小红书**：矩媒 0.11.6 靠 DOM 选择器填表，实测标题/正文会漏填（草稿只剩壳），用户实测就是「标题没上传」；x-mcp 是 API 级、可显式传字段。**必填内容（2026-10-03 实测固化）**：标题（服务端按**原始字符** ≤20，注意不是技能文档写的 UTF-16/2）、正文 content（不含 # 话题）、话题 tags（数组，不带 #）、视频必须是 **http(s) URL**（upload_asset 只收图片 ≤10MB，故用蚁小二 yxer upload 转成 https://oss-v2.yixiaoer.cn/<key>）、可见范围（公开可见/仅自己可见/仅互关好友可见）、可选 schedule_at(+1h5m~+14天)。**流程**：create_note → 内置浏览器打开 browserHandoff.url 授权进画布页 → edit_note 写正文/话题 → publish_with_video。发布目标账号必须在画布页选定（现为 hermes key，online），脚本不替用户决定。**当前阻断**：publish_with_video 返回 publish_failed（工具原话：请打开小红书创作者中心确认账号已登录、页面可正常操作，且要求不要自行反复重试）→ 需用户确认环境后再跑；草稿内容本身已能备齐（--draft-only）。"
     },
     "browser_extension_inventory": {
       "mode": "local_script",
@@ -653,6 +693,31 @@
       "primary": "scripts/handoff_append.py",
       "fallbacks": [],
       "purpose": "收工三写（确定性零 LLM）：一次调用同时①更新任务台账自己那行（状态/最后更新/产出/交接链接）②向 交接/<任务ID>.md 追加 8 字段交接块（幂等，同时间戳跳过）③向 会话索引/<agent>.jsonl 追加结论+指针行。守卫：无台账行且未 --create → exit 2（先认领再动手）；改他人行需 --force --force-reason（写台账变更记录）；疑似密钥拒写。`--dry-run` 只打印。2026-09-30 协同三件套 P1 新增"
+    },
+    "workbench_digest": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/workbench_digest.py",
+      "fallbacks": [],
+      "purpose": "工作台只读面板（确定性零 LLM）：只读 tool_registry.json / ~/.hermes/cron/jobs.json / 协同任务台账 / vault 内容生产目录 mtime，生成 系统中枢/运行手册/工作台总览.md 与 code-news/_reports/工作台.html 两份同源渲染。含六区块：在等我 / 系统在跑什么 / 今天产出了什么 / 我能调什么 / 账号与发布 / 一键入口，外加告警与自检；算不出来就写「—」不猜。2026-10-12 工作台阶段 1 新增"
+    },
+    "workbench_lookup": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/workbench.py",
+      "fallbacks": [
+        "scripts/tool_inventory.py"
+      ],
+      "purpose": "工作台按名调用入口（确定性路由零 LLM）：给一个能力口语名 → 输出命中清单（注册表优先、技能/脚本/toolkit 兜底）并给出「怎么调」；`--run` 取命中直接执行，`--pick N` 选第 N 条；`--entries` / `--entry <名称>` 列出并启动一键入口。与 tool_inventory.py 分工：那是开发前存量盘点（宁可多列），这是日常按名调用（给最优命中 + 可执行）。2026-10-12 工作台阶段 2 新增"
+    },
+    "workbench_app": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/workbench_app.py",
+      "fallbacks": [
+        "scripts/workbench_digest.py"
+      ],
+      "purpose": "工作台应用壳（交互式本地应用，确定性零 LLM）：把面板做成可搜索/可筛「只看异常」/可一键复制命令的单文件应用，产出 _reports/workbench-app/（index.html + README.md + open-workbench.cmd），该目录可整体作为 WorkBuddy 项目打开继续改。数据只来自 workbench_digest.build_panel()，不新建第二份真相。2026-10-12 工作台阶段 3 新增"
     }
   }
 }
