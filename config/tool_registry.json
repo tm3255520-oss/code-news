@@ -502,8 +502,8 @@
     },
     "publish_wordcheck": {
       "mode": "local_script",
-      "status": "active",
-      "primary": "scripts/publish_wordcheck.py",
+      "status": "retired",
+      "primary": "scripts/_deprecated/publish_wordcheck.py",
       "fallbacks": [
         "toolkit:publish_wordcheck"
       ],
@@ -645,16 +645,16 @@
     },
     "video_publisher_matrixmedia": {
       "mode": "local_script",
-      "status": "active",
-      "primary": "scripts/publish_via_matrixmedia.py",
+      "status": "retired",
+      "primary": "scripts/_deprecated/publish_via_matrixmedia.py",
       "fallbacks": ["matrixmedia"],
       "formalPublishEnabled": true,
       "purpose": "矩媒 MatrixMedia 通道视频发布，负责蚁小二覆盖不到的平台。默认草稿箱优先：快手·B站·小红书 draft=true；头条无草稿箱 → 定时次日 09:30。partition 默认从账号树 文档/MatrixMedia/data/account/<最新>.json 自动解析为 persist:<空间名><平台名>，规避「传手机号→未登录空分区→选择器超时」的坑。需矩媒 GUI 打开。2026-10-03 真机实测：快手（公开+草稿）·B站（草稿）·头条（定时）success；**小红书＝只到草稿箱**（用户从草稿箱编辑后成功发布）——矩媒在「正文/标签」阶段报 exitCode=3，但作品已落地草稿箱；脚本按报错文案区分：通用「执行失败」判草稿已投递（台账记待发布），带 ERR_/loading/未登录 则照实报错。副作用：每次调用都会在草稿箱留一件，勿短时重复重试。另注意：矩媒内 B站/小红书 登录态会过期，过期时 B站 流程会让矩媒崩溃（0xc0000005）。盘点结论：tool_inventory 蚁小二=0 命中；矩媒仅有 toolkit MCP 工具（agent 会话内可调，产线/cron 不可调）与已归档的手动 bat，故新建命令行脚本"
     },
     "video_publisher_xhs_xmcp": {
       "mode": "local_script",
-      "status": "active",
-      "primary": "scripts/publish_via_xmcp.py",
+      "status": "retired",
+      "primary": "scripts/_deprecated/publish_via_xmcp.py",
       "fallbacks": ["C:/Users/Administrator/.hermes/scripts/xhs_publisher.py"],
       "formalPublishEnabled": true,
       "purpose": "小红书专用发布通道（x-mcp / a-red-ink-mcp，26 个工具）。**为什么不用矩媒发小红书**：矩媒 0.11.6 靠 DOM 选择器填表，实测标题/正文会漏填（草稿只剩壳），用户实测就是「标题没上传」；x-mcp 是 API 级、可显式传字段。**必填内容（2026-10-03 实测固化）**：标题（服务端按**原始字符** ≤20，注意不是技能文档写的 UTF-16/2）、正文 content（不含 # 话题）、话题 tags（数组，不带 #）、视频必须是 **http(s) URL**（upload_asset 只收图片 ≤10MB，故用蚁小二 yxer upload 转成 https://oss-v2.yixiaoer.cn/<key>）、可见范围（公开可见/仅自己可见/仅互关好友可见）、可选 schedule_at(+1h5m~+14天)。**流程**：create_note → 内置浏览器打开 browserHandoff.url 授权进画布页 → edit_note 写正文/话题 → publish_with_video。发布目标账号必须在画布页选定（现为 hermes key，online），脚本不替用户决定。**当前阻断**：publish_with_video 返回 publish_failed（工具原话：请打开小红书创作者中心确认账号已登录、页面可正常操作，且要求不要自行反复重试）→ 需用户确认环境后再跑；草稿内容本身已能备齐（--draft-only）。"

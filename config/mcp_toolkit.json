@@ -65,7 +65,7 @@
       "enabled": true,
       "group": "research",
       "label": "发布前违禁词门禁（官方词库，公众号/小红书/抖音）",
-      "script": "C:/Users/Administrator/Documents/code-news/scripts/publish_wordcheck.py",
+      "script": "C:/Users/Administrator/Documents/code-news/scripts/_deprecated/publish_wordcheck.py",
       "python": null,
       "timeoutSec": 120,
       "notes": "退出码 0 通过 / 2 阻断 / 1 无法判定。补充门禁，不替换各平台既有 checker（那些还查 AI 声明/原创度/标题规范）。"
