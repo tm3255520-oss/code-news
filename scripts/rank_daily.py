@@ -3,8 +3,8 @@
 """rank_daily.py — 平台榜单每日落盘（确定性，零 LLM）
 
 产出：
-    <vault>/内容生产/情报与选题/热点与情报/抖音/<日期>-榜单.md
-    <vault>/内容生产/情报与选题/热点与情报/小红书/<日期>-榜单.md
+    <vault>/内容生产/1-情报与选题/热点与情报/抖音/<日期>-榜单.md
+    <vault>/内容生产/1-情报与选题/热点与情报/小红书/<日期>-榜单.md
 
 数据源：RedFox 官方 skill，统一经 scripts/redfox_skill.py 执行
 （强制 UTF-8、注入 REDFOX_API_KEY、积分不足映射退出码 3）。
@@ -47,7 +47,7 @@ if HERMES_SCRIPTS.exists():
 try:
     from vault_paths import HOTSPOT as HOTSPOT_DIR
 except Exception:  # noqa: BLE001
-    HOTSPOT_DIR = Path(r"D:\Obsidian Vault\obsidian Vault\内容生产\情报与选题\热点与情报")
+    HOTSPOT_DIR = Path(r"D:\Obsidian Vault\obsidian Vault\内容生产\1-情报与选题\热点与情报")
 
 # 平台 → [(小节标题, skill, 参数)]
 PLATFORMS: dict[str, list[tuple[str, str, list[str]]]] = {
@@ -202,6 +202,11 @@ def main() -> int:
         if ns.dry_run:
             print("---- %s（dry-run，不写盘）----" % platform)
             print(doc[:1200])
+            continue
+        if ok == 0:
+            # 该平台一个榜都没取到，写盘只会留下「只有表头的空壳」，下游会误当数据；不落盘并显式报原因。
+            print("[%s] %d 个榜单全部取数失败，不落盘" % (platform, fail),
+                  file=sys.stderr, flush=True)
             continue
         out_dir = HOTSPOT_DIR / platform
         out_dir.mkdir(parents=True, exist_ok=True)
