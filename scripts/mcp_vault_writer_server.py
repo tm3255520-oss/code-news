@@ -22,9 +22,12 @@ from scripts._mcp_compat import FastMCP  # noqa: E402  # 兼容 mcp 1.x / 2.x
 
 VAULT_ROOT = Path(r"D:\Obsidian Vault\obsidian Vault")
 
-# 白名单：允许写入的顶层目录（来自 vault AGENTS.md 各 Agent 写白名单，按需增补）
+# 白名单：允许写入的顶层目录（已收窄，禁止再「按需增补」）
+#   - AI工具：2026-08 退役归档，vault 顶层已无此目录
+#   - wiki/decisions：wiki 早已改名「知识库」，无 wiki/ 目录
+#   - raw：2026-09-28 用户裁定⑧「只进不出」，仅采集器可写、禁止外部同步覆盖
 ALLOWED_PREFIXES = [
-    "内容生产", "AI工具", "wiki/decisions", "raw",
+    "内容生产",
     "系统中枢",  # 2026-09-27 增补：工具档案专区（系统skills以及MCP / 系统脚本工具链）在此
 ]
 
