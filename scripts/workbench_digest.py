@@ -156,6 +156,10 @@ ENTRY_POINTS: list[tuple[str, str, str]] = [
      "刷新运行手册里的调度常青总览"),
     ("工作台面板再生", "python %s" % (SCRIPT_DIR / "workbench_digest.py"),
      "就是本文件"),
+    ("打开工作台应用（交互壳）", str(REPO_ROOT / "_reports" / "workbench-app" / "index.html"),
+     "可搜索/筛选的本地应用；再生：python scripts/workbench_app.py"),
+    ("工作台应用再生", "python %s" % (SCRIPT_DIR / "workbench_app.py"),
+     "刷新交互壳（数据同源，仍由 workbench_digest.build_panel 取数）"),
     ("按名调用（查能力/跑入口）", "python %s" % (SCRIPT_DIR / "workbench.py"),
      "给口语名 → 命中清单与怎么调；--entries 列入口；--entry <名称> 跑入口"),
     ("能力盘点（新建前置）", "python %s" % (SCRIPT_DIR / "tool_inventory.py"),
@@ -203,6 +207,17 @@ def brief_paths(cell: str) -> str:
     if len(parts) <= 1:
         return parts[0] if parts else "—"
     return "%s ……（共 %d 项）" % (parts[0], len(parts))
+
+
+def title_for_display(text: str) -> str:
+    """渲染台账标题前去掉行内代码反引号（保留文字）。
+
+    台账标题是历史记录，里面可能写有当时路径（如 `~/.hermes/scripts/xx.py`）。
+    它一旦被复制进活文档（工作台总览.md）的表格，check_doc_references.py 就会把
+    反引号里的路径当成活引用去校验，把「记录里的当时路径」误判成失效引用（传染）。
+    只去反引号、不动文字：路径退化为纯文本，校验器不再提取，也不丢信息。
+    """
+    return str(text or "").replace("`", "")
 
 
 def howto(entry: dict) -> str:
@@ -352,9 +367,9 @@ def build_panel(jobs_path: Path, registry_path: Path, now: datetime) -> dict:
             led = _xt.parse_ledger(ledger_path)
             for t in led.tasks:
                 if t.status in WAITING_STATUSES:
-                    waiting.append({"id": t.task_id, "title": t.title, "platform": t.platform,
-                                    "owner": t.owner, "status": t.status, "updated": t.updated,
-                                    "artifact": t.artifact})
+                    waiting.append({"id": t.task_id, "title": title_for_display(t.title),
+                                    "platform": t.platform, "owner": t.owner, "status": t.status,
+                                    "updated": t.updated, "artifact": t.artifact})
             for p in led.problems:
                 panel["alerts"].append("台账解析告警：%s" % p)
         except Exception as exc:  # noqa: BLE001
