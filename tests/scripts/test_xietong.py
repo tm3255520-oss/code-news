@@ -6,7 +6,11 @@ from __future__ import annotations
 
 import io
 import json
+import subprocess
+import sys
 import tempfile
+import threading
+import time
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta
@@ -36,6 +40,16 @@ def make_root(tmp: Path, rows: str = "", *, artifacts: tuple[str, ...] = ()) -> 
 def row(task_id: str, title: str, platform: str, owner: str, status: str, updated: str,
         artifact: str = "—", link: str = "—") -> str:
     return f"| {task_id} | {title} | {platform} | {owner} | {status} | {updated} | {artifact} | {link} |\n"
+
+
+def make_block(ts: str, agent: str, task_id: str, status: str = "进行中") -> lib.Block:
+    """构造一个 7 字段齐全的交接块（read_handoff 校验 problems 为空的前提）。"""
+    return lib.Block(
+        ts=ts, agent=agent, task_id=task_id,
+        fields={"本轮做了什么": "x", "动了哪些文件": "y", "证据": "z",
+                "未决问题": "无", "下一步": "无",
+                "建议接手方 + 该调的 skill": "无", "状态": status},
+        line_no=0)
 
 
 class ParseLedgerTests(unittest.TestCase):
@@ -161,6 +175,53 @@ class HandoffAppendTests(unittest.TestCase):
         self.assertEqual(len(blocks), 1)
         self.assertEqual(len(rows), 1)
         self.assertIn("跳过", out)
+
+    def test_create_on_occupied_id_from_other_task_is_refused(self) -> None:
+        """撞号=危险：另一个任务占了同一个 WK 号时必须拒（实测发生过两次静默覆盖）。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td), row("WK-20261002-03", "ai 词表调优", "采集线/B站", "workbuddy",
+                                           "待审", "2026-10-02 01:28",
+                                           artifact="C:/Users/Administrator/.hermes/scripts/a.py"))
+            before = (root / "任务台账.md").read_bytes()
+            code, out = self._run(["--task", "WK-20261002-03", "--agent", "workbuddy",
+                                   "--status", "已完成", "--did", "另一批活儿",
+                                   "--evidence", "x.md", "--create",
+                                   "--title", "B站首采第二轮", "--platform", "B站",
+                                   "--root", str(root)])
+            after = (root / "任务台账.md").read_bytes()
+            handoffs = sorted(p.name for p in (root / "交接").iterdir())
+        self.assertEqual(code, 2)
+        self.assertIn("已被占用", out)
+        self.assertEqual(before, after)
+        self.assertEqual(handoffs, [])
+
+    def test_repeat_call_merges_artifact_paths(self) -> None:
+        """第二次收工的 --files 必须与台账已有路径取并集（原先整列覆盖）。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td), row("WK-20261003-01", "T", "抖音", "dsh", "进行中",
+                                           "2026-10-03 09:00", artifact="a/one.py,b/two.py"))
+            code, _ = self._run(["--task", "WK-20261003-01", "--agent", "dsh",
+                                 "--status", "进行中", "--did", "补产出", "--evidence", "x",
+                                 "--files", "c/three.py", "--root", str(root)])
+            led = lib.parse_ledger(root / "任务台账.md")
+        self.assertEqual(code, 0)
+        artifact = led.by_id("WK-20261003-01").artifact
+        for p in ("a/one.py", "b/two.py", "c/three.py"):
+            self.assertIn(p, artifact)
+        self.assertNotIn("a/one.py, a/one.py", artifact)  # 去重
+
+    def test_repeat_call_dedupes_slashes_and_case(self) -> None:
+        """同一文件写成 `A\\B.py` / `a/b.py` 两种形态时不得重复登记。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td), row("WK-20261003-01", "T", "抖音", "dsh", "进行中",
+                                           "2026-10-03 09:00", artifact=r"C:\X\One.py"))
+            self._run(["--task", "WK-20261003-01", "--agent", "dsh", "--status", "进行中",
+                       "--did", "重复登记", "--evidence", "x",
+                       "--files", "c:/x/one.py,d/two.py", "--root", str(root)])
+            led = lib.parse_ledger(root / "任务台账.md")
+        artifact = led.by_id("WK-20261003-01").artifact
+        self.assertEqual(artifact.lower().count("one.py"), 1)
+        self.assertIn("d/two.py", artifact)
 
     def test_owner_guard_and_force(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -370,6 +431,401 @@ class TaskIdAndTokensTests(unittest.TestCase):
         self.assertIsNone(xietong_weekly.task_date("bad"))
         self.assertIn("gpt", lib.tokens("GPT-5 视频生成"))
         self.assertEqual(lib.tokens("视频 内容"), set())
+
+
+class AppendIndexTests(unittest.TestCase):
+    def test_append_index_no_trailing_newline_does_not_glue(self) -> None:
+        """反例：末行无换行时追加，守卫先补换行，不粘连且 problems 为空。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            idx = root / "会话索引" / "codex.jsonl"
+            first = {"agent": "codex", "ts": "t1", "task": "T1"}
+            idx.write_bytes(json.dumps(first, ensure_ascii=False).encode("utf-8"))
+            rec = {"agent": "codex", "ts": "t2", "task": "T2", "outcome": "进行中"}
+            path, wrote = lib.append_index(root, rec)
+            rows, problems = lib.read_index(root, "codex")
+            raw = idx.read_bytes()
+            lines = raw.splitlines()
+        self.assertTrue(wrote)
+        self.assertEqual(problems, [])
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(lines), 2)
+        self.assertEqual(json.loads(lines[0]), first)
+        self.assertEqual(json.loads(lines[1]), rec)
+        self.assertEqual(raw.count(b"\r\n"), raw.count(b"\n"))
+
+    def test_append_index_crlf_trailing_newline_no_regression(self) -> None:
+        """正例：末行以 CRLF 结尾时行为与旧实现一致，新条目独占一行。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            idx = root / "会话索引" / "codex.jsonl"
+            first = {"agent": "codex", "ts": "t1", "task": "T1"}
+            idx.write_bytes(json.dumps(first, ensure_ascii=False).encode("utf-8") + b"\r\n")
+            rec = {"agent": "codex", "ts": "t2", "task": "T2", "outcome": "进行中"}
+            path, wrote = lib.append_index(root, rec)
+            rows, problems = lib.read_index(root, "codex")
+            raw = idx.read_bytes()
+            lines = raw.splitlines()
+        self.assertTrue(wrote)
+        self.assertEqual(problems, [])
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(lines), 2)
+        self.assertEqual(json.loads(lines[0]), first)
+        self.assertEqual(json.loads(lines[1]), rec)
+        self.assertEqual(raw.count(b"\r\n"), raw.count(b"\n"))
+
+    def test_append_index_dedup_no_write(self) -> None:
+        """同一条 record 第二次调用返回 (path, False)，且文件字节完全不变。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            rec = {"agent": "codex", "ts": "t1", "task": "T1", "outcome": "进行中"}
+            path1, wrote1 = lib.append_index(root, rec)
+            before = (root / "会话索引" / "codex.jsonl").read_bytes()
+            path2, wrote2 = lib.append_index(root, rec)
+            after = (root / "会话索引" / "codex.jsonl").read_bytes()
+        self.assertTrue(wrote1)
+        self.assertFalse(wrote2)
+        self.assertEqual(path1, path2)
+        self.assertEqual(before, after)
+
+
+class SyncHandoffStatusTests(unittest.TestCase):
+    """WK-20261017-19：sync_handoff_status / handoff_header(status=…) 的回归测试。
+
+    全部跑在临时目录，不触碰真实 vault；不覆盖生产代码（xietong_lib.py 一个字节不动）。
+    """
+
+    def _handoff(self, fm_status: str, block_status: str, *, nl: str = "\n",
+                 bom: bool = False) -> bytes:
+        """构造一份最小交接文件：frontmatter 带 status + 一个完整交接块（状态=block_status）。"""
+        content = (
+            "---" + nl
+            + "title: 交接 WK-20260101-01" + nl
+            + "date: 2026-01-01" + nl
+            + "tags: [协同, 交接]" + nl
+            + f"status: {fm_status}" + nl
+            + "agent: shared" + nl
+            + "---" + nl
+            + nl
+            + "# 交接 WK-20260101-01" + nl
+            + nl
+            + "## 2026-01-01T10:00 | codex | WK-20260101-01" + nl
+            + "- 本轮做了什么：x" + nl
+            + "- 动了哪些文件：y" + nl
+            + "- 证据：z" + nl
+            + "- 未决问题：无" + nl
+            + "- 下一步：无" + nl
+            + "- 建议接手方 + 该调的 skill：无" + nl
+            + f"- 状态：{block_status}" + nl
+        )
+        data = content.encode("utf-8")
+        return (b"\xef\xbb\xbf" + data) if bom else data
+
+    def test_status_mismatch_updates_only_status_line(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "h.md"
+            p.write_bytes(self._handoff("进行中", "已完成"))
+            before = p.read_text(encoding="utf-8").splitlines()
+            result = lib.sync_handoff_status(p)
+            after = p.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(result, (True, "进行中", "已完成"))
+        self.assertEqual(len(before), len(after))
+        diffs = [(i, b, a) for i, (b, a) in enumerate(zip(before, after)) if b != a]
+        self.assertEqual(len(diffs), 1)
+        self.assertEqual(diffs[0][1], "status: 进行中")
+        self.assertEqual(diffs[0][2], "status: 已完成")
+
+    def test_status_already_consistent_no_write(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "h.md"
+            p.write_bytes(self._handoff("已完成", "已完成"))
+            before = p.read_bytes()
+            result = lib.sync_handoff_status(p)
+            after = p.read_bytes()
+        self.assertEqual(result, (False, "", ""))
+        self.assertEqual(before, after)
+
+    def test_boundary_cases_no_insertion(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            # 无 frontmatter
+            p1 = Path(td) / "no_fm.md"
+            p1.write_bytes(
+                ("# 无 frontmatter\n\n"
+                 "## 2026-01-01T10:00 | codex | WK-20260101-01\n- 状态：已完成\n").encode("utf-8"))
+            before1 = p1.read_bytes()
+            r1 = lib.sync_handoff_status(p1)
+            self.assertEqual(r1, (False, "", ""))
+            self.assertEqual(before1, p1.read_bytes())
+
+            # frontmatter 无 status: 行
+            p2 = Path(td) / "no_status.md"
+            p2.write_bytes(
+                ("---\ntitle: x\n---\n\n"
+                 "## 2026-01-01T10:00 | codex | WK-20260101-01\n- 状态：已完成\n").encode("utf-8"))
+            before2 = p2.read_bytes()
+            r2 = lib.sync_handoff_status(p2)
+            self.assertEqual(r2, (False, "", ""))
+            self.assertEqual(before2, p2.read_bytes())
+
+            # 文件不存在 → 不抛异常
+            p3 = Path(td) / "missing.md"
+            r3 = lib.sync_handoff_status(p3)
+            self.assertEqual(r3, (False, "", ""))
+
+    def test_crlf_and_bom_preserved(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            # ① 全 CRLF：改后仍全 CRLF，无孤立 \n
+            p1 = Path(td) / "crlf.md"
+            p1.write_bytes(self._handoff("进行中", "已完成", nl="\r\n"))
+            r1 = lib.sync_handoff_status(p1)
+            raw1 = p1.read_bytes()
+            self.assertEqual(r1, (True, "进行中", "已完成"))
+            self.assertNotIn(b"\n", raw1.replace(b"\r\n", b""))
+            self.assertIn("status: 已完成", raw1.decode("utf-8-sig"))
+
+            # ② 带 UTF-8 BOM：改后仍有 BOM，且状态已更新
+            p2 = Path(td) / "bom.md"
+            p2.write_bytes(self._handoff("进行中", "已完成", bom=True))
+            r2 = lib.sync_handoff_status(p2)
+            raw2 = p2.read_bytes()
+            self.assertEqual(r2, (True, "进行中", "已完成"))
+            self.assertTrue(raw2.startswith(b"\xef\xbb\xbf"))
+            self.assertIn("status: 已完成", raw2.decode("utf-8-sig"))
+
+    def test_append_handoff_block_syncs_status_end_to_end(self) -> None:
+        def block(ts: str, status: str) -> lib.Block:
+            return lib.Block(
+                ts=ts, agent="codex", task_id="WK-20260101-01",
+                fields={"本轮做了什么": "x", "动了哪些文件": "y", "证据": "z",
+                        "未决问题": "无", "下一步": "无",
+                        "建议接手方 + 该调的 skill": "无", "状态": status},
+                line_no=0)
+
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            path1, wrote1 = lib.append_handoff_block(root, block("2026-01-01T10:00", "进行中"))
+            text1 = path1.read_text(encoding="utf-8")
+            path2, wrote2 = lib.append_handoff_block(root, block("2026-01-01T11:00", "待审"))
+            blocks, problems = lib.read_handoff(path2)
+            text2 = path2.read_text(encoding="utf-8")
+
+        self.assertTrue(wrote1)
+        self.assertTrue(wrote2)
+        self.assertEqual(path1, path2)
+        self.assertIn("status: 进行中", text1)
+        self.assertIn("status: 待审", text2)
+        self.assertEqual(problems, [])
+        self.assertEqual(len(blocks), 2)
+
+        header = lib.handoff_header("WK-20260101-01", "2026-01-01", status="待审")
+        self.assertIn("status: 待审", header)
+
+    def test_write_false_returns_mismatch_without_writing(self) -> None:
+        """WK-20261017-20 N1：write=False 只判定不落盘——frontmatter 与最后一块不一致时返回 (True,旧,新) 且字节不变。"""
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "h.md"
+            p.write_bytes(self._handoff("进行中", "已完成"))
+            before = p.read_bytes()
+            result = lib.sync_handoff_status(p, write=False)
+            after = p.read_bytes()
+        self.assertEqual(result, (True, "进行中", "已完成"))
+        self.assertEqual(before, after)
+
+    def test_cli_full_chain_syncs_frontmatter(self) -> None:
+        """WK-20261017-20 N2：CLI 整链——create 建行写交接块并把 frontmatter status 对齐；二次收工改状态再追加一块。"""
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            buf = io.StringIO()
+            with redirect_stdout(buf), redirect_stderr(buf):
+                code1 = handoff_append.main([
+                    "--task", "WK-20260101-01", "--agent", "codex",
+                    "--status", "待审", "--create",
+                    "--title", "t", "--platform", "p",
+                    "--did", "d", "--evidence", "e",
+                    "--root", str(root), "--now", "2026-01-01T10:00"])
+            hpath = root / "交接" / "WK-20260101-01.md"
+            blocks1, _ = lib.read_handoff(hpath)
+            text1 = hpath.read_text(encoding="utf-8")
+
+            with redirect_stdout(buf), redirect_stderr(buf):
+                code2 = handoff_append.main([
+                    "--task", "WK-20260101-01", "--agent", "codex",
+                    "--status", "已完成",
+                    "--did", "d2", "--evidence", "e2",
+                    "--root", str(root), "--now", "2026-01-01T11:00"])
+            blocks2, _ = lib.read_handoff(hpath)
+            text2 = hpath.read_text(encoding="utf-8")
+
+        self.assertEqual(code1, 0)
+        self.assertEqual(len(blocks1), 1)
+        self.assertIn("status: 待审", text1)
+
+        self.assertEqual(code2, 0)
+        self.assertEqual(len(blocks2), 2)
+        self.assertIn("status: 已完成", text2)
+
+    def test_parenthesized_status_preserved_verbatim(self) -> None:
+        """WK-20261017-20 N3：块状态带括号标注时，同步后 frontmatter 的 status 逐字等于该串（记录当前行为）。"""
+        annot = "待审（首轮实跑完成；4 张卡待复核）"
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "h.md"
+            p.write_bytes(self._handoff("进行中", annot))
+            result = lib.sync_handoff_status(p)
+            text = p.read_text(encoding="utf-8")
+        self.assertEqual(result, (True, "进行中", annot))
+        self.assertIn(f"status: {annot}", text)
+
+    def test_second_sync_is_idempotent(self) -> None:
+        """WK-20261017-20 N4：一次成功同步后紧接着再调一次 → (False,"","") 且字节不变。"""
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "h.md"
+            p.write_bytes(self._handoff("进行中", "已完成"))
+            first = lib.sync_handoff_status(p)
+            after_first = p.read_bytes()
+            second = lib.sync_handoff_status(p)
+            after_second = p.read_bytes()
+        self.assertEqual(first, (True, "进行中", "已完成"))
+        self.assertEqual(second, (False, "", ""))
+        self.assertEqual(after_first, after_second)
+
+
+class ConcurrencyTests(unittest.TestCase):
+    """WK-20261017-21：并发安全（进程锁 + 原子替换）自测 T1–T5。
+
+    全部跑在临时目录，不触碰真实 vault；只验证锁/原子写带来的行为不变式。
+    """
+
+    def test_thread_concurrent_append_handoff_blocks(self) -> None:
+        """T1：同一交接文件 8 线程 × 各追加 5 个不同块 → 恰好 40 块、无重复无丢失。"""
+        n_threads, per_thread = 8, 5
+        task_id = "WK-20260101-01"
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+
+            def worker(i: int) -> None:
+                for j in range(per_thread):
+                    ts = f"2026-01-01T{i:02d}:{j:02d}"
+                    lib.append_handoff_block(root, make_block(ts, "codex", task_id), "t")
+
+            threads = [threading.Thread(target=worker, args=(i,)) for i in range(n_threads)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+
+            blocks, problems = lib.read_handoff(root / "交接" / f"{task_id}.md")
+
+        self.assertEqual(len(blocks), n_threads * per_thread)
+        self.assertEqual(problems, [])
+        self.assertEqual(len({b.ts for b in blocks}), n_threads * per_thread)  # 无重复
+
+    def test_process_concurrent_append_handoff_blocks(self) -> None:
+        """T2：4 个子进程各追加 5 块到同一文件 → 恰好 20 块。"""
+        n_proc, per_proc = 4, 5
+        task_id = "WK-20260101-02"
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            scripts_dir = str(Path(lib.__file__).resolve().parent)
+            worker = Path(td) / "_xietong_worker.py"
+            worker.write_text(
+                "import sys\n"
+                "sys.path.insert(0, sys.argv[1])\n"
+                "from xietong_lib import Block, append_handoff_block\n"
+                "root, i = sys.argv[2], int(sys.argv[3])\n"
+                "tid = 'WK-20260101-02'\n"
+                "fields = {'本轮做了什么':'x','动了哪些文件':'y','证据':'z',"
+                "'未决问题':'无','下一步':'无','建议接手方 + 该调的 skill':'无','状态':'进行中'}\n"
+                "for j in range(5):\n"
+                "    ts = '2026-01-02T%02d:%02d' % (i, j)\n"
+                "    append_handoff_block(root, "
+                "Block(ts=ts, agent='codex', task_id=tid, fields=fields, line_no=0), 't')\n",
+                encoding="utf-8",
+            )
+            procs = [
+                subprocess.Popen(
+                    [sys.executable, str(worker), scripts_dir, str(root), str(i)],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+                for i in range(n_proc)
+            ]
+            for p in procs:
+                _, err = p.communicate()
+                self.assertEqual(p.returncode, 0, msg=err.decode("utf-8", "replace"))
+
+            blocks, problems = lib.read_handoff(root / "交接" / f"{task_id}.md")
+
+        self.assertEqual(len(blocks), n_proc * per_proc)
+        self.assertEqual(problems, [])
+        self.assertEqual(len({b.ts for b in blocks}), n_proc * per_proc)
+
+    def test_ledger_concurrent_update_different_rows(self) -> None:
+        """T3：3 线程各更新不同任务行的状态 → 3 行都改到（无互相覆盖）。"""
+        targets = {
+            "WK-20260101-01": "已完成",
+            "WK-20260101-02": "待审",
+            "WK-20260101-03": "暂停",
+        }
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(
+                Path(td),
+                row("WK-20260101-01", "A", "抖音", "codex", "进行中", "2026-01-01 10:00")
+                + row("WK-20260101-02", "B", "抖音", "codex", "进行中", "2026-01-01 10:00")
+                + row("WK-20260101-03", "C", "抖音", "codex", "进行中", "2026-01-01 10:00"))
+            ledger_path = root / "任务台账.md"
+
+            def worker(tid: str, status: str) -> None:
+                led = lib.parse_ledger(ledger_path)
+                task = led.by_id(tid)
+                task.status = status
+                task.updated = "2026-01-01 11:00"
+                lib.update_ledger_row(led, task)
+
+            threads = [threading.Thread(target=worker, args=(tid, st))
+                       for tid, st in targets.items()]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+
+            led = lib.parse_ledger(ledger_path)
+
+        for tid, st in targets.items():
+            self.assertEqual(led.by_id(tid).status, st, f"{tid} 状态被覆盖")
+
+    def test_nested_lock_and_append_no_deadlock(self) -> None:
+        """T4：append_handoff_block（内部调 sync_handoff_status）5s 内返回；locked 同路径嵌套两层不卡。"""
+        task_id = "WK-20260101-01"
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            start = time.monotonic()
+            path, wrote = lib.append_handoff_block(
+                root, make_block("2026-01-01T10:00", "codex", task_id), "t")
+            elapsed = time.monotonic() - start
+            self.assertTrue(wrote)
+            self.assertLess(elapsed, 5.0)
+
+            p = root / "任务台账.md"
+            with lib.locked(p):
+                with lib.locked(p):
+                    pass
+
+    def test_no_residue_and_write_text_crlf(self) -> None:
+        """T5：一次追加后目标目录无 .tmp-* / .lock；write_text_file 仍产出 CRLF。"""
+        task_id = "WK-20260101-01"
+        with tempfile.TemporaryDirectory() as td:
+            root = make_root(Path(td))
+            lib.append_handoff_block(root, make_block("2026-01-01T10:00", "codex", task_id), "t")
+
+            for d in (root, root / "交接"):
+                leftovers = [p.name for p in d.iterdir()
+                             if p.name.endswith(".lock") or ".tmp-" in p.name]
+                self.assertEqual(leftovers, [], f"{d} 残留: {leftovers}")
+
+            p = root / "任务台账.md"
+            lib.write_text_file(p, "a\nb\n")
+            raw = p.read_bytes()
+
+        self.assertEqual(raw, b"a\r\nb\r\n")
 
 
 if __name__ == "__main__":
