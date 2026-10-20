@@ -710,6 +710,13 @@
       ],
       "purpose": "工作台按名调用入口（确定性路由零 LLM）：给一个能力口语名 → 输出命中清单（注册表优先、技能/脚本/toolkit 兜底）并给出「怎么调」；`--run` 取命中直接执行，`--pick N` 选第 N 条；`--entries` / `--entry <名称>` 列出并启动一键入口。与 tool_inventory.py 分工：那是开发前存量盘点（宁可多列），这是日常按名调用（给最优命中 + 可执行）。2026-10-12 工作台阶段 2 新增"
     },
+    "find_duplicate_models": {
+      "mode": "local_script",
+      "status": "active",
+      "primary": "scripts/find_duplicate_models.py",
+      "fallbacks": [],
+      "purpose": "模型库重复副本检测与硬链接化（2026-10-20 新建）：扫多个模型根目录 → 跳过符号链接/junction（ReparsePoint）→ 按体积分组 → 同体积候选算 SHA256 → 内容一致者判为真重复 → 默认 dry-run 只报告，加 --apply 才把重复副本改成硬链接（两条路径都保留、磁盘只占一份、可 --rollback 反向拆开）。解决同一份模型被下载了两遍占双份空间的问题。配套单测 tests/test_find_duplicate_models.py（10 条）。铁律：找重复必算 SHA256、处置用硬链接而非删除、停摆不等于废弃。"
+    },
     "workbench_app": {
       "mode": "local_script",
       "status": "active",
