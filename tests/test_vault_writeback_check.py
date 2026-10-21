@@ -128,5 +128,62 @@ class TestLandedFiles(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
 
+class TestCheckPaths(unittest.TestCase):
+    """产出路径存在性检查（防路径笔误）—— 2026-10-21 同一个笔误一天犯了三次"""
+
+    def test_missing_path_detected(self):
+        import tempfile as tf
+
+        tmp = tf.mkdtemp(prefix="vwc_p_")
+        real = os.path.join(tmp, "real.md")
+        with open(real, "w", encoding="utf-8") as fh:
+            fh.write("# x")
+        fake = os.path.join(tmp, "typo.md")
+        old_led = vwc.LEDGER
+        ledger = os.path.join(tmp, "台账.md")
+        with open(ledger, "w", encoding="utf-8") as fh:
+            fh.write(
+                "| 任务ID | 标题 | 平台 | 负责人 | 状态 | 更新时间 | 产出路径 | 交接 |\n"
+                "|---|---|---|---|---|---|---|---|\n"
+                f"| WK-20260101-02 | t | p | opencode | 已完成 | 2026-01-01 10:00 | "
+                f"{real.replace(chr(92), '/')}, {fake.replace(chr(92), '/')} | h.md |\n"
+            )
+        vwc.LEDGER = ledger
+        try:
+            rc = vwc.main(["--ledger", "WK-20260101-02", "--check-paths"])
+            self.assertEqual(rc, 1)  # 有不存在的路径 → 退出码 1
+        finally:
+            vwc.LEDGER = old_led
+            import shutil
+
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_all_paths_exist_returns_zero(self):
+        import tempfile as tf
+
+        tmp = tf.mkdtemp(prefix="vwc_p2_")
+        real = os.path.join(tmp, "real.md")
+        with open(real, "w", encoding="utf-8") as fh:
+            fh.write("# x")
+        old_led = vwc.LEDGER
+        ledger = os.path.join(tmp, "台账.md")
+        with open(ledger, "w", encoding="utf-8") as fh:
+            fh.write(
+                "| 任务ID | 标题 | 平台 | 负责人 | 状态 | 更新时间 | 产出路径 | 交接 |\n"
+                "|---|---|---|---|---|---|---|---|\n"
+                f"| WK-20260101-03 | t | p | opencode | 已完成 | 2026-01-01 10:00 | "
+                f"{real.replace(chr(92), '/')} | h.md |\n"
+            )
+        vwc.LEDGER = ledger
+        try:
+            rc = vwc.main(["--ledger", "WK-20260101-03", "--check-paths"])
+            self.assertEqual(rc, 0)
+        finally:
+            vwc.LEDGER = old_led
+            import shutil
+
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

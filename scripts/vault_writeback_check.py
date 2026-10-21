@@ -169,7 +169,8 @@ def landed_files(kind: str, since: Optional[datetime.datetime]) -> List[str]:
 
 def has_backlink(path: str) -> bool:
     try:
-        t = open(path, encoding="utf-8", errors="replace").read()
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            t = fh.read()
     except OSError:
         return True
     return ("## 回链" in t) or ("回链" in t and "##" in t)
@@ -183,6 +184,8 @@ def main(argv: List[str] | None = None) -> int:
     src.add_argument("--changed", nargs="+", help="手工给改动清单")
     src.add_argument("--git-status", action="store_true", help="从 code-news 的 git 工作区取")
     src.add_argument("--scan-vault", action="store_true", help="只体检 vault 内文档的回链段")
+    ap.add_argument("--check-paths", action="store_true",
+                    help="检查产出路径是否真实存在（防路径笔误）；可与 --ledger 同用")
     ap.add_argument("--repo", default=r"C:\Users\Administrator\Documents\code-news", help="--git-status 的仓库路径")
     ap.add_argument("--since", help="起始时间（YYYY-MM-DD 或 YYYY-MM-DD HH:MM），默认取台账行时间")
     ap.add_argument("--json", help="结果 JSON 落盘路径")
@@ -211,7 +214,46 @@ def main(argv: List[str] | None = None) -> int:
     elif args.scan_vault:
         paths = []
 
+    # ── 0. 产出路径存在性检查（防路径笔误）──────────────────────────────
+    # 2026-10-21 实战：同一个路径笔误（`系统中枢` 打成 `系统中中枢`）一天内犯了三次，
+    # 每次都要等巡检才发现 → 这里把它变成一道机械闸。
+    missing_paths: List[str] = []
+    if paths:
+        missing_paths = [p for p in paths if not os.path.exists(p)]
+        if args.check_paths or args.ledger:
+            print(f"══ 收工落盘自检 ══  产出路径存在性：{len(paths) - len(missing_paths)}/{len(paths)} 存在")
+            for p in missing_paths:
+                print(f"   ❌ 路径不存在（笔误？）：{p}")
+            if not missing_paths:
+                print("   ✅ 产出路径全部存在")
+            print()
+
     report: Dict[str, object] = {"since": since.isoformat() if since else None, "changed": len(paths)}
+
+    # ── 0.5 落盘判据的时间口径修正 ────────────────────────────────────────
+    # 台账行的"最后更新"是**收工时刻**，而落盘往往发生在动作过程中（更早）→
+    # 拿收工时刻当 since 会把"本轮落的盘"判成"没落"。
+    # 正确口径：**最早的那个改动文件的时间**（改动必然不晚于它自己的落盘动作），
+    # 取二者较小值作为"已落"的时间下界。
+    since_effective = since
+    if paths:
+        mtimes = []
+        for p in paths:
+            # 只算**文件**的 mtime：目录（尤其备份目录）的 mtime 会把时间下界拉得很宽，
+            # 让"缺落点"判不出来。目录不是改动。
+            if not os.path.isfile(p):
+                continue
+            try:
+                mtimes.append(datetime.datetime.fromtimestamp(os.path.getmtime(p)))
+            except OSError:
+                pass
+        if mtimes:
+            earliest = min(mtimes)
+            if since_effective is None or earliest < since_effective:
+                since_effective = earliest
+    if since_effective != since:
+        print(f"（落盘判定时间下界取 {since_effective} —— 台账时间是收工时刻，"
+              f"本轮落盘发生在动作过程中，不能用收工时刻卡）")
 
     # ── 1. vault 外改动 → 该落哪几类 ──────────────────────────────────────
     needs = classify(paths)
@@ -227,7 +269,7 @@ def main(argv: List[str] | None = None) -> int:
             if kind not in needs:
                 continue
             d = route_dir(kind)
-            landed = landed_files(kind, since)
+            landed = landed_files(kind, since_effective)
             ok = bool(landed)
             mark = "✅" if ok else "❌"
             print(f"  {mark} {kind:<12} 落点: {norm(d).replace(VAULT.replace(chr(92), '/'), '')}")
@@ -291,10 +333,15 @@ def main(argv: List[str] | None = None) -> int:
 
     report["gaps"] = gaps
     report["backlink_gaps"] = backlink_gaps
+    report["missing_paths"] = missing_paths
     if args.json:
         json.dump(report, open(args.json, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         print(f"[记录] → {args.json}")
 
+    if missing_paths:
+        print(f"结论: ❌ 产出路径 {len(missing_paths)} 条不存在（笔误或文件已被删）")
+        print("      → 改台账那一行的产出路径列；别让巡检再报一次断链")
+        return 1
     if gaps:
         print(f"结论: ❌ 缺 {len(gaps)} 类落盘 → {', '.join(gaps)}")
         print("      （05-记忆协议 §四·4.2：同步整理，不是「以后再说」）")
