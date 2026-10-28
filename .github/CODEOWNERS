@@ -1,0 +1,19 @@
+# Code Owners for code-news repository
+# These users/teams will be automatically requested for review on PRs touching these paths
+
+# Configuration files - require review
+/config/ @tm3255520-oss
+
+# Scripts - require review
+/scripts/ @tm3255520-oss
+
+# GitHub workflows - require review
+/.github/ @tm3255520-oss
+
+# Documentation
+/docs/ @tm3255520-oss
+
+# Root level files
+/CLAUDE.md @tm3255520-oss
+/.gitignore @tm3255520-oss
+/requirements.txt @tm3255520-oss

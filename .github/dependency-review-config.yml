@@ -1,0 +1,13 @@
+# Dependency Review Configuration
+# Used by actions/dependency-review-action@v4
+
+# Fail on high/critical severity vulnerabilities
+fail-on-severity: high
+
+# Allow specific vulnerabilities if they have mitigations
+allow-ghsas:
+  # Example format:
+  # - GHSA-xxxx-xxxx-xxxx  # Reason: mitigated by X
+
+# Ignore specific scopes if needed (e.g., dev dependencies)
+# scope: runtime

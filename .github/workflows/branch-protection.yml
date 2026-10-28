@@ -1,0 +1,64 @@
+name: Branch Protection Setup
+
+# This workflow documents the required branch protection settings for main branch
+# These settings must be configured manually in GitHub repository settings:
+# Settings > Branches > Add branch protection rule for "main"
+#
+# Required settings:
+# - Require a pull request before merging
+#   - Require approvals: 1
+#   - Dismiss stale PR approvals when new commits are pushed
+#   - Require review from code owners (if CODEOWNERS exists)
+# - Require status checks to pass before merging
+#   - Require branches to be up to date before merging
+#   - Required status checks:
+#     * verify (from ci.yml)
+# - Require conversation resolution before merging
+# - Require signed commits (optional but recommended)
+# - Require linear history (optional but recommended)
+# - Include administrators (recommended)
+#
+# This workflow runs on schedule to verify branch protection is still in place
+# and creates an issue if protection is missing.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check-branch-protection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check branch protection via API
+        id: check
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/{owner}/{repo}/branches/main/protection
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create issue if protection missing
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['branch-protection'],
+              state: 'open'
+            });
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '⚠️ Main branch protection is missing or misconfigured',
+                body: 'The main branch does not have the required protection rules. Please configure in Settings > Branches > Branch protection rules.\n\nRequired settings:\n- Require PR before merge (1 approval)\n- Require status checks: verify (CI)\n- Require branches up to date\n- Require conversation resolution\n- Include administrators',
+                labels: ['branch-protection', 'security']
+              });
+            }
