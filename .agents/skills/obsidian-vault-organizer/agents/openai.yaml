@@ -1,0 +1,7 @@
+﻿interface:
+  display_name: "Obsidian Vault Organizer"
+  short_description: "Organize, link, and validate Obsidian Markdown vaults"
+  default_prompt: "Use $obsidian-vault-organizer to audit and organize this Obsidian vault while preserving local guidance, source-file safety, naming conventions, links, and review pages."
+
+policy:
+  allow_implicit_invocation: true

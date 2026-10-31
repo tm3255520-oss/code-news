@@ -1,0 +1,46 @@
+# Dependabot configuration for automated dependency updates
+# Updates Python packages and GitHub Actions
+# Runs weekly on Monday 06:00 UTC
+
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps(pip)"
+    groups:
+      dev-tools:
+        patterns:
+          - "ruff*"
+          - "pytest*"
+          - "mypy*"
+          - "black*"
+        update-types:
+          - "minor"
+          - "patch"
+      security:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "deps(actions)"

@@ -1,0 +1,109 @@
+{
+ "series": "AI KNOWLEDGE",
+ "episode": "SERIES 001",
+ "breadcrumb": "AI工作流",
+ "voice": "yunjian",
+ "lines": [
+  "给Codex装上这四个技能我把做一条视频的时间从三个小时压缩到五分钟",
+  "只要把选题和素材丢进去剩下的脚本、配音、画面和字幕都是他自己跑完的",
+  "第一个Hyperframes负责的是想只需要给它一个主题它会先把内容整理成脚本和分镜再把每一段拆成具体场景相当于是把整条视频的股价给搭好",
+  "第二个Eleven Labs负责的是说它会把文案变成自然音色的人工智能配音声音、语速和停顿都能提前设置好",
+  "第三个Remotion负责的是动它会按照分镜用代码把文字、图片和素材组合成动态画面完成动画和视频渲染",
+  "第四个Captions负责的是字它会识别配音内容把每一句字幕准确堆到时间轴再统一字体大小、颜色和关键词高亮",
+  "这四个技能各做一件事Codex负责把它们串起来以前我要在几个软件之间反复导出修改现在只要替换文案和素材就能批量生成视频想要这四个技能评论区留下我要直接就可以拿去用"
+ ],
+ "cards": [
+  {
+   "title": "给 Codex 装上\n这 4 个技能",
+   "kicker": "AI 工作流 / 01",
+   "blocks": [
+    {
+     "label": "SETUP",
+     "text": "Codex + 4 Skill"
+    }
+   ],
+   "from": 1,
+   "to": 1
+  },
+  {
+   "title": "做一条视频",
+   "subtitle": "旧流程 3 小时 → 现在 5 分钟",
+   "big": [
+    "3 小时",
+    "5 分钟"
+   ],
+   "blocks": [],
+   "from": 2,
+   "to": 2
+  },
+  {
+   "title": "HyperFrames",
+   "kicker": "第一个 · 负责的是「想」",
+   "subtitle": "主题 → 脚本分镜 → 场景拆解",
+   "blocks": [
+    {
+     "label": "INPUT",
+     "text": "给它一个主题"
+    },
+    {
+     "label": "OUTPUT",
+     "text": "脚本 · 分镜 · 场景"
+    }
+   ],
+   "from": 3,
+   "to": 3
+  },
+  {
+   "title": "ElevenLabs",
+   "kicker": "第二个 · 负责的是「说」",
+   "subtitle": "文案 → 自然音色配音",
+   "blocks": [
+    {
+     "label": "可设置",
+     "text": "声音 · 语速 · 停顿"
+    }
+   ],
+   "from": 4,
+   "to": 4
+  },
+  {
+   "title": "Remotion",
+   "kicker": "第三个 · 负责的是「动」",
+   "subtitle": "按分镜用代码组合成动态画面",
+   "blocks": [
+    {
+     "label": "OUTPUT",
+     "text": "动画 · 渲染"
+    }
+   ],
+   "from": 5,
+   "to": 5
+  },
+  {
+   "title": "Captions AI",
+   "kicker": "第四个 · 负责的是「字」",
+   "subtitle": "字幕对轴 + 统一字体样式",
+   "blocks": [
+    {
+     "label": "样式",
+     "text": "字体 · 大小 · 颜色 · 关键词高亮"
+    }
+   ],
+   "from": 6,
+   "to": 6
+  },
+  {
+   "title": "4 个 Skill\n一条自动流水线",
+   "kicker": "组合",
+   "subtitle": "以前反复导出，现在换素材就批量生成",
+   "blocks": [
+    {
+     "label": "CTA",
+     "text": "评论区留下「我要」"
+    }
+   ],
+   "from": 7,
+   "to": 7
+  }
+ ]
+}

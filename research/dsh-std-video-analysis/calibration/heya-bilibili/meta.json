@@ -1,0 +1,20 @@
+{
+ "platform": "bilibili",
+ "url": "https://www.bilibili.com/video/BV13KhP6CEKq",
+ "bvid": "BV13KhP6CEKq",
+ "cid": 41221030100,
+ "title": "DSH插件圈大地震！dsh-std 协定核弹来袭，免维护 Adapter 保你插件长生不老永远不死！",
+ "description": "DeepSeek Harness 插件开发者的福音来啦！\ndsh-TUI 团队出品遵从 dsh-std 的 spec 来袭！\n再也不用担心插件了爆炸，还能一键接入dsh全生态！\n维护了adapter的TUI仓库：https://github.com/ccch1mneyyy/dsh-TUI\ntui-adapter映射表与准入规范：https://github.com/T-Auto/dsh-ecosystem-spec\n元协议提案：https://github.com/Yan-Zero/dsh-std",
+ "author": "黑鸦Heya",
+ "author_uid": 3706929260006322,
+ "duration_s": 208,
+ "publish_time": 1787572800,
+ "play_count": 37275,
+ "comment_count": 468,
+ "digg_count": 1513,
+ "favorite_count": 723,
+ "coin_count": 197,
+ "share_count": 192,
+ "danmaku_count": 25,
+ "poster_url": "http://i0.hdslb.com/bfs/archive/52c9646d040a8f8921bc8788d7f2ecbc671bbe25.jpg"
+}

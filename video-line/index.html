@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1440, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#0a0a0a; }
+
+#root {
+  width:100%; height:100%;
+  font-family: sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+.bgclip, .card, .cap { position:absolute; inset:0; }
+
+/* ── 外框 ───────────────────────────────── */
+.stage { position:absolute; inset:0; background:#E3DCC9; }
+.corner { position:absolute; width:26px; height:26px; }
+.corner::before, .corner::after { content:""; position:absolute; background:rgba(255,255,255,.22); }
+.corner::before { left:12px; top:0; width:1px; height:26px; }
+.corner::after  { top:12px; left:0; height:1px; width:26px; }
+.c-tl { left:16px;  top:16px; }
+.c-tr { right:16px; top:16px; }
+.c-bl { left:16px;  bottom:16px; }
+.c-br { right:16px; bottom:16px; }
+
+.stamp-l { position:absolute; left:56px; top:22px; display:flex; flex-direction:column;
+  gap:1px; font-size:11px; line-height:1.45; letter-spacing:.14em;
+  color:#3F3B2E; font-weight:800; }
+.stamp-b { position:absolute; right:56px; bottom:26px; text-align:right;
+  display:flex; flex-direction:column; gap:1px; font-size:10px; line-height:1.5;
+  letter-spacing:.14em; color:#3F3B2E; font-weight:800; }
+.mono { font-family:ui-monospace, Consolas, "Courier New", monospace; }
+
+/* ── 主面板 ─────────────────────────────── */
+.panel {
+  position:absolute; left:38px; right:38px; top:86px; bottom:66px;
+  background:#101818; border-radius:22px; overflow:hidden;
+  background-image:linear-gradient(to right,rgba(255,255,255,0.085) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.085) 1px,transparent 1px);background-size:34px 34px;
+  box-shadow:0 18px 44px rgba(0,0,0,.22);
+}
+.dots { position:absolute; left:30px; top:24px; display:flex; gap:9px; }
+.dots i { width:11px; height:11px; border-radius:50%; background:#2E3A33; display:block; }
+.crumb { position:absolute; left:50%; top:20px; transform:translateX(-50%);
+  border:1px solid #2B3630; border-radius:14px; padding:5px 18px;
+  font-size:13px; letter-spacing:.08em; color:#C9D2C6; font-weight:700; }
+
+/* ── 四角括号（借 telemetry-hud 的框景语言，用强调色才看得见） ─ */
+.frame { position:absolute; left:52px; right:52px; top:58px; bottom:222px; }
+.bracket { position:absolute; width:40px; height:40px; border:0 solid rgba(179,229,83,0.42); }
+.b-tl { left:0; top:0; border-left-width:2px; border-top-width:2px; }
+.b-tr { right:0; top:0; border-right-width:2px; border-top-width:2px; }
+.b-bl { left:0; bottom:0; border-left-width:2px; border-bottom-width:2px; }
+.b-br { right:0; bottom:0; border-right-width:2px; border-bottom-width:2px; }
+
+/* ── 面板右上：大字读数（对标 C 的 SCAN RATE 风格） ─ */
+.readout { position:absolute; right:calc(38px + 30px); top:calc(86px + 26px);
+  display:flex; gap:22px; text-align:right; }
+.readout .ro { display:flex; flex-direction:column; align-items:flex-end; }
+.readout .rl { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:10px; letter-spacing:.16em; color:rgba(179,229,83,0.55); font-weight:700; }
+.readout .rv { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:30px; line-height:1.05; font-weight:800; color:#B3E553; }
+.readout .rv small { font-size:14px; margin-left:2px; }
+
+/* ── 卡片内容 ───────────────────────────── */
+.card-inner { position:absolute; left:72px; right:72px; top:150px; bottom:262px; }
+/* 纵向画幅下 .card-inner 是 flex 列：kicker 是 inline-block，不限定就会横向拉伸成整条 */
+.card-inner > .kicker { align-self:flex-start; }
+/* ── 背景素材层（2026-09-17 加）──
+   每卡一张深色底图（数据侧 card.bg），压暗铺底，内容浮在其上。
+   对标依据：抖音《只用了 Claude Code 30%能力》每卡换一张深色科技素材，
+   我们原来 9 张卡背景完全一样（同一网格底）→ 逐卡差异感为零。
+   压暗用 filter + 径向遮罩两层：既压住素材亮度保住文字对比度，又给中心留亮区。 */
+.bgimg { position:absolute; inset:0; background-size:cover; background-position:center;
+  filter:brightness(.55) saturate(.85); }
+.bgimg::after { content:""; position:absolute; inset:0;
+  background:radial-gradient(125% 95% at 50% 42%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.74) 100%); }
+.card-inner.has-bg > *:not(.bgimg) { position:relative; z-index:1; }
+.kicker { display:inline-block; border:1px solid #B3E553; border-radius:14px;
+  padding:6px 16px; font-size:13px; letter-spacing:.16em; font-weight:800; color:#B3E553;
+  font-family:ui-monospace, Consolas, "Courier New", monospace; }
+.title { margin-top:24px; font-size:84px; line-height:1.10; font-weight:900;
+  color:#F4F4EF; letter-spacing:-.02em; max-width:1180px; white-space:pre-line; }
+.title .ln { display:block; }
+.title .ch { display:inline; }
+.rule { height:5px; width:240px; margin-top:18px; background:#B3E553; border-radius:2px; }
+.blocks { margin-top:40px; display:flex; flex-direction:column; gap:18px; max-width:1080px; }
+.block { border:2px solid #B3E553; border-radius:18px; padding:20px 28px;
+  background:rgba(179,229,83,.045); }
+.block .bl { font-size:12px; letter-spacing:.18em; font-weight:800; color:#8FB845; }
+.block .bt { margin-top:7px; font-size:27px; line-height:1.35; font-weight:800;
+  color:#EDEDE6; white-space:pre-line; }
+/* 内容单元少时按块数放大，避免画面出现大片空白 */
+.blocks.n1 { gap:0; }
+.blocks.n1 .block { padding:40px 36px; }
+.blocks.n1 .block .bl { font-size:13px; }
+.blocks.n1 .block .bt { font-size:38px; line-height:1.25; }
+.blocks.n2 { gap:26px; }
+.blocks.n2 .block { padding:32px 34px; }
+.blocks.n2 .block .bt { font-size:32px; }
+
+/* ── 信息单元：list（逐项找位 + 容器线性漂移，借 list-reveal） ── */
+.unit-list { display:flex; flex-direction:column; gap:9px; width:640px; margin-top:40px; }
+.unit-list .li { display:flex; align-items:center; gap:16px;
+  padding:15px 20px; background:rgba(179,229,83,.045);
+  border:2px solid #B3E553; border-radius:18px; }
+.unit-list .li .lic { width:26px; height:26px; border-radius:7px; flex:0 0 auto;
+  background:#B3E553; opacity:.85; }
+.unit-list .li .lit { font-size:24px; font-weight:700; color:#EDEDE6;
+  white-space:nowrap; }
+.unit-list .li .lin { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:15px; color:#8FB845; font-weight:700; margin-right:2px; }
+/* ── 信息单元：checklist（图标 + 短句，2026-09-17 加；版式与 list 同族，只换前缀） ── */
+.unit-checklist { display:flex; flex-direction:column; gap:9px; width:640px; margin-top:40px; }
+.unit-checklist .li { display:flex; align-items:center; gap:14px;
+  padding:15px 20px; background:rgba(179,229,83,.045);
+  border:2px solid #B3E553; border-radius:18px; }
+/* 不显式声明 emoji 字体族：写了会触发质量门"字体必须有 @font-face / local()"的检查
+   （2026-09-17 实测被拦），而系统会自己回退到 emoji 字体，去掉声明反而干净 */
+.unit-checklist .li .lici { flex:0 0 auto; font-size:20px; line-height:1; color:#B3E553;
+  font-weight:900; }
+.unit-checklist .li .lit { font-size:24px; font-weight:700; color:#EDEDE6;
+  white-space:nowrap; }
+.unit-note { margin-top:18px; font-size:19px; color:#9AA79B; font-weight:600; }
+/* blocks 与 units 同现时收紧间距：两者各自的 margin-top 叠加会把内容压进 HUD 区
+   （实测过一次真实重叠：末卡「标题两行 + 卡片 + 对照 + 说明」超出内容区） */
+.blocks + .unit-list, .blocks + .unit-stat,
+.blocks + .unit-compare, .blocks + .unit-steps,
+.blocks + .unit-checklist { margin-top:24px; }
+.unit-list + .unit-note, .unit-stat + .unit-note,
+.unit-compare + .unit-note, .unit-steps + .unit-note,
+.unit-checklist + .unit-note { margin-top:12px; }
+
+/* ── 信息单元：stat（大数字 + 刻度带，借 gauge-readout-moves 式 B） ── */
+.unit-stat { display:flex; gap:52px; margin-top:46px; }
+.unit-stat .si { display:flex; flex-direction:column; gap:14px; }
+.unit-stat .sl { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:12px; letter-spacing:.16em; color:#8FB845; font-weight:700; }
+.unit-stat .srow { display:flex; align-items:baseline; gap:5px; }
+.unit-stat .sv { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:76px; line-height:1.14; font-weight:800; color:#B3E553;
+  letter-spacing:-.02em; display:block; }
+.unit-stat .su { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:26px; font-weight:700; color:#B3E553; opacity:.7; }
+.unit-stat .stape { position:relative; height:11px; margin-top:8px; overflow:hidden; }
+.unit-stat .stape i { position:absolute; top:0; width:1px; height:11px;
+  background:rgba(255,255,255,.09); display:block; }
+
+/* ── 信息单元：compare（并列面板，借 quad-split-parallel-scenes 的错拍） ── */
+.unit-compare { display:grid; grid-template-columns:repeat(2, 1fr); gap:18px;
+  margin-top:40px; max-width:860px; position:relative; }
+.unit-compare.n4 { grid-template-columns:repeat(2, 1fr); max-width:900px; }
+/* 两格对照时加一条中轴分隔，让两侧留白读作刻意而非空 */
+.unit-compare.n2::before { content:""; position:absolute; left:50%; top:8px; bottom:8px;
+  width:1px; background:rgba(255,255,255,.09); }
+.unit-compare .ci { border:2px solid #B3E553; border-radius:18px;
+  background:rgba(179,229,83,.045); padding:24px 26px; }
+.unit-compare .cl { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:12px; letter-spacing:.18em; color:#8FB845; font-weight:700; }
+.unit-compare .ct { margin-top:9px; font-size:25px; line-height:1.38;
+  font-weight:700; color:#EDEDE6; white-space:pre-line; }
+
+/* ── 信息单元：steps（纵向步骤 + 高亮逐拍推进，借 beat-step-list-theme-cycle） ── */
+.unit-steps { position:relative; margin-top:38px; width:780px;
+  display:flex; flex-direction:column; gap:12px; padding-left:16px; }
+.unit-steps .marker { position:absolute; left:0; top:0; width:4px; height:58px;
+  background:#B3E553; border-radius:2px; }
+.unit-steps .sp { display:flex; align-items:center; gap:20px; height:58px;
+  padding:0 22px; border-radius:18px; opacity:.42; }
+.unit-steps .sp .sn { font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:16px; font-weight:800; color:#8FB845; }
+.unit-steps .sp .stx { font-size:26px; font-weight:700; color:#EDEDE6; }
+.bignum { font-size:132px; font-weight:900; color:#B3E553; line-height:1; }
+.row { display:flex; align-items:center; gap:34px; }
+.arrow { font-size:70px; color:#9AA79B; font-weight:900; }
+.subtitle { margin-top:26px; font-size:22px; line-height:1.5; color:#9AA79B; font-weight:600; }
+
+/* ── 页眉页码 / 进度点（右上，随卡片切换） ── */
+.pagebar { position:absolute; right:56px; top:0; height:86px;
+  display:flex; align-items:center; gap:16px; }
+.pageno { font-size:15px; letter-spacing:.12em; font-weight:800; color:#3F3B2E; }
+.progress { display:flex; align-items:center; gap:11px; }
+.progress i { width:15px; height:15px; border-radius:50%; background:#3E4A42; display:block; }
+.progress i.on { background:#B3E553; }
+
+/* ── 面板下部：HUD 读数 / 步骤标号 / 分段进度条 ── */
+/* z-index:3 是必需的：HUD 与 .card-inner 在纵向有约 30px 重叠，卡片内容透明时能透出，
+   但加了背景素材层（.bgimg 不透明）后会被盖住 —— 2026-09-17 实测被质量门 text_occluded 拦下 */
+.hud { position:absolute; left:52px; bottom:168px; z-index:3;
+  display:flex; flex-direction:column;
+  font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:12px; line-height:1.75; letter-spacing:.06em; color:#9AA79B; }
+.hud b { color:#B3E553; font-weight:700; }
+.steplabel { position:absolute; right:52px; bottom:calc(66px + 168px); text-align:right;
+  display:flex; flex-direction:column;
+  font-family:ui-monospace, Consolas, "Courier New", monospace;
+  font-size:12px; line-height:1.75; letter-spacing:.10em; color:#9AA79B; }
+.steplabel b { color:#B3E553; font-weight:700; }
+.pbar { position:absolute; left:52px; right:52px; bottom:calc(66px + 150px); height:3px;
+  display:flex; gap:5px; }
+.pbar i { flex:1; background:rgba(255,255,255,.14); display:block; }
+.pbar i.on { background:#B3E553; }
+
+/* ── 字幕条（底板常驻，仅文字随句切换） ──── */
+.cap-band { position:absolute; left:38px; right:38px; bottom:66px; height:148px;
+  background:#0D0D0D; border-top:3px solid #B3E553; }
+.cap-layer { position:absolute; left:38px; right:38px; bottom:66px; height:148px;
+  display:flex; align-items:center; justify-content:center; padding-bottom:8px; }
+.cap-layer span { font-size:34px; font-weight:900; color:#EFEFE4; letter-spacing:.01em; }
+
+/* ── 结尾淡出黑幕 ───────────────────────── */
+.fadeclip { pointer-events:none; }
+#fadeout { position:absolute; inset:0; background:#000; opacity:0; }
+</style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0"
+         data-duration="32.470" data-width="1440" data-height="1080">
+
+      <div class="clip bgclip" id="stage-bg" data-start="0" data-duration="32.470" data-track-index="0">
+        <div class="stage">
+          <div class="corner c-tl"></div><div class="corner c-tr"></div>
+          <div class="corner c-bl"></div><div class="corner c-br"></div>
+          <div class="stamp-l">
+            <span>RESEARCH CARD</span>
+            <span>AI 工作流</span>
+            <span>SERIES 003</span>
+          </div>
+          <div class="stamp-b">
+            <span>VERSION.</span>
+            <span>CARD 4:3 / AUTO 2.0</span>
+          </div>
+          <div class="panel">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="crumb">‹ 自动流水线 ›</div>
+            <div class="frame">
+              <div class="bracket b-tl"></div><div class="bracket b-tr"></div>
+              <div class="bracket b-bl"></div><div class="bracket b-br"></div>
+            </div>
+            <div class="hud"><span>CARDS:<b>09</b></span><span>DUR:<b>32.5s</b></span><span>AVG:3.6s</span></div>
+          </div>
+          <div class="cap-band"></div>
+        </div>
+      </div>
+
+    <div class="clip card" data-start="0.000" data-duration="2.580" data-track-index="1" id="card0">
+      <div class="card-inner" data-motion="SLAMS 标题">
+        <div class="kicker-wrap"><div class="kicker">01 · 现状</div></div>
+      <div class="title">还在比
+哪个 AI 答得准</div>
+      
+      
+      <div class="unit-list" data-drift="1"><div class="li"><span class="lin">01</span><span class="lit">比谁答得更准</span></div><div class="li"><span class="lin">02</span><span class="lit">比谁写得更像人</span></div><div class="li"><span class="lin">03</span><span class="lit">比谁响应更快</span></div></div><div class="unit-note">这些比较都停在同一个地方：前台</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">01 / 09</div>
+      <div class="progress"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">2.6</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">17</span></div>
+    </div>
+    <div class="steplabel">STEP <b>01 / 04</b></div>
+    <div class="pbar"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="2.580" data-duration="5.160" data-track-index="1" id="card1">
+      <div class="card-inner" data-motion="FLOATS 标题 → FLOATS 卡片">
+        <div class="kicker-wrap"><div class="kicker">02 · 转折</div></div>
+      <div class="title">差距不在前台</div>
+      
+      <div class="blocks n1"><div class="block"><div class="bl">关键</div><div class="bt">真正拉开差距的是后台</div></div></div>
+      <div class="unit-compare n2"><div class="ci"><div class="cl">前台</div><div class="ct">一个会聊天的对话框</div></div><div class="ci"><div class="cl">后台</div><div class="ct">一条会自己跑的线</div></div></div><div class="unit-note">前台看的是回答质量，后台看的是它能不能自己往前推</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">02 / 09</div>
+      <div class="progress"><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">5.2</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">33</span></div>
+    </div>
+    <div class="steplabel">STEP <b>02 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="7.740" data-duration="2.850" data-track-index="1" id="card2">
+      <div class="card-inner" data-motion="TYPES 标题">
+        <div class="kicker-wrap"><div class="kicker">03 · 方法</div></div>
+      <div class="title"><span class="ln"><span class="ch">三</span><span class="ch">个</span><span class="ch"> </span><span class="ch">A</span><span class="ch">I</span><span class="ch"> </span><span class="ch">分</span><span class="ch">工</span></span></div>
+      
+      
+      <div class="unit-steps"><div class="marker"></div><div class="sp" data-i="1"><span class="sn">01</span><span class="stx">采集：把素材扫进笔记库</span></div><div class="sp" data-i="2"><span class="sn">02</span><span class="stx">改写：按平台调性重写</span></div><div class="sp" data-i="3"><span class="sn">03</span><span class="stx">发布：发完把数据写回</span></div></div><div class="unit-note">高亮会按固定节拍，逐个往下走</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">03 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">2.9</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">18</span></div>
+    </div>
+    <div class="steplabel">STEP <b>03 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="10.590" data-duration="2.990" data-track-index="1" id="card3">
+      <div class="card-inner" data-motion="FLOATS 标题">
+        <div class="kicker-wrap"><div class="kicker">04 · 深夜干活</div></div>
+      <div class="title">采集员</div>
+      
+      
+      <div class="unit-stat"><div class="si" data-i="0"><div class="sl">触发</div><div class="srow"><span class="sv" data-num="3.0" data-dec="0" data-pre="凌晨" data-suf="点">凌晨3</span><span class="su">点</span></div><div class="stape"><i style="left:0.0%"></i><i style="left:7.2%"></i><i style="left:14.4%"></i><i style="left:21.6%"></i><i style="left:28.8%"></i><i style="left:36.0%"></i><i style="left:43.2%"></i><i style="left:50.4%"></i><i style="left:57.6%"></i><i style="left:64.8%"></i><i style="left:72.0%"></i><i style="left:79.2%"></i><i style="left:86.4%"></i><i style="left:93.6%"></i></div></div><div class="si" data-i="1"><div class="sl">覆盖</div><div class="srow"><span class="sv" data-num="3.0" data-dec="0" data-pre="" data-suf="个平台">3</span><span class="su">个平台</span></div><div class="stape"><i style="left:0.0%"></i><i style="left:7.2%"></i><i style="left:14.4%"></i><i style="left:21.6%"></i><i style="left:28.8%"></i><i style="left:36.0%"></i><i style="left:43.2%"></i><i style="left:50.4%"></i><i style="left:57.6%"></i><i style="left:64.8%"></i><i style="left:72.0%"></i><i style="left:79.2%"></i><i style="left:86.4%"></i><i style="left:93.6%"></i></div></div><div class="si" data-i="2"><div class="sl">人工介入</div><div class="srow"><span class="sv" data-num="0.0" data-dec="0" data-pre="" data-suf="次">0</span><span class="su">次</span></div><div class="stape"><i style="left:0.0%"></i><i style="left:7.2%"></i><i style="left:14.4%"></i><i style="left:21.6%"></i><i style="left:28.8%"></i><i style="left:36.0%"></i><i style="left:43.2%"></i><i style="left:50.4%"></i><i style="left:57.6%"></i><i style="left:64.8%"></i><i style="left:72.0%"></i><i style="left:79.2%"></i><i style="left:86.4%"></i><i style="left:93.6%"></i></div></div></div><div class="unit-note">数值从零爬到目标，刻度带在下方滑入</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">04 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">3.0</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">19</span></div>
+    </div>
+    <div class="steplabel">STEP <b>03 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="13.580" data-duration="3.020" data-track-index="1" id="card4">
+      <div class="card-inner" data-motion="SLIDES 标题">
+        <div class="kicker-wrap"><div class="kicker">05 · 分清平台</div></div>
+      <div class="title">改写员</div>
+      
+      
+      <div class="unit-list" data-drift="1"><div class="li"><span class="lin">01</span><span class="lit">不抄原文，只提炼核心观点</span></div><div class="li"><span class="lin">02</span><span class="lit">换成口语表达</span></div><div class="li"><span class="lin">03</span><span class="lit">加一个能站住的标题</span></div></div><div class="unit-note">同一份素材，投不同平台要换一套说法</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">05 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">3.0</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">19</span></div>
+    </div>
+    <div class="steplabel">STEP <b>03 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="16.600" data-duration="2.920" data-track-index="1" id="card5">
+      <div class="card-inner" data-motion="FLOATS 标题">
+        <div class="kicker-wrap"><div class="kicker">06 · 早上开工</div></div>
+      <div class="title">发布员</div>
+      
+      
+      <div class="unit-steps"><div class="marker"></div><div class="sp" data-i="1"><span class="sn">01</span><span class="stx">打开后台并登录</span></div><div class="sp" data-i="2"><span class="sn">02</span><span class="stx">粘贴内容与配图</span></div><div class="sp" data-i="3"><span class="sn">03</span><span class="stx">发布后回写数据</span></div></div><div class="unit-note">发完不是结束，数据回写才让下一天有依据</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">06 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">2.9</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">18</span></div>
+    </div>
+    <div class="steplabel">STEP <b>03 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="19.520" data-duration="2.790" data-track-index="1" id="card6">
+      <div class="card-inner" data-motion="RISES 标题">
+        <div class="kicker-wrap"><div class="kicker">07 · 串起来</div></div>
+      <div class="title">人退到早上</div>
+      
+      
+      <div class="unit-stat"><div class="si" data-i="0"><div class="sl">自动环节</div><div class="srow"><span class="sv" data-num="3.0" data-dec="0" data-pre="" data-suf="段">3</span><span class="su">段</span></div><div class="stape"><i style="left:0.0%"></i><i style="left:7.2%"></i><i style="left:14.4%"></i><i style="left:21.6%"></i><i style="left:28.8%"></i><i style="left:36.0%"></i><i style="left:43.2%"></i><i style="left:50.4%"></i><i style="left:57.6%"></i><i style="left:64.8%"></i><i style="left:72.0%"></i><i style="left:79.2%"></i><i style="left:86.4%"></i><i style="left:93.6%"></i></div></div><div class="si" data-i="1"><div class="sl">人的环节</div><div class="srow"><span class="sv" data-num="1.0" data-dec="0" data-pre="" data-suf="个">1</span><span class="su">个</span></div><div class="stape"><i style="left:0.0%"></i><i style="left:7.2%"></i><i style="left:14.4%"></i><i style="left:21.6%"></i><i style="left:28.8%"></i><i style="left:36.0%"></i><i style="left:43.2%"></i><i style="left:50.4%"></i><i style="left:57.6%"></i><i style="left:64.8%"></i><i style="left:72.0%"></i><i style="left:79.2%"></i><i style="left:86.4%"></i><i style="left:93.6%"></i></div></div><div class="si" data-i="2"><div class="sl">值守时长</div><div class="srow"><span class="sv" data-num="24.0" data-dec="0" data-pre="" data-suf="h">24</span><span class="su">h</span></div><div class="stape"><i style="left:0.0%"></i><i style="left:7.2%"></i><i style="left:14.4%"></i><i style="left:21.6%"></i><i style="left:28.8%"></i><i style="left:36.0%"></i><i style="left:43.2%"></i><i style="left:50.4%"></i><i style="left:57.6%"></i><i style="left:64.8%"></i><i style="left:72.0%"></i><i style="left:79.2%"></i><i style="left:86.4%"></i><i style="left:93.6%"></i></div></div></div><div class="unit-note">人不是被替代，是从执行退到看结果</div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">07 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">2.8</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">17</span></div>
+    </div>
+    <div class="steplabel">STEP <b>03 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="22.310" data-duration="5.620" data-track-index="1" id="card7">
+      <div class="card-inner" data-motion="DRAWS 标题 → FLOATS 卡片">
+        <div class="kicker-wrap"><div class="kicker">08 · 结论</div></div>
+      <div class="title">值钱的不是提示词
+是流程</div>
+      <div class="rule"></div>
+      <div class="blocks n1"><div class="block"><div class="bl">一句话</div><div class="bt">提示词让你爽一次，流程让你省一个月</div></div></div>
+      <div class="unit-compare n2"><div class="ci"><div class="cl">提示词</div><div class="ct">用完就过期
+换个人就失效</div></div><div class="ci"><div class="cl">流程</div><div class="ct">描述一次
+之后自己跑</div></div></div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">08 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">5.6</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">34</span></div>
+    </div>
+    <div class="steplabel">STEP <b>04 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i></div>
+  </div>
+    <div class="clip card" data-start="27.930" data-duration="4.540" data-track-index="1" id="card8">
+      <div class="card-inner" data-motion="FLOATS 标题 → FLOATS 卡片">
+        <div class="kicker-wrap"><div class="kicker">09 · 行动</div></div>
+      <div class="title">你早晚用得上</div>
+      
+      <div class="blocks n1"><div class="block"><div class="bl">一句话</div><div class="bt">收藏是给以后的自己省时间</div></div></div>
+      <div class="unit-list" data-drift="1"><div class="li"><span class="lin">01</span><span class="lit">先收藏，要用时不用翻记录</span></div><div class="li"><span class="lin">02</span><span class="lit">想看拆解过程，点关注</span></div></div>
+      
+    </div>
+    <div class="pagebar">
+      <div class="pageno">09 / 09</div>
+      <div class="progress"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i></div>
+    </div>
+    <div class="readout">
+      <div class="ro"><span class="rl">SEC</span><span class="rv">4.5</span></div>
+      <div class="ro"><span class="rl">CHAR</span><span class="rv">27</span></div>
+    </div>
+    <div class="steplabel">STEP <b>04 / 04</b></div>
+    <div class="pbar"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i></div>
+  </div>
+
+  <div class="clip cap" data-start="0.000" data-duration="1.280" data-track-index="2" id="cap0"><div class="cap-layer"><span>很多人还在比较，</span></div></div>
+  <div class="clip cap" data-start="1.360" data-duration="1.140" data-track-index="2" id="cap1"><div class="cap-layer"><span>哪个AI答得更准。</span></div></div>
+  <div class="clip cap" data-start="2.580" data-duration="1.322" data-track-index="2" id="cap2"><div class="cap-layer"><span>但真正拉开差距的，</span></div></div>
+  <div class="clip cap" data-start="3.982" data-duration="1.600" data-track-index="2" id="cap3"><div class="cap-layer"><span>不是前台那个对话框，</span></div></div>
+  <div class="clip cap" data-start="5.662" data-duration="2.272" data-track-index="2" id="cap4"><div class="cap-layer"><span>是后台有没有一条会自己跑的线</span></div></div>
+  <div class="clip cap" data-start="8.014" data-duration="0.120" data-track-index="2" id="cap5"><div class="cap-layer"><span>。</span></div></div>
+  <div class="clip cap" data-start="7.740" data-duration="1.013" data-track-index="2" id="cap6"><div class="cap-layer"><span>这条线拆开，</span></div></div>
+  <div class="clip cap" data-start="8.833" data-duration="1.677" data-track-index="2" id="cap7"><div class="cap-layer"><span>其实是三个AI在分工。</span></div></div>
+  <div class="clip cap" data-start="10.590" data-duration="1.296" data-track-index="2" id="cap8"><div class="cap-layer"><span>第一个负责采集，</span></div></div>
+  <div class="clip cap" data-start="11.966" data-duration="1.534" data-track-index="2" id="cap9"><div class="cap-layer"><span>凌晨把素材扫进笔记库。</span></div></div>
+  <div class="clip cap" data-start="13.580" data-duration="1.306" data-track-index="2" id="cap10"><div class="cap-layer"><span>第二个负责改写，</span></div></div>
+  <div class="clip cap" data-start="14.966" data-duration="1.554" data-track-index="2" id="cap11"><div class="cap-layer"><span>把素材按平台调性重写。</span></div></div>
+  <div class="clip cap" data-start="16.600" data-duration="1.347" data-track-index="2" id="cap12"><div class="cap-layer"><span>第三个负责发布，</span></div></div>
+  <div class="clip cap" data-start="18.027" data-duration="1.413" data-track-index="2" id="cap13"><div class="cap-layer"><span>发完把数据写回日志。</span></div></div>
+  <div class="clip cap" data-start="19.520" data-duration="1.390" data-track-index="2" id="cap14"><div class="cap-layer"><span>三个角色串起来，</span></div></div>
+  <div class="clip cap" data-start="20.990" data-duration="1.240" data-track-index="2" id="cap15"><div class="cap-layer"><span>人只在早上看报告。</span></div></div>
+  <div class="clip cap" data-start="22.310" data-duration="1.813" data-track-index="2" id="cap16"><div class="cap-layer"><span>所以值钱的不是提示词，</span></div></div>
+  <div class="clip cap" data-start="24.203" data-duration="0.649" data-track-index="2" id="cap17"><div class="cap-layer"><span>是流程。</span></div></div>
+  <div class="clip cap" data-start="24.932" data-duration="1.559" data-track-index="2" id="cap18"><div class="cap-layer"><span>你每天重复做的事，</span></div></div>
+  <div class="clip cap" data-start="26.571" data-duration="1.279" data-track-index="2" id="cap19"><div class="cap-layer"><span>就是你该搭的那条线。</span></div></div>
+  <div class="clip cap" data-start="27.930" data-duration="2.545" data-track-index="2" id="cap20"><div class="cap-layer"><span>先收藏，要用的时候省得再找。</span></div></div>
+  <div class="clip cap" data-start="30.555" data-duration="2.491" data-track-index="2" id="cap21"><div class="cap-layer"><span>想看每一步怎么拆，关注我。</span></div></div>
+
+  <audio id="vo" src="assets/voice_segmented.mp3" data-start="0" data-duration="32.470" data-volume="1.0"></audio>
+  <div class="clip fadeclip" id="fadeclip" data-start="0" data-duration="32.470" data-track-index="3"><div id="fadeout"></div></div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+  tl.fromTo("#card0 .card-inner .title", { opacity: 0, scale: 1.26 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, 0.000);
+  tl.fromTo("#card0 .unit-list", { y: 16 }, { y: -16, duration: 2.580, ease: "none" }, 0.000);
+  tl.fromTo("#card0 .unit-list .li", { opacity: 0, scale: 0.78, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: 0.85, stagger: 0.32, ease: "back.out(1.2)" }, 0.350);
+  tl.fromTo("#card1 .card-inner .title", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 2.580);
+  tl.fromTo("#card1 .card-inner .blocks .block", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 2.900);
+  tl.fromTo("#card1 .card-inner", { scale: 1 }, { scale: 1.045, duration: 5.160, ease: "none" }, 2.580);
+  tl.fromTo("#card1 .unit-compare .ci", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: "power3.out" }, 2.880);
+  tl.fromTo("#card2 .card-inner .title .ch", { opacity: 0 }, { opacity: 1, duration: .28, stagger: .045, ease: "none" }, 7.740);
+  tl.to("#card2 .unit-steps .sp[data-i=\"1\"]", { opacity: 1, duration: 0.2, ease: "power3.out" }, 8.090);
+  tl.to("#card2 .unit-steps .marker", { y: 70, duration: 0.2, ease: "power3.out" }, 8.690);
+  tl.to("#card2 .unit-steps .sp[data-i=\"2\"]", { opacity: 1, duration: 0.2, ease: "power3.out" }, 8.690);
+  tl.to("#card2 .unit-steps .marker", { y: 140, duration: 0.2, ease: "power3.out" }, 9.290);
+  tl.to("#card2 .unit-steps .sp[data-i=\"3\"]", { opacity: 1, duration: 0.2, ease: "power3.out" }, 9.290);
+  tl.fromTo("#card3 .card-inner .title", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 10.590);
+  (function(){var e=document.querySelector('#card3 .unit-stat .si[data-i="0"] .sv[data-num]');if(!e)return;var o={v:0},dec=parseInt(e.dataset.dec,10);tl.to(o,{v:parseFloat(e.dataset.num),duration:1.1,ease:"power2.out",onUpdate:function(){e.textContent=(e.dataset.pre||'')+o.v.toFixed(dec);}},10.890);})();
+  (function(){var e=document.querySelector('#card3 .unit-stat .si[data-i="1"] .sv[data-num]');if(!e)return;var o={v:0},dec=parseInt(e.dataset.dec,10);tl.to(o,{v:parseFloat(e.dataset.num),duration:1.1,ease:"power2.out",onUpdate:function(){e.textContent=(e.dataset.pre||'')+o.v.toFixed(dec);}},11.110);})();
+  (function(){var e=document.querySelector('#card3 .unit-stat .si[data-i="2"] .sv[data-num]');if(!e)return;var o={v:0},dec=parseInt(e.dataset.dec,10);tl.to(o,{v:parseFloat(e.dataset.num),duration:1.1,ease:"power2.out",onUpdate:function(){e.textContent=(e.dataset.pre||'')+o.v.toFixed(dec);}},11.330);})();
+  tl.fromTo("#card3 .unit-stat .stape", { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: .6, stagger: .18, ease: "power2.out" }, 10.890);
+  tl.fromTo("#card4 .card-inner .title", { opacity: 0, x: -46 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 13.580);
+  tl.fromTo("#card4 .card-inner", { scale: 1 }, { scale: 1.045, duration: 3.020, ease: "none" }, 13.580);
+  tl.fromTo("#card4 .unit-list", { y: 16 }, { y: -16, duration: 3.020, ease: "none" }, 13.580);
+  tl.fromTo("#card4 .unit-list .li", { opacity: 0, scale: 0.78, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: 0.85, stagger: 0.32, ease: "back.out(1.2)" }, 13.930);
+  tl.fromTo("#card5 .card-inner .title", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 16.600);
+  tl.to("#card5 .unit-steps .sp[data-i=\"1\"]", { opacity: 1, duration: 0.2, ease: "power3.out" }, 16.950);
+  tl.to("#card5 .unit-steps .marker", { y: 70, duration: 0.2, ease: "power3.out" }, 17.550);
+  tl.to("#card5 .unit-steps .sp[data-i=\"2\"]", { opacity: 1, duration: 0.2, ease: "power3.out" }, 17.550);
+  tl.to("#card5 .unit-steps .marker", { y: 140, duration: 0.2, ease: "power3.out" }, 18.150);
+  tl.to("#card5 .unit-steps .sp[data-i=\"3\"]", { opacity: 1, duration: 0.2, ease: "power3.out" }, 18.150);
+  tl.fromTo("#card6 .card-inner .title", { opacity: 0, y: 72 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 19.520);
+  (function(){var e=document.querySelector('#card6 .unit-stat .si[data-i="0"] .sv[data-num]');if(!e)return;var o={v:0},dec=parseInt(e.dataset.dec,10);tl.to(o,{v:parseFloat(e.dataset.num),duration:1.1,ease:"power2.out",onUpdate:function(){e.textContent=(e.dataset.pre||'')+o.v.toFixed(dec);}},19.820);})();
+  (function(){var e=document.querySelector('#card6 .unit-stat .si[data-i="1"] .sv[data-num]');if(!e)return;var o={v:0},dec=parseInt(e.dataset.dec,10);tl.to(o,{v:parseFloat(e.dataset.num),duration:1.1,ease:"power2.out",onUpdate:function(){e.textContent=(e.dataset.pre||'')+o.v.toFixed(dec);}},20.040);})();
+  (function(){var e=document.querySelector('#card6 .unit-stat .si[data-i="2"] .sv[data-num]');if(!e)return;var o={v:0},dec=parseInt(e.dataset.dec,10);tl.to(o,{v:parseFloat(e.dataset.num),duration:1.1,ease:"power2.out",onUpdate:function(){e.textContent=(e.dataset.pre||'')+o.v.toFixed(dec);}},20.260);})();
+  tl.fromTo("#card6 .unit-stat .stape", { opacity: 0, x: -34 }, { opacity: 1, x: 0, duration: .6, stagger: .18, ease: "power2.out" }, 19.820);
+  tl.fromTo("#card7 .rule", { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: .55, ease: "power2.inOut" }, 22.310);
+  tl.fromTo("#card7 .card-inner .blocks .block", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 22.630);
+  tl.fromTo("#card7 .card-inner", { scale: 1 }, { scale: 1.045, duration: 5.620, ease: "none" }, 22.310);
+  tl.fromTo("#card7 .unit-compare .ci", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.15, ease: "power3.out" }, 22.610);
+  tl.fromTo("#card8 .card-inner .title", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 27.930);
+  tl.fromTo("#card8 .card-inner .blocks .block", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 28.250);
+  tl.fromTo("#card8 .card-inner", { scale: 1 }, { scale: 1.045, duration: 4.540, ease: "none" }, 27.930);
+  tl.fromTo("#card8 .unit-list", { y: 16 }, { y: -16, duration: 4.540, ease: "none" }, 27.930);
+  tl.fromTo("#card8 .unit-list .li", { opacity: 0, scale: 0.78, y: 14 }, { opacity: 1, scale: 1, y: 0, duration: 0.85, stagger: 0.32, ease: "back.out(1.2)" }, 28.280);
+  tl.fromTo("#fadeout", { opacity: 0 }, { opacity: 1, duration: .85, ease: "power2.in" }, 31.570);
+  tl.fromTo("#cap0 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 0.000);
+  tl.fromTo("#cap1 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 1.360);
+  tl.fromTo("#cap2 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 2.580);
+  tl.fromTo("#cap3 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 3.982);
+  tl.fromTo("#cap4 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 5.662);
+  tl.fromTo("#cap5 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 8.014);
+  tl.fromTo("#cap6 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 7.740);
+  tl.fromTo("#cap7 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 8.833);
+  tl.fromTo("#cap8 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 10.590);
+  tl.fromTo("#cap9 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 11.966);
+  tl.fromTo("#cap10 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 13.580);
+  tl.fromTo("#cap11 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 14.966);
+  tl.fromTo("#cap12 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 16.600);
+  tl.fromTo("#cap13 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 18.027);
+  tl.fromTo("#cap14 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 19.520);
+  tl.fromTo("#cap15 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 20.990);
+  tl.fromTo("#cap16 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 22.310);
+  tl.fromTo("#cap17 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 24.203);
+  tl.fromTo("#cap18 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 24.932);
+  tl.fromTo("#cap19 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 26.571);
+  tl.fromTo("#cap20 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 27.930);
+  tl.fromTo("#cap21 .cap-layer", { opacity: 0 }, { opacity: 1, duration: .18 }, 30.555);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,61 @@
+取预签名上传地址：final.mp4（6.1 MB）
+上传文件中...
+确认上传完成...
+上传完成：video_id=ad82ebf738bb4c81ac406a8fc5a17140
+上传后视频链接：https://service.lingyishuke.com/api/v1/asset/media/download/bedd78eac9834860a79a15f27a027dba/final.mp4
+发起拆解任务：video_id=ad82ebf738bb4c81ac406a8fc5a17140
+任务已创建：task_id=aa5e2adc2627461981ab50a76ecf7f1a
+开始轮询拆解状态（最长 600s，间隔 4s）...
+[running / stage=-] 
+轮询遇到可重试错误：<urlopen error _ssl.c:1015: The handshake operation timed out>，4s 后重试
+Traceback (most recent call last):
+  File "C:\Users\Administrator\.codex\skills\lingyi-wx-video-decomposer-plus\scripts\analyze_wx_video.py", line 670, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Administrator\.codex\skills\lingyi-wx-video-decomposer-plus\scripts\analyze_wx_video.py", line 656, in main
+    status, data, err = poll_loop(base_url, api_key, task_id, args.max_wait, args.interval)
+                        ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.codex\skills\lingyi-wx-video-decomposer-plus\scripts\analyze_wx_video.py", line 499, in poll_loop
+    data = poll_once(base_url, api_key, task_id)
+  File "C:\Users\Administrator\.codex\skills\lingyi-wx-video-decomposer-plus\scripts\analyze_wx_video.py", line 469, in poll_once
+    status, text = http_request("GET", url, headers=auth_headers(api_key), timeout=30)
+                   ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\.codex\skills\lingyi-wx-video-decomposer-plus\scripts\analyze_wx_video.py", line 232, in http_request
+    with urllib.request.urlopen(req, timeout=timeout, context=SSL_CONTEXT) as resp:
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\urllib\request.py", line 189, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\urllib\request.py", line 489, in open
+    response = self._open(req, data)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\urllib\request.py", line 506, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\urllib\request.py", line 466, in _call_chain
+    result = func(*args)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\urllib\request.py", line 1367, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\urllib\request.py", line 1323, in do_open
+    r = h.getresponse()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 1450, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\http\client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\socket.py", line 719, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\ssl.py", line 1304, in recv_into
+    return self.read(nbytes, buffer)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python313\Lib\ssl.py", line 1138, in read
+    return self._sslobj.read(len, buffer)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+TimeoutError: The read operation timed out

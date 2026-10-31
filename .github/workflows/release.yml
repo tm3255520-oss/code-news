@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt --break-system-packages 2>$null || echo "requirements.txt not found, skipping"
+          pip install pyyaml --break-system-packages
+
+      - name: Run CI checks
+        run: |
+          python scripts/tool_inventory.py --verify-registry
+          python scripts/check_config_integrity.py
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $prevTag = git describe --tags --abbrev=0 $tag^ 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            $log = git log $prevTag..$tag --pretty=format:"- %s (%an)" --no-merges
+          } else {
+            $log = git log $tag --pretty=format:"- %s (%an)" --no-merges
+          }
+          $changelog = "## $tag`n$log"
+          echo "changelog<<EOF" >> $env:GITHUB_OUTPUT
+          echo $changelog >> $env:GITHUB_OUTPUT
+          echo "EOF" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

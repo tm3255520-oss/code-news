@@ -1,0 +1,30 @@
+{
+ "generated_at": "2026-08-25T15:23:42.783426",
+ "steps": {
+  "meta": {
+   "ok": true,
+   "platform": "toutiao"
+  },
+  "download": {
+   "ok": true,
+   "def": "720p",
+   "error": ""
+  },
+  "audio": {
+   "ok": true,
+   "error": ""
+  },
+  "frames": {
+   "ok": true,
+   "error": ""
+  },
+  "ocr": {
+   "ok": true,
+   "error": ""
+  },
+  "transcript": {
+   "ok": true,
+   "error": ""
+  }
+ }
+}

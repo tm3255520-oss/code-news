@@ -1,0 +1,194 @@
+{
+  "generated_at": "2026-08-27T01:38:39.879773",
+  "source_script": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\20260827_GitHub破万星-EverOS-让AI-Agent记住你_口播脚本_hook.json",
+  "audio": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\voice\\voice_segmented.mp3",
+  "audio_duration": 61.43,
+  "total_duration": 61.43,
+  "slot_count": 16,
+  "video_title": "GitHub破万星 EverOS 让AI Agent记住你",
+  "tool_name": "EverOS",
+  "segments": [
+    {
+      "role": "",
+      "content": "这个项目已经5 个了，但九成的人根本不会用——今天一条视频讲透。",
+      "start": 0.0,
+      "end": 6.2
+    },
+    {
+      "role": "",
+      "content": "用过 AI 助手的人都有体会：换个工具、换个会话，上下文全没了，反复解释自己是谁、想要什么，效率直接",
+      "start": 6.2,
+      "end": 16.41
+    },
+    {
+      "role": "",
+      "content": "EverOS 的定位是「一个可移植的记忆层」，主打本地优先、Markdown 原生、用户自有，数据归",
+      "start": 16.41,
+      "end": 28.41
+    },
+    {
+      "role": "",
+      "content": "技术栈用的是 Python，安装支持 pip 和 uv 两种方式，README 给了 5 个可直接跑",
+      "start": 28.41,
+      "end": 41.22
+    },
+    {
+      "role": "",
+      "content": "目前仓库已经积了 20 个 Issue、74 个 Open Issue，说明项目还在快速迭代，作者观",
+      "start": 41.22,
+      "end": 54.23
+    },
+    {
+      "role": "",
+      "content": "你觉得 AI Agent 该不该有自己的记忆层？评论区聊聊，觉得有用点个关注。",
+      "start": 54.23,
+      "end": 61.43
+    }
+  ],
+  "slots": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "end": 3.84,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "out"
+    },
+    {
+      "index": 1,
+      "start": 3.84,
+      "end": 7.68,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "pantop"
+    },
+    {
+      "index": 2,
+      "start": 7.68,
+      "end": 11.52,
+      "duration": 3.84,
+      "type": "textcard",
+      "main_text": "5 个"
+    },
+    {
+      "index": 3,
+      "start": 11.52,
+      "end": 15.36,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "panbottom"
+    },
+    {
+      "index": 4,
+      "start": 15.36,
+      "end": 19.2,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "in"
+    },
+    {
+      "index": 5,
+      "start": 19.2,
+      "end": 23.04,
+      "duration": 3.84,
+      "type": "textcard",
+      "main_text": "20 个 "
+    },
+    {
+      "index": 6,
+      "start": 23.04,
+      "end": 26.87,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "out"
+    },
+    {
+      "index": 7,
+      "start": 26.87,
+      "end": 30.71,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "pantop"
+    },
+    {
+      "index": 8,
+      "start": 30.71,
+      "end": 34.55,
+      "duration": 3.84,
+      "type": "textcard",
+      "main_text": "74 个 "
+    },
+    {
+      "index": 9,
+      "start": 34.55,
+      "end": 38.39,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "panbottom"
+    },
+    {
+      "index": 10,
+      "start": 38.39,
+      "end": 42.23,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "in"
+    },
+    {
+      "index": 11,
+      "start": 42.23,
+      "end": 46.07,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "out"
+    },
+    {
+      "index": 12,
+      "start": 46.07,
+      "end": 49.91,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "pantop"
+    },
+    {
+      "index": 13,
+      "start": 49.91,
+      "end": 53.75,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "panbottom"
+    },
+    {
+      "index": 14,
+      "start": 53.75,
+      "end": 57.59,
+      "duration": 3.84,
+      "type": "image",
+      "path": "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg",
+      "motion": "in"
+    },
+    {
+      "index": 15,
+      "start": 57.59,
+      "end": 61.43,
+      "duration": 3.84,
+      "type": "textcard",
+      "main_text": "EverOS"
+    }
+  ],
+  "image_pool": [
+    "C:\\Users\\Administrator\\Documents\\code-news\\research\\dsh-std-video-analysis\\dsh-video-prod\\enhanced\\imgs\\2026-08-26-DSH-EverMind-AI-Eve_01.jpg"
+  ],
+  "broll_pool": []
+}

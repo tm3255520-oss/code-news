@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt --break-system-packages 2>$null || echo "requirements.txt not found, skipping"
+          pip install pyyaml --break-system-packages
+
+      - name: Verify tool registry
+        run: python scripts/tool_inventory.py --verify-registry
+
+      - name: Verify config integrity
+        run: python scripts/check_config_integrity.py
+
+      - name: Run syntax check on Python files
+        run: |
+          $files = Get-ChildItem -Recurse -Filter *.py -Path scripts
+          foreach ($f in $files) {
+            python -m py_compile $f.FullName
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+          }
+
+      - name: Check JSON files valid
+        run: |
+          $files = Get-ChildItem -Recurse -Filter *.json -Path config
+          foreach ($f in $files) {
+            $content = Get-Content $f.FullName -Raw
+            $json = $content | ConvertFrom-Json
+            if (-not $json) { exit 1 }
+          }

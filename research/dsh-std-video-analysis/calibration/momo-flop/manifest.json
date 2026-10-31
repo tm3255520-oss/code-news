@@ -1,0 +1,29 @@
+{
+ "generated_at": "2026-08-25T19:56:52.839903",
+ "steps": {
+  "meta": {
+   "ok": true,
+   "platform": "bilibili"
+  },
+  "download": {
+   "ok": true,
+   "error": ""
+  },
+  "audio": {
+   "ok": true,
+   "error": ""
+  },
+  "frames": {
+   "ok": true,
+   "error": ""
+  },
+  "ocr": {
+   "ok": true,
+   "error": ""
+  },
+  "transcript": {
+   "ok": true,
+   "error": ""
+  }
+ }
+}

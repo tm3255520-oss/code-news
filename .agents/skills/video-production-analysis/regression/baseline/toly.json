@@ -1,0 +1,607 @@
+{
+  "source": "C:\\Users\\Administrator\\Documents\\code-news\\.tmp\\toly\\video.mp4",
+  "A_technical": {
+    "duration_s": 53.29,
+    "total_bitrate_kbps": 964,
+    "container": "mov,mp4,m4a,3gp,3g2,mj2",
+    "tags": {},
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0,
+    "video_codec": "h264",
+    "video_bitrate_kbps": 827,
+    "aspect": "horizontal",
+    "audio_codec": "aac",
+    "audio_sample_rate": "44100",
+    "audio_channels": 2,
+    "audio_bitrate_kbps": 128
+  },
+  "B_shots": {
+    "video_class": "动态素材型",
+    "scene_metric": "自适应阈值法（动态素材型：实拍/录屏/混剪；阈值下限 0.35）",
+    "counts_by_criteria": {
+      "adaptive": 23
+    },
+    "scene_count_range": [
+      23,
+      23
+    ],
+    "cut_count": 23,
+    "cut_times": [
+      1.7,
+      2.2,
+      4.87,
+      5.63,
+      9.53,
+      12.63,
+      15.63,
+      18.23,
+      21.13,
+      21.87,
+      23.77,
+      25.5,
+      27.53,
+      29.5,
+      31.73,
+      34.2,
+      38.47,
+      39.6,
+      40.17,
+      44.2,
+      45.13,
+      47.47,
+      52.53
+    ],
+    "hard_cut_count": 0,
+    "fade_count": 0,
+    "event_detail": [
+      {
+        "t": 1.7,
+        "peak": 139.68,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 2.2,
+        "peak": 162.51,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 4.87,
+        "peak": 86.7,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 5.63,
+        "peak": 110.12,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 9.53,
+        "peak": 88.48,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 12.63,
+        "peak": 99.11,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 15.63,
+        "peak": 122.29,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 18.23,
+        "peak": 40.84,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 21.13,
+        "peak": 134.13,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 21.87,
+        "peak": 35.37,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 23.77,
+        "peak": 99.58,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 25.5,
+        "peak": 133.59,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 27.53,
+        "peak": 45.74,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 29.5,
+        "peak": 48.82,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 31.73,
+        "peak": 53.77,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 34.2,
+        "peak": 29.85,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 38.47,
+        "peak": 60.29,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 39.6,
+        "peak": 176.02,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 40.17,
+        "peak": 153.42,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 44.2,
+        "peak": 62.83,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 45.13,
+        "peak": 76.26,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 47.47,
+        "peak": 104.59,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      },
+      {
+        "t": 52.53,
+        "peak": 85.05,
+        "area_ratio": null,
+        "width_frames": null,
+        "kind": "变点"
+      }
+    ],
+    "card_count": 24,
+    "shot_durations": [
+      1.7,
+      0.5,
+      2.67,
+      0.76,
+      3.9,
+      3.1,
+      3.0,
+      2.6,
+      2.9,
+      0.74,
+      1.9,
+      1.73,
+      2.03,
+      1.97,
+      2.23,
+      2.47,
+      4.27,
+      1.13,
+      0.57,
+      4.03,
+      0.93,
+      2.34,
+      5.06,
+      0.74
+    ],
+    "shots": 24,
+    "mean_shot_s": 2.22,
+    "median_shot_s": 2.13,
+    "min_shot_s": 0.5,
+    "max_shot_s": 5.06,
+    "short_shots_lt2s": 11,
+    "static_shot_ratio": 0.859,
+    "mean_frame_diff": 3.104,
+    "threshold": 1.5
+  },
+  "form": {
+    "verdict": "图文动效/幻灯片（画面几乎静止）",
+    "bits_per_pixel_per_frame": 0.01329,
+    "basis": [
+      "每像素每帧码率 0.0133 极低",
+      "静止镜头占比 86%"
+    ]
+  },
+  "C_transcript": {
+    "model": "large-v3-turbo",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 2.64,
+        "text": "一分钟就能自动展出一份高主要的PPT"
+      },
+      {
+        "start": 2.64,
+        "end": 4.64,
+        "text": "最近疯狂学习ChatGPT的我"
+      },
+      {
+        "start": 4.64,
+        "end": 5.6,
+        "text": "有被惊艳到"
+      },
+      {
+        "start": 5.6,
+        "end": 7.76,
+        "text": "真的超级适合大学生做课堂展示"
+      },
+      {
+        "start": 7.76,
+        "end": 9.52,
+        "text": "只想能做行业调研 做汇报"
+      },
+      {
+        "start": 9.52,
+        "end": 10.64,
+        "text": "学到就是赚到"
+      },
+      {
+        "start": 10.64,
+        "end": 12.64,
+        "text": "剩下的时间的牧民不像"
+      },
+      {
+        "start": 12.64,
+        "end": 15.68,
+        "text": "我们以大学课堂私修课要做的课堂展示为例"
+      },
+      {
+        "start": 15.68,
+        "end": 18.24,
+        "text": "首先我们打开ChatGPT输入这段话术"
+      },
+      {
+        "start": 18.24,
+        "end": 21.12,
+        "text": "具体的要求你还可以根据实际情况进行调整"
+      },
+      {
+        "start": 21.12,
+        "end": 23.84,
+        "text": "这样它就会输出Markdown原代码格式"
+      },
+      {
+        "start": 23.84,
+        "end": 25.52,
+        "text": "点击CopyCut复制"
+      },
+      {
+        "start": 25.52,
+        "end": 27.44,
+        "text": "相对到另一个AI Mind the Show里"
+      },
+      {
+        "start": 27.44,
+        "end": 30.64,
+        "text": "这样一份大学生如何进行时间管理的30页PPT"
+      },
+      {
+        "start": 30.64,
+        "end": 31.84,
+        "text": "就自动生成了"
+      },
+      {
+        "start": 31.84,
+        "end": 35.2,
+        "text": "而且右边的区域还可以随意更换样式和进一步调整"
+      },
+      {
+        "start": 35.2,
+        "end": 37.04,
+        "text": "每一页也可以调整样式"
+      },
+      {
+        "start": 37.04,
+        "end": 38.48,
+        "text": "微调一下就可以导出"
+      },
+      {
+        "start": 38.48,
+        "end": 40.16,
+        "text": "直接拿到课堂上展示了"
+      },
+      {
+        "start": 40.16,
+        "end": 41.2,
+        "text": "对于职场人来说"
+      },
+      {
+        "start": 41.2,
+        "end": 42.44,
+        "text": "专业性要求更高"
+      },
+      {
+        "start": 42.44,
+        "end": 44.24,
+        "text": "你可以直接让ChatGPT角色扮演"
+      },
+      {
+        "start": 44.24,
+        "end": 45.2,
+        "text": "输入这段话术"
+      },
+      {
+        "start": 45.2,
+        "end": 47.2,
+        "text": "一套新人培训的PPT就出来了"
+      },
+      {
+        "start": 47.2,
+        "end": 48.56,
+        "text": "当然还有很多衍生玩法"
+      },
+      {
+        "start": 48.56,
+        "end": 50.32,
+        "text": "但是本质上有了这两个工具"
+      },
+      {
+        "start": 50.32,
+        "end": 52.56,
+        "text": "你就可以无限的快速的生成PPT"
+      },
+      {
+        "start": 52.56,
+        "end": 53.28,
+        "text": "效率爆表"
+      }
+    ],
+    "segment_count": 28,
+    "full_text": "一分钟就能自动展出一份高主要的PPT最近疯狂学习ChatGPT的我有被惊艳到真的超级适合大学生做课堂展示只想能做行业调研 做汇报学到就是赚到剩下的时间的牧民不像我们以大学课堂私修课要做的课堂展示为例首先我们打开ChatGPT输入这段话术具体的要求你还可以根据实际情况进行调整这样它就会输出Markdown原代码格式点击CopyCut复制相对到另一个AI Mind the Show里这样一份大学生如何进行时间管理的30页PPT就自动生成了而且右边的区域还可以随意更换样式和进一步调整每一页也可以调整样式微调一下就可以导出直接拿到课堂上展示了对于职场人来说专业性要求更高你可以直接让ChatGPT角色扮演输入这段话术一套新人培训的PPT就出来了当然还有很多衍生玩法但是本质上有了这两个工具你就可以无限的快速的生成PPT效率爆表",
+    "wav": "C:\\Users\\Administrator\\Documents\\code-news\\.tmp\\toly\\audio.wav",
+    "untrusted_guard": "ok",
+    "untrusted_hits": []
+  },
+  "D_coupling": {
+    "aligned_cuts": 19,
+    "total_cuts": 23,
+    "cut_coverage": 0.826,
+    "median_deviation_s": 0.07,
+    "max_deviation_s": 1.14,
+    "segments_with_a_cut": 18,
+    "total_segments": 28,
+    "tolerance_s": 0.6,
+    "cut_sample": 23,
+    "min_cuts_required": 8,
+    "min_cuts_weak": 5,
+    "sample_confidence": "high",
+    "inferred_production_order": "配音先行：画面切点按语音句首排布"
+  },
+  "E_voice": {
+    "pause_count_ge_0.25s": 0,
+    "rms_db_p10": -21.1,
+    "rms_db_p50": -18.9,
+    "rms_db_p90": -16.8,
+    "dynamic_range_db": 4.3,
+    "speech_density": 1.0,
+    "verdict": "强推断 TTS：全程无换气停顿",
+    "caveat": "只能判停顿规律，不能判音色；需人工听一次确认"
+  },
+  "H_loudness": {
+    "integrated_lufs": -15.29,
+    "true_peak_dbtp": 0.85,
+    "lra_lu": 2.7,
+    "true_peak_ok": false,
+    "verdict": "真峰值越界（标准 ≤ -1.0 dBTP），导出前需过限幅",
+    "measured_on": "原视频音轨（非转码后的 wav）",
+    "note": "参考基准：整体响度约 -14 LUFS、真峰值 ≤ -1.0 dBTP"
+  },
+  "F_palette": {
+    "dominant_colors": [
+      {
+        "hex": "#F9F8F6",
+        "share": 0.343
+      },
+      {
+        "hex": "#020101",
+        "share": 0.232
+      },
+      {
+        "hex": "#90939F",
+        "share": 0.171
+      },
+      {
+        "hex": "#756566",
+        "share": 0.142
+      },
+      {
+        "hex": "#3A363C",
+        "share": 0.112
+      }
+    ],
+    "dark_pixel_ratio": 0.306,
+    "scheme": "亮色系"
+  },
+  "F2_layout": {
+    "ocr_frames": 22,
+    "sampled_every_s": 2.5,
+    "block_count": 356,
+    "text_lines": 103,
+    "y_bands": [
+      {
+        "band": "5–10%",
+        "blocks": 12
+      },
+      {
+        "band": "10–15%",
+        "blocks": 13
+      },
+      {
+        "band": "15–20%",
+        "blocks": 11
+      },
+      {
+        "band": "20–25%",
+        "blocks": 30
+      },
+      {
+        "band": "25–30%",
+        "blocks": 17
+      },
+      {
+        "band": "30–35%",
+        "blocks": 22
+      },
+      {
+        "band": "35–40%",
+        "blocks": 26
+      },
+      {
+        "band": "40–45%",
+        "blocks": 28
+      },
+      {
+        "band": "45–50%",
+        "blocks": 22
+      },
+      {
+        "band": "50–55%",
+        "blocks": 19
+      },
+      {
+        "band": "55–60%",
+        "blocks": 21
+      },
+      {
+        "band": "60–65%",
+        "blocks": 21
+      },
+      {
+        "band": "65–70%",
+        "blocks": 18
+      },
+      {
+        "band": "70–75%",
+        "blocks": 18
+      },
+      {
+        "band": "75–80%",
+        "blocks": 16
+      },
+      {
+        "band": "80–85%",
+        "blocks": 13
+      },
+      {
+        "band": "85–90%",
+        "blocks": 8
+      },
+      {
+        "band": "90–95%",
+        "blocks": 40
+      },
+      {
+        "band": "95–100%",
+        "blocks": 1
+      }
+    ],
+    "y_dense_bands": [
+      {
+        "band": "90–95%",
+        "blocks": 40
+      }
+    ],
+    "y_bands_note": "各卡版式不同时 y 分布准连续，全局槽位不存在；这里给占用直方图与密集带，不做聚类",
+    "type_tiers_px": [
+      {
+        "h_px": 81.1,
+        "blocks": 43,
+        "range": [
+          69,
+          96
+        ]
+      },
+      {
+        "h_px": 20.1,
+        "blocks": 311,
+        "range": [
+          2,
+          47
+        ]
+      }
+    ],
+    "type_tiers_ungrouped": 2,
+    "centered_ratio": 0.058,
+    "centered_scope": "内容区（y 20–80%）按行判定；并排块算一行",
+    "layout_verdict": "多框/多栏版式（非单栏居中）",
+    "note": "槽位=文字块中心的 y 百分比聚类（间隔 2.5%）；字号档=块高像素聚类（间隔 12px）。颜色『语义』（工具/系统/收益）属判断，脚本只给强调色清单，标注留给报告作者。",
+    "accent_color": {
+      "hex": "#8B5443",
+      "frames_with_accent": 20,
+      "accent_pixel_ratio_median": 0.0342,
+      "verdict": "偏高（>3%）：颜色可能铺面积，注意是否失去强调作用"
+    }
+  },
+  "G_provenance": {
+    "boxes_found": [
+      "xmp",
+      "Lavf",
+      "isom",
+      "avc1"
+    ],
+    "has_c2pa": false,
+    "has_xmp": true,
+    "note": "未发现 C2PA/XMP 溯源信息；平台交付件通常已被转码洗掉原元数据，不能据此反推创作者工具",
+    "scan_bytes": 4194304
+  }
+}

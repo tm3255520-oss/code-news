@@ -1,0 +1,19 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Microsoft YaHei,76,&H00FFFFFF,&H000000FF,&H00000000,&H96000000,-1,0,0,0,100,100,0,0,1,3,2,2,60,60,140,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+
+Dialogue: 0,00:00:00.000,00:00:10.841,Default,,0,0,0,,一个上线不到一年的项目，\NGitHub已经拿到一万两千多\N颗星、九百多个Fork。它解\N决的，是AIAgent最大的短\N板——记不住你。
+Dialogue: 0,00:00:11.241,00:00:21.324,Default,,0,0,0,,用过AI助手的人都有体会：\N换个工具、换个会话，上下文\N全没了，反复解释自己是谁、\N想要什么，效率直接腰斩。
+Dialogue: 0,00:00:21.724,00:00:32.094,Default,,0,0,0,,EverOS的定位是「一个可移\N植的记忆层」，主打本地优先\N、Markdown原生、用户自有\N，数据归你管，不被任何平台\N锁死。
+Dialogue: 0,00:00:32.494,00:00:43.832,Default,,0,0,0,,技术栈用的是Python，安装\N支持pip和uv两种方式，\NREADME给了{\c&H00D4FF&\1c&H00D4FF&}5个{\c&HFFFFFF&\1c&HFFFFFF&}可直接跑的\Ndemo命令，对新手很友好，\N上手门槛不高。
+Dialogue: 0,00:00:44.232,00:00:55.125,Default,,0,0,0,,目前仓库已经积了{\c&H00D4FF&\1c&H00D4FF&}20个{\c&HFFFFFF&\1c&HFFFFFF&}\NIssue、{\c&H00D4FF&\1c&H00D4FF&}74个{\c&HFFFFFF&\1c&HFFFFFF&}OpenIssue，\N说明项目还在快速迭代，作者\N观点是：想押注可以先跑\Ndemo验证，别盲跟。
+Dialogue: 0,00:00:55.525,00:01:01.428,Default,,0,0,0,,你觉得AIAgent该不该有自\N己的记忆层？评论区聊聊，觉\N得有用点个关注。

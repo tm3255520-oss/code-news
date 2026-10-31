@@ -1,0 +1,101 @@
+{
+  "video": {
+    "title": "信息单元测试",
+    "platform": "视频号",
+    "core_message": "验证列表单元可渲染",
+    "density": "讲清楚型：每镜一个信息点",
+    "tone": "冷静直给，像同事在工位旁讲解",
+    "series": "内部测试",
+    "episode": "UNIT TEST",
+    "breadcrumb": "列表单元",
+    "style": "grid-dark"
+  },
+  "voice": "yunjian",
+  "lines": [
+    "这一步用来验证列表单元能不能正常渲染。",
+    "三项会依次找位落定，画面全程有一条缓慢漂移。",
+    "如果三项都出现了，说明配方卡移植成功。"
+  ],
+  "beats": [
+    {"name": "起头", "role": "说明这是测试", "scene_from": 1, "scene_to": 1},
+    {"name": "正文", "role": "展示列表单元", "scene_from": 2, "scene_to": 2},
+    {"name": "收尾", "role": "确认结果", "scene_from": 3, "scene_to": 3}
+  ],
+  "scenes": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 1,
+      "role": "起头",
+      "type": "A",
+      "narration": "这一步用来验证列表单元能不能正常渲染。",
+      "screen": {
+        "title": "列表单元测试",
+        "kicker": "UNIT TEST",
+        "blocks": [{"label": "目标", "text": "验证 list 单元"}]
+      },
+      "content_expect": "观众知道这是一次单元级验证，不是成片",
+      "effect_expect": "建立预期，知道接下来要看什么",
+      "visual": "标题左对齐，下方一个说明卡片",
+      "motion": "FLOATS 标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 2,
+      "role": "展示列表单元",
+      "type": "A",
+      "narration": "三项会依次找位落定，画面全程有一条缓慢漂移。",
+      "screen": {
+        "title": "逐项找位",
+        "kicker": "列表单元 / list",
+        "units": [
+          {
+            "type": "list",
+            "numbered": true,
+            "drift": true,
+            "items": [
+              "素材采集：挑反复出现的观点",
+              "框架建模：整理成一条推理链",
+              "封装技能：一句话即可触发"
+            ],
+            "note": "逐项入场与整体漂移是两层不相干的运动"
+          }
+        ]
+      },
+      "content_expect": "让观众看到三项按固定节拍依次落位，且画面在项与项之间没有钉死",
+      "effect_expect": "读得清每一项，同时感觉画面一直是活的",
+      "visual": "三行列表，每行有等宽序号与荧光绿方块，容器整体缓慢上移",
+      "motion": "FLOATS 标题",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 3,
+      "role": "收尾",
+      "type": "A",
+      "narration": "如果三项都出现了，说明配方卡移植成功。",
+      "screen": {
+        "title": "移植成功",
+        "kicker": "结果",
+        "blocks": [{"label": "结论", "text": "list 单元可进产线"}]
+      },
+      "content_expect": "给出这次测试的结论",
+      "effect_expect": "确认单元可用，可以进入下一张卡",
+      "visual": "标题左对齐，下方结论卡片",
+      "motion": "SLAMS 标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "FADES 到黑",
+      "assets": []
+    }
+  ]
+}

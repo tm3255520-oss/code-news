@@ -1,7 +1,16 @@
 .tmp/
 node_modules/
+.firecrawl/
 
-.agents/
+# 自研技能默认可被忽略，只放行已入库（git 管理）的技能目录
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/video-production-analysis/
+!.agents/skills/knowledge-video-storyboard/
+!.agents/skills/viral-video-breakdown/
+!.agents/skills/viral-video-replicate/
+!.agents/skills/vault-sync/
 
 __pycache__/
 *.py[cod]
@@ -13,3 +22,10 @@ venv/
 
 @AutomationLog.txt
 gcm-diagnose.log
+
+# viral-video-breakdown 研究产出二进制（不入库）
+research/dsh-std-video-analysis/**/*.mp4
+research/dsh-std-video-analysis/**/*.wav
+research/dsh-std-video-analysis/**/*.m4s
+research/dsh-std-video-analysis/**/*.jpg
+research/dsh-std-video-analysis/**/*.png

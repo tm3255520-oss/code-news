@@ -1,0 +1,187 @@
+{
+  "video": {
+    "title": "把名人的思维，装进 AI",
+    "platform": "视频号",
+    "core_message": "把判断方式变成可调用技能",
+    "density": "讲清楚型：每镜一个信息点，不堆名词",
+    "tone": "冷静、给证据，不说教；像在工位旁讲一个新发现，不要惊叹号堆砌",
+    "series": "AI 工作流",
+    "episode": "SERIES 002",
+    "breadcrumb": "Skill 蒸馏",
+    "style": "grid-dark",
+    "notes": "本模板固定 4:3（1440x1080），与视频号竖屏不一致，本期按 4:3 出片。素材来源：vault 知识库/归档/outputs-legacy 两篇成稿，事实部分经 GitHub/skills.sh 复核。"
+  },
+  "voice": "yunjian",
+  "lines": [
+    "如果 AI 能用乔布斯的思路，看产品，用芒格的模型，判断风险，会是什么样？",
+    "这不是抄语录，而是把一个人做判断的方式，拆成机器能调用的结构。",
+    "第一步是素材采集，从他的传记、演讲和访谈里，挑出反复出现的观点。",
+    "第二步是框架建模，把散落的观点，整理成一条可复用的推理链。",
+    "第三步是封装成技能，你只要说一句，用它看这个产品，AI 就按这套逻辑回答。",
+    "这类项目已经真实存在，光一个作者，就开源了十几个人物视角技能。",
+    "但真正的问题不是能不能调用，而是当所有思维都能被调用，你自己那一套是什么。"
+  ],
+  "beats": [
+    {"name": "钩子", "role": "用一句反问把概念立起来", "scene_from": 1, "scene_to": 1},
+    {"name": "澄清", "role": "划清「抄语录」与「抄判断方式」的界线", "scene_from": 2, "scene_to": 2},
+    {"name": "方法", "role": "三步拆解蒸馏流程", "scene_from": 3, "scene_to": 5},
+    {"name": "证据", "role": "证明这不是设想", "scene_from": 6, "scene_to": 6},
+    {"name": "追问", "role": "把话题交回观众自己", "scene_from": 7, "scene_to": 7}
+  ],
+  "scenes": [
+    {
+      "id": 1,
+      "from": 1,
+      "to": 1,
+      "role": "封面钩子",
+      "type": "A",
+      "narration": "如果 AI 能用乔布斯的思路，看产品，用芒格的模型，判断风险，会是什么样？",
+      "screen": {
+        "title": "把名人的思维\n装进 AI",
+        "kicker": "Skill 蒸馏 / 01",
+        "blocks": [{"label": "问题", "text": "借用别人的判断方式"}]
+      },
+      "content_expect": "观众立刻知道这条视频在讲把人物思维做成 AI 技能这件事",
+      "effect_expect": "产生好奇并愿意听下去",
+      "visual": "深色网格画布，大标题两行左对齐，下方一个荧光绿描边卡片点出问题",
+      "motion": "SLAMS 标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 2,
+      "from": 2,
+      "to": 2,
+      "role": "澄清误解",
+      "type": "A",
+      "narration": "这不是抄语录，而是把一个人做判断的方式，拆成机器能调用的结构。",
+      "screen": {
+        "title": "不是抄语录",
+        "kicker": "区别在哪",
+        "subtitle": "抄观点，不等于抄判断方式",
+        "blocks": [
+          {"label": "前者", "text": "记住他说过什么"},
+          {"label": "后者", "text": "复用他怎么想"}
+        ]
+      },
+      "content_expect": "让观众分清「记观点」和「复现判断过程」是两件不同的事",
+      "effect_expect": "意识到自己以前理解错了这件事",
+      "visual": "标题左对齐，下方两张并排卡片分别写「前者」与「后者」，形成对照",
+      "motion": "FLOATS 标题 → STAGGER 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 3,
+      "from": 3,
+      "to": 3,
+      "role": "方法第一步",
+      "type": "A",
+      "narration": "第一步是素材采集，从他的传记、演讲和访谈里，挑出反复出现的观点。",
+      "screen": {
+        "title": "第一步 · 素材采集",
+        "kicker": "从人到资料",
+        "subtitle": "挑反复出现的观点，不是挑金句",
+        "blocks": [{"label": "来源", "text": "传记 · 演讲 · 访谈"}]
+      },
+      "content_expect": "说明素材来源是长期一手资料，判断标准是「反复出现」而不是「听起来漂亮」",
+      "effect_expect": "理解为什么这一步不能靠搜索几句名言糊弄",
+      "visual": "标题逐字打出，下方副标题点明筛选标准，再浮入来源卡片",
+      "motion": "TYPES 标题 → FLOATS 副标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 4,
+      "from": 4,
+      "to": 4,
+      "role": "方法第二步",
+      "type": "A",
+      "narration": "第二步是框架建模，把散落的观点，整理成一条可复用的推理链。",
+      "screen": {
+        "title": "第二步 · 框架建模",
+        "kicker": "从资料到方法",
+        "blocks": [{"label": "例", "text": "第一性原理 = 拆解 → 重构 → 验证"}]
+      },
+      "content_expect": "说明要把散点整理成有先后顺序的推理链，并给出一个具体例子",
+      "effect_expect": "能自己举出一个「把观点变成步骤」的例子",
+      "visual": "标题从左侧滑入，下方卡片给出一个三步公式作为示范",
+      "motion": "SLIDES 标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 5,
+      "from": 5,
+      "to": 5,
+      "role": "方法第三步",
+      "type": "A",
+      "narration": "第三步是封装成技能，你只要说一句，用它看这个产品，AI 就按这套逻辑回答。",
+      "screen": {
+        "title": "第三步 · 封装成技能",
+        "kicker": "从方法到调用",
+        "subtitle": "一句话触发，不必懂内部结构",
+        "blocks": [{"label": "调用", "text": "用它看这个产品"}]
+      },
+      "content_expect": "说明封装后的调用门槛极低，使用者不需要理解内部推理链",
+      "effect_expect": "理解「技能」这个词在这里指代什么",
+      "visual": "标题左对齐，副标题点明调用门槛，卡片给出实际调用语句",
+      "motion": "FLOATS 标题 → CASCADE 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 6,
+      "from": 6,
+      "to": 6,
+      "role": "给出证据",
+      "type": "A",
+      "narration": "这类项目已经真实存在，光一个作者，就开源了十几个人物视角技能。",
+      "screen": {
+        "title": "已经真实存在",
+        "kicker": "不是设想",
+        "subtitle": "单个技能安装量从几千到上万",
+        "blocks": [{"label": "已核实", "text": "十几个人物视角，同一作者开源"}]
+      },
+      "content_expect": "用可查证的安装量证明这类技能已经有人在做、有人在用",
+      "effect_expect": "确认这不是概念炒作，而是已经发生的事情",
+      "visual": "标题左对齐，副标题给量级，卡片说明这些技能已开源可查",
+      "motion": "FLOATS 标题 → FLOATS 副标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "硬切",
+      "assets": []
+    },
+    {
+      "id": 7,
+      "from": 7,
+      "to": 7,
+      "role": "追问收尾",
+      "type": "A",
+      "narration": "但真正的问题不是能不能调用，而是当所有思维都能被调用，你自己那一套是什么。",
+      "screen": {
+        "title": "你自己的\n思维框架是什么",
+        "kicker": "下一站",
+        "blocks": [{"label": "留给你", "text": "借用不是终点，构建才是"}]
+      },
+      "content_expect": "把话题从「怎么用别人的思维」转成「你自己的判断方式是什么」",
+      "effect_expect": "停下来想一秒自己的答案，而不是立刻划走",
+      "visual": "标题两行、字号最大形成收束冲击，下方卡片留一句给观众的话",
+      "motion": "RISES 标题 → FLOATS 卡片",
+      "sfx": "无",
+      "transition_in": "硬切",
+      "transition_out": "FADES 到黑",
+      "assets": []
+    }
+  ]
+}

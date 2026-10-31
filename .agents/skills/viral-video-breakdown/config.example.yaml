@@ -1,0 +1,36 @@
+# viral-video-breakdown 配置示例 —— 复制为 config.yaml 后按环境修改
+# 原则：技能不硬编码业务常量，全部外置配置（skill-design 铁律 #6）
+
+paths:
+  ffmpeg: ffmpeg            # ffmpeg 可执行文件（在 PATH 或绝对路径）
+  tesseract: tesseract      # tesseract 可执行文件
+  tessdata_prefix: null     # chi_sim.traineddata 所在目录；null=系统默认
+
+whisper:
+  model_name: large-v3-turbo   # 生产按 video-pipeline 铁律用 large-v3-turbo；沙箱可降级 base
+  model_dir: null              # faster-whisper 本地模型目录；null=自动下载/缓存
+  device: cpu
+  compute_type: int8
+
+extraction:
+  frame_interval: 3            # 抽帧间隔（秒）
+  frame_width: 640             # 抽帧宽度
+  transcript_language: zh
+  user_agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
+
+# B站候选池采集器（collect_bili_candidates.py）
+bili:
+  keywords:                    # DSH 赛道关键词池（自动采集时循环搜索）
+    - "deepseek harness"
+    - "dsh 插件"
+    - "dsh-std"
+    - "DeepSeek Harness 插件"
+    - "deepseek harness 教程"
+  seed_author_mids: [12890453] # 种子作者 mid（如 程序员鱼皮）；自动发现会扩充
+  top_authors_to_scan: 5       # 枚举前 N 个高量作者的视频空间（补中位数+DSH视频）
+  search_pages: 2              # 每关键词搜索页数
+  request_interval_s: 2.5      # 请求间隔（秒），防 412 风控
+  min_play: 2000               # 候选初筛播放下限
+  min_fav_rate: 0.02           # 收藏率下限（资料价值代理指标）
+  max_authors: 30              # 自动发现作者数上限
+  max_candidates: 80           # 输出候选数上限

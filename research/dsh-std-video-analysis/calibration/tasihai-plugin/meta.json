@@ -1,0 +1,20 @@
+{
+ "platform": "bilibili",
+ "url": "https://www.bilibili.com/video/BV16u8h6aE17",
+ "bvid": "BV16u8h6aE17",
+ "cid": 41194884253,
+ "title": "做了个插件，把AI对话侧边栏变成视觉地图【DSH插件】",
+ "description": "我觉得目前 Agent 的侧边栏对话列表设计，非常反人类。\n\n会话一多，找起来就很麻烦，得一条条翻；而且对话之间也无法联动。\n\n所以我做了个插件，把它摊成一张地图。对话变卡片铺在画布上，能分组、能上色、能连线。还支持管道推送，让不同的对话之间产生关联。已开源：https://github.com/Tasihi89/dsh-talk-map",
+ "author": "塔斯海Tasihi",
+ "author_uid": 385097689,
+ "duration_s": 293,
+ "publish_time": 1787496398,
+ "play_count": 8585,
+ "comment_count": 55,
+ "digg_count": 171,
+ "favorite_count": 448,
+ "coin_count": 43,
+ "share_count": 43,
+ "danmaku_count": 6,
+ "poster_url": "http://i0.hdslb.com/bfs/archive/c4a1d32bbab1ae67e6eabc152a41ec07b72e69b0.jpg"
+}

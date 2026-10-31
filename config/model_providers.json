@@ -1,0 +1,705 @@
+{
+  "agents": {
+    "claude_cli": {
+      "name": "Claude Code CLI",
+      "config": "C:/Users/Administrator/.claude/settings.json",
+      "launcher": [
+        "C:/Users/Administrator/.claude/launch-claude.cmd",
+        "C:/Users/Administrator/.claude/launch-claude.ps1"
+      ],
+      "wire": "anthropic",
+      "provider": "bailian",
+      "base_url": "https://dashscope.aliyuncs.com/apps/anthropic",
+      "key_env": "BAILIAN_API_KEY",
+      "model_map": {
+        "ANTHROPIC_MODEL": "qwen3-coder-plus",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "qwen3-max",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3-coder-plus",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qwen3.5-plus",
+        "CLAUDE_CODE_SUBAGENT_MODEL": "qwen3.5-plus",
+        "ANTHROPIC_DEFAULT_MODEL": "qwen3-coder-plus",
+        "ANTHROPIC_MODEL_38_MAX": "qwen3.8-max",
+        "ANTHROPIC_MODEL_DEEPSEEK_PRO": "deepseek-v4-pro"
+      },
+      "note": "2026-08-30 确认：以百炼 Bailian + qwen3-coder-plus 为准；token 由启动器把 BAILIAN_API_KEY 映射为 ANTHROPIC_AUTH_TOKEN，配置内不落明文。"
+    }
+  },
+  "providers": {
+    "nvidia": {
+      "key_env": "NVIDIA_API_KEY_A",
+      "endpoints": {
+        "openai-completions": "https://integrate.api.nvidia.com/v1",
+        "images": "https://ai.api.nvidia.com/v1/genai/{model}"
+      },
+      "models": {
+        "adept/fuyu-8b": {
+          "roles": [
+            "general"
+          ]
+        },
+        "black-forest-labs/flux.2-klein-4b": {
+          "roles": [
+            "image_gen"
+          ],
+          "key_env": "NVIDIA_API_KEY_FLUX"
+        },
+        "deepseek-ai/deepseek-v4.1-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "google/diffusiongemma-26b-a4b-it": {
+          "roles": [
+            "general"
+          ]
+        },
+        "ibm/granite-34b-code-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "meta/codellama-70b": {
+          "roles": [
+            "general"
+          ]
+        },
+        "meta/llama-3.2-11b-vision-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "meta/llama-3.2-90b-vision-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "meta/muse-glimmer-30b": {
+          "roles": [
+            "general"
+          ]
+        },
+        "microsoft/phi-3-vision-128k-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "mistralai/codestral-22b-instruct-v0.1": {
+          "roles": [
+            "general"
+          ]
+        },
+        "moonshotai/kimi-k2.6": {
+          "roles": [
+            "general"
+          ]
+        },
+        "moonshotai/kimi-k3": {
+          "roles": [
+            "reasoning",
+            "general",
+            "vision"
+          ]
+        },
+        "nvidia/llama-3.1-nemotron-51b-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/llama-3.1-nemotron-70b-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/llama-3.1-nemotron-safety-guard-8b-v3": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/llama-3.1-nemotron-ultra-253b-v1": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/llama-nemotron-embed-vl-1b-v2": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/nemotron-3-embed-1b": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
+          "roles": [
+            "vision"
+          ]
+        },
+        "nvidia/nemotron-3-super-120b-a12b": {
+          "roles": [
+            "reasoning"
+          ]
+        },
+        "nvidia/nemotron-3-ultra-550b-a55b": {
+          "roles": [
+            "reasoning",
+            "premium"
+          ]
+        },
+        "nvidia/nemotron-3.5-content-safety": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/nemotron-3.5-lightning-30b-a3b": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/nemotron-parse-2.0": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/riva-translate-4b-instruct": {
+          "roles": [
+            "general"
+          ]
+        },
+        "nvidia/riva-translate-4b-instruct-v2": {
+          "roles": [
+            "general"
+          ]
+        },
+        "openai/gpt-oss-20b": {
+          "roles": [
+            "fast",
+            "summarization"
+          ]
+        },
+        "poolside/laguna-xs-2.1": {
+          "roles": [
+            "general"
+          ]
+        },
+        "z-ai/glm-5.3": {
+          "roles": [
+            "general"
+          ]
+        },
+        "z-ai/glm-5.3-flash": {
+          "roles": [
+            "general"
+          ]
+        }
+      },
+      "images_style": "nvidia_genai"
+    },
+    "bailian": {
+      "key_env": "BAILIAN_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "responses": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "anthropic": "https://dashscope.aliyuncs.com/apps/anthropic",
+        "images": "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
+      },
+      "models": {
+        "MiniMax/speech-2.8-hd": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax/speech-2.8-turbo": {
+          "roles": [
+            "general"
+          ]
+        },
+        "fun-asr-flash-2026-06-15": {
+          "roles": [
+            "general"
+          ]
+        },
+        "kimi-k2.7-code": {
+          "roles": [
+            "code_premium"
+          ]
+        },
+        "qwen-audio-3.0-asr-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen-audio-3.0-realtime-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen-audio-3.0-realtime-plus": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen-audio-3.1-realtime-plus": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen-image-2.1-pro": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen-image-3.0": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen-image-3.0-pro": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3-asr-flash-realtime": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3-coder-flash": {
+          "roles": [
+            "code_fast"
+          ]
+        },
+        "qwen3-tts-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3-tts-flash-realtime": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3-vl-plus": {
+          "roles": [
+            "vision"
+          ]
+        },
+        "qwen3.5-397b-a17b": {
+          "roles": [
+            "premium",
+            "general"
+          ]
+        },
+        "qwen3.5-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3.5-ocr": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3.5-omni-plus": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3.5-plus": {
+          "roles": [
+            "fast",
+            "general"
+          ]
+        },
+        "qwen3.6-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "qwen3.6-plus": {
+          "roles": [
+            "general"
+          ]
+        },
+        "unisound/unisound-u2": {
+          "roles": [
+            "general"
+          ]
+        },
+        "wan2.7-image": {
+          "roles": [
+            "general"
+          ]
+        },
+        "wan2.7-image-pro": {
+          "roles": [
+            "general"
+          ]
+        }
+      }
+    },
+    "deepseek": {
+      "key_env": "DEEPSEEK_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://api.deepseek.com/v1",
+        "responses": "https://api.deepseek.com/",
+        "anthropic": "https://api.deepseek.com/anthropic"
+      },
+      "models": {
+        "deepseek-flash": {
+          "roles": [
+            "code_fast",
+            "vision",
+            "general"
+          ]
+        },
+        "deepseek-v4-pro": {
+          "roles": [
+            "code_premium",
+            "reasoning"
+          ]
+        }
+      }
+    },
+    "minimax": {
+      "key_env": "MINIMAX_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://api.minimaxi.com/v1",
+        "responses": "https://api.minimaxi.com/v1"
+      },
+      "models": {
+        "MiniMax-M2": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M2.1": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M2.1-highspeed": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M2.5": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M2.5-highspeed": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M2.7": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M2.7-highspeed": {
+          "roles": [
+            "general"
+          ]
+        },
+        "MiniMax-M3": {
+          "roles": [
+            "code_premium",
+            "reasoning",
+            "general"
+          ]
+        }
+      }
+    },
+    "kimi": {
+      "key_env": "KIMI_CN_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://api.moonshot.cn/v1"
+      },
+      "models": {
+        "kimi-k2.6": {
+          "roles": [
+            "general"
+          ]
+        },
+        "kimi-k2.7-code": {
+          "roles": [
+            "general"
+          ]
+        },
+        "kimi-k2.7-code-highspeed": {
+          "roles": [
+            "general"
+          ]
+        },
+        "kimi-k3": {
+          "roles": [
+            "general"
+          ]
+        }
+      }
+    },
+    "qianfan": {
+      "key_env": "QIANFAN_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://qianfan.baidubce.com/v2"
+      },
+      "models": {
+        "ernie-4.5-turbo-128k": {
+          "roles": [
+            "general"
+          ]
+        },
+        "ernie-4.5-turbo-vl": {
+          "roles": [
+            "vision"
+          ]
+        },
+        "ernie-5.0-thinking-preview": {
+          "roles": [
+            "reasoning"
+          ]
+        },
+        "ernie-5.1": {
+          "roles": [
+            "general",
+            "premium"
+          ]
+        },
+        "internvl3-38b": {
+          "roles": [
+            "vision"
+          ]
+        }
+      }
+    },
+    "agnes": {
+      "key_env": "AGNES_API_KEY",
+      "key_envs": [
+        "AGNES_API_KEY",
+        "AGNES_API_KEY_2",
+        "AGNES_API_KEY_3",
+        "AGNES_API_KEY_4"
+      ],
+      "endpoints": {
+        "openai-completions": "https://apihub.agnes-ai.com/v1"
+      },
+      "models": {
+        "agnes-2.5-flash": {
+          "roles": [
+            "fast",
+            "vision"
+          ]
+        },
+        "agnes-2.5-pro": {
+          "roles": [
+            "premium"
+          ]
+        },
+        "agnes-2.5-pro-alpha": {
+          "roles": [
+            "general"
+          ]
+        },
+        "agnes-2.5-pro-beta": {
+          "roles": [
+            "general"
+          ]
+        },
+        "agnes-3.0-flash": {
+          "roles": [
+            "code_fast",
+            "general",
+            "vision"
+          ]
+        },
+        "agnes-image-2.0-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "agnes-image-2.1-flash": {
+          "roles": [
+            "image_gen"
+          ]
+        },
+        "agnes-image-2.5-flash": {
+          "roles": [
+            "general"
+          ]
+        },
+        "agnes-video-2.5": {
+          "roles": [
+            "general"
+          ]
+        },
+        "agnes-video-2.5-flash": {
+          "roles": [
+            "general"
+          ]
+        }
+      }
+    },
+    "zhipu": {
+      "key_env": "ZHIPU_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://open.bigmodel.cn/api/paas/v4"
+      },
+      "models": {
+        "glm-5.2": {
+          "roles": [
+            "general"
+          ]
+        },
+        "glm-5.3": {
+          "roles": [
+            "general",
+            "premium"
+          ]
+        },
+        "glm-5.3-flash": {
+          "roles": [
+            "general",
+            "fast"
+          ]
+        },
+        "glm-5.3-flashx": {
+          "roles": [
+            "general",
+            "fast"
+          ]
+        }
+      }
+    },
+    "ark": {
+      "key_env": "ARK_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://ark.cn-beijing.volces.com/api/v3"
+      },
+      "models": {
+        "doubao-seed-2-0-code-preview-260215": {
+          "roles": [
+            "code_premium"
+          ]
+        },
+        "doubao-seed-2-1-lite-260915": {
+          "roles": [
+            "general",
+            "fast"
+          ]
+        },
+        "doubao-seed-2-1-pro-260915": {
+          "roles": [
+            "general",
+            "premium"
+          ]
+        },
+        "doubao-seed-2-1-turbo-260628": {
+          "roles": [
+            "general",
+            "fast"
+          ]
+        },
+        "doubao-seed-character-260628": {
+          "roles": [
+            "script"
+          ]
+        }
+      }
+    },
+    "alibaba-coding-plan": {
+      "key_env": "ALIBABA_CODING_PLAN_API_KEY",
+      "endpoints": {
+        "openai-completions": "https://ws-icdk7in8ipc4ujep.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+      },
+      "models": {
+        "deepseek-v4-pro": {
+          "roles": [
+            "code_premium"
+          ]
+        },
+        "qwen3.6-plus": {
+          "roles": [
+            "general"
+          ]
+        }
+      }
+    }
+  },
+  "roles": {
+    "review_fidelity": "agnes-3.0-flash",
+    "review_compliance": "agnes-2.5-flash",
+    "review_quality": "nvidia/nemotron-3-ultra-550b-a55b",
+    "review_arbiter": "agnes-2.5-flash",
+    "script": "agnes-3.0-flash",
+    "analysis": "nvidia/nemotron-3-ultra-550b-a55b",
+    "reasoning": "nvidia/nemotron-3-ultra-550b-a55b",
+    "review_fix": "agnes-2.5-flash"
+  },
+  "fallback_chains": {
+    "review_fidelity": [
+      "agnes/agnes-2.5-flash",
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+      "deepseek/deepseek-flash"
+    ],
+    "review_compliance": [
+      "agnes/agnes-3.0-flash",
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+    ],
+    "review_quality": [
+      "agnes/agnes-3.0-flash",
+      "agnes/agnes-2.5-flash"
+    ],
+    "review_arbiter": [
+      "agnes/agnes-3.0-flash",
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+    ],
+    "review_fix": [
+      "agnes/agnes-3.0-flash",
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+    ],
+    "general": [
+      "agnes/agnes-3.0-flash",
+      "agnes/agnes-2.5-flash",
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+      "deepseek/deepseek-flash"
+    ],
+    "fast": [
+      "agnes/agnes-2.5-flash",
+      "agnes/agnes-3.0-flash",
+      "nvidia/openai/gpt-oss-20b"
+    ],
+    "premium": [
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+    ],
+    "reasoning": [
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+    ],
+    "analysis": [
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+    ],
+    "script": [
+      "agnes/agnes-3.0-flash",
+      "nvidia/nvidia/nemotron-3-ultra-550b-a55b",
+      "deepseek/deepseek-flash"
+    ],
+    "vision": [
+      "agnes/agnes-3.0-flash",
+      "qianfan/ernie-4.5-turbo-vl",
+      "qianfan/internvl3-38b"
+    ],
+    "vision_scene": [
+      "agnes/agnes-3.0-flash",
+      "qianfan/ernie-4.5-turbo-vl"
+    ],
+    "code_fast": [
+      "deepseek/deepseek-flash"
+    ],
+    "code_premium": [],
+    "summarization": [
+      "nvidia/openai/gpt-oss-20b",
+      "agnes/agnes-2.5-flash"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Web Access（浏览器自动化）",
+  "installedAt": 1789142527416,
+  "source": "marketplace",
+  "version": "2.5.0",
+  "skillId": "skill_2053083109158420480",
+  "examples_zh": [
+    "搜索并对比三家海外竞品的功能页面",
+    "浏览 Reddit 和 LinkedIn 上关于这个问题的公开讨论",
+    "登录我授权的管理后台并导出月报，执行前确认",
+    "并行研究 5 个公开网站并总结发现"
+  ],
+  "examples_en": [
+    "Search and compare feature pages from three overseas competitors",
+    "Browse public Reddit and LinkedIn discussions about this problem",
+    "Log into my authorized admin dashboard and export the monthly report after confirmation",
+    "Research five public websites in parallel and summarize findings"
+  ],
+  "description_zh": "CDP 直连本地 Chrome，智能调度联网工具，支持登录态、并行批量操作",
+  "description_en": "CDP-based web access: search, scrape, login-aware browsing, parallel ops",
+  "iconSource": "https://openplatform-cdn.codebuddy.ai/public/skills/icons/web-access.svg",
+  "iconLocalPath": "C:\\Users\\Administrator\\.workbuddy-ai\\skills\\web-access\\_icon.svg",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.ai/public/skills/icons/web-access.svg",
+  "installedContentHash": "sha256:110a56c5f8ff154440c5da5b7ea496785eb880da411c7547c4691adc985aa462"
+}
